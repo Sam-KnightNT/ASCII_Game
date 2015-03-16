@@ -1,24 +1,28 @@
 package version_7;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public abstract class Location {
 
 	public Tile[][] tiles;
-	private ArrayList<Location> attachedLocs;
+	protected HashMap<Location, Entrance> attachedLocs = new HashMap<Location, Entrance>();
 	public ArrayList<EntityTile> entities = new ArrayList<EntityTile>();
 	public ArrayList<ItemTile> items = new ArrayList<ItemTile>();
 	Coord2D corner;
 	private String name;
 	protected int width;
 	protected int height;
+	protected int x;
+	protected int y;
 	
-	public ArrayList<Location> getAttached() {
+	public HashMap<Location, Entrance> getAttached() {
 		return attachedLocs;
 	}
 	
-	public void addAttachment(Location attachment) {
-		attachedLocs.add(attachment);
+	public void addAttachment(Location attachment, Entrance entrance) {
+		attachedLocs.put(attachment, entrance);
+		//TODO - this needs more information about the attachment. How wide is the connection, and where is it?
 	}
 
 	public Tile[][] getTiles() {
@@ -30,10 +34,10 @@ public abstract class Location {
 	}
 	
 	public int getX() {
-		return corner.getY();
+		return x;
 	}
 	public int getY() {
-		return corner.getY();
+		return y;
 	}
 	public int getW() {
 		return width;

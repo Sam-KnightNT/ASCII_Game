@@ -1,6 +1,7 @@
 package version_7;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Room extends Location{
 
@@ -47,30 +48,61 @@ public class Room extends Location{
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
-		tiles = new Tile[w+2][h+2];
+		this.x = x;
+		this.y = y;
+		tiles = new Tile[w][h];
 	}
 	
 	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType) {
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
-		tiles = new Tile[w+2][h+2];
-		for (int yI = 1; yI < h+1; yI++) {
-			for (int xI = 1; xI < w+1; xI++) {
+		this.x = x;
+		this.y = y;
+		tiles = new Tile[w][h];
+		for (int yI = 1; yI < h-1; yI++) {
+			for (int xI = 1; xI < w-1; xI++) {
 				tiles[xI][yI] = new Tile(floorTileType);
 			}
 		}
-		for (int xI = 0; xI < w+2; xI++) {
+		for (int xI = 0; xI < w; xI++) {
 			tiles[xI][0] = new Tile(wallTileType);
-			tiles[xI][h+1] = new Tile(wallTileType);
+			tiles[xI][h-1] = new Tile(wallTileType);
 		}
-		for (int yI = 0; yI < h+2; yI++) {
+		for (int yI = 0; yI < h; yI++) {
 			tiles[0][yI] = new Tile(wallTileType);
-			tiles[w+1][yI] = new Tile(wallTileType);
+			tiles[w-1][yI] = new Tile(wallTileType);
 		}
 	}
-		
+
+	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
+		this(w, h, x, y, floorTileType, wallTileType);
+		attachedLocs = attachments;
+	}
 	
+	public void carveEntrancesWithCurrentAttachments(TileType floor) {
+		carveEntrances(new ArrayList<Entrance>(attachedLocs.values()), floor);
+	}
+	public void carveEntrances(ArrayList<Entrance> entrances, TileType floorTileType) {
+		for (Entrance entrance : entrances) {
+			for (int s=0; s<entrance.getSize(); s++) {
+				switch (entrance.getDirection()) {
+				case NORTH:
+					tiles[entrance.getLocation()+s][0] = new Tile(floorTileType);
+					break;
+				case SOUTH:
+					tiles[entrance.getLocation()+s][height-1] = new Tile(floorTileType);
+					break;
+				case WEST:
+					tiles[0][entrance.getLocation()+s] = new Tile(floorTileType);
+					break;
+				case EAST:
+					tiles[width-1][entrance.getLocation()+s] = new Tile(floorTileType);
+					break;
+				}
+			}
+		}
+	}
 	public int getW() {
 		return width;
 	}
@@ -103,5 +135,9 @@ public class Room extends Location{
 	public void moveCamera() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public String toString() {
+		return new String("\tRoom:\n\t\tWidth: "+width+"\n\t\tHeight: "+height+"\n\t\tX position: "+x+"\n\t\tY position: "+y);
 	}
 }

@@ -151,14 +151,32 @@ public class GameClass {
 		
 		BufferedReader readIn = new BufferedReader(new InputStreamReader(System.in));
 		String command = "";
-		Room room = new Room(4, 6, 10, 10, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		
+		//Construct 2 rooms and a corridor to connect them
+		Room room = new Room(9, 6, 6, 11, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		Room room2 = new Room(7, 8, 15, 16, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		Room room3 = new Room(7, 8, 15, 1, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		Room room4 = new Room(7, 8, 1, 16, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		
+		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
+		entrances.add(new Entrance(Direction.SOUTH, 4, 3));
+		entrances.add(new Entrance(Direction.WEST, 6, 2));
+		entrances.add(new Entrance(Direction.NORTH, 6, 2));
+		entrances.add(new Entrance(Direction.EAST, 6, 2));
+
+		Corridor corridor = new Corridor(9, 9, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		attachTwoLocations(corridor, room, entrances.get(0));
+		attachTwoLocations(corridor, room2, entrances.get(1));
+		attachTwoLocations(corridor, room3, entrances.get(2));
+		attachTwoLocations(corridor, room4, entrances.get(3));
+		
+		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
+		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
+		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		locations.put("Room 1", room);
-		locations.put("Room 2", new Room(7, 8, 12, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall")));
-		//Connect the two with a Corridor
-		HashMap<Direction, IntPair> entrances = new HashMap<Direction, IntPair>();
-		entrances.put(Direction.SOUTH, new IntPair(4, 3));
-		entrances.put(Direction.WEST, new IntPair(6, 2));
-		locations.put("Corridor 1", new Corridor(9, 9, 20, 15, tiles.get("Marble Floor"), tiles.get("Marble Wall"), entrances));
+		locations.put("Room 2", room2);
+		locations.put("Corridor 1", corridor);
+		
 		cloc = locations.get("Room 1");
 		self = new EntityTile(entities.get("Player"), cloc, 1, 1, 0);
 		cloc.addEntity(self);
@@ -631,7 +649,7 @@ public class GameClass {
 					Location expandingLocation = locationPath.get(locationPath.size()-1);
 					
 					//Look at all the Rooms attached
-					for (Location attachedLocation : expandingLocation.getAttached()) {
+					for (Location attachedLocation : expandingLocation.getAttached().keySet()) {
 						//If this is the one you are aiming for, set the path to it. Otherwise, construct a new path and add it to the path list.
 						if (attachedLocation.equals(self.getLocation())) {
 							//If this one is the desired location, get the second Room in the list and break the loop.
@@ -1516,6 +1534,52 @@ public class GameClass {
 				TileType tile = tiles.get(name);
 				map.setTile(i, j, 0, tile);				
 			}
+		}
+	}
+	
+	private static void attachTwoLocations(Location loc1, Location loc2, Entrance entrance) {
+		//First, check if they are allowed to have a connection (if they're aligned right). If so, create the connection.
+		//Creating: Take the Direction, and place it onto loc1 in that direction, with the second in the Triplet as the location, third width.
+		//Then, reverse the Direction, calculate the relative 2nd point on loc2 (relative to loc1) and put it in that too.
+		
+		//If it is a valid connection, do this
+		int relX = loc2.getX()-loc1.getX();
+		int relY = loc2.getY()-loc1.getY();
+		boolean isValid = false;
+		Entrance entrance2 = new Entrance();
+		switch(entrance.getDirection()) {
+		case NORTH:
+			if (relY==loc2.getH()) {
+				isValid = true;
+				entrance2.setDetails(Direction.SOUTH, relX, entrance.getSize());
+			}
+			break;
+		case SOUTH:
+			if (-relY==loc1.getH()) {
+				isValid = true;
+				entrance2.setDetails(Direction.NORTH, -relX, entrance.getSize());
+			}
+			break;
+		case EAST:
+			if (-relX==loc1.getW()) {
+				isValid = true;
+				entrance2.setDetails(Direction.WEST, relY, entrance.getSize());
+			}
+			break;
+		case WEST:
+			if (relX==loc2.getW()) {
+				isValid = true;
+				entrance2.setDetails(Direction.EAST, -relY, entrance.getSize());
+			}
+			break;
+		}
+		if (isValid) {
+			loc1.addAttachment(loc2, entrance);
+			//Modify the Entrance here to contain the relative location
+			loc2.addAttachment(loc1, entrance2);
+			print("Attachment created.\nloc1 details:\n"+loc1.toString()+"\nloc2 details:\n"+loc2.toString()+"\nEntrance details:\n"+entrance.toString()+"\nNew entrance details:\n"+entrance2.toString());
+		} else {
+			print("Invalid attachment.\nloc1 details:\n"+loc1.toString()+"\nloc2 details:\n"+loc2.toString()+"\nEntrance details:\n"+entrance.toString());
 		}
 	}
 }

@@ -180,10 +180,6 @@ public class GameImage extends JPanel {
 			int dy = cloc.getY()-location.getY();
 			int h = location.getH();
 			int w = location.getW();
-			if (location.getClass() == cloc.getClass()) {
-				h+=2;
-				w+=2;
-			}
 			for (int y=0; y<h; y++) {
 				for (int x=0; x<w; x++) {
 					TileType tile = location.getTile(x, y).getType();
