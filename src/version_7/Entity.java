@@ -1,0 +1,98 @@
+package version_7;
+
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+
+public class Entity {
+
+	// The general entity name
+	private String name;
+	private BufferedImage image;
+	private Color colour;
+	private Color backColour;
+	private String[] features;
+	private HashMap<String, Integer> baseStats = new HashMap<String, Integer>();
+	private boolean transparentBackground = false;
+
+	// Work more on hashmaps
+
+	public Entity() {
+
+	}
+
+	public Entity(String name, BufferedImage image, Color colour,
+			Color backColour, String[] features,
+			HashMap<String, Integer> baseStats) {
+		this.name = name;
+		this.image = image;
+		this.colour = colour;
+		this.backColour = backColour;
+		this.features = features;
+		this.baseStats = baseStats;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setImage(BufferedImage image) {
+		this.image = image;
+	}
+	public BufferedImage getImage() {
+		return image;
+	}
+
+	public void setColour(Color colour) {
+		this.colour = colour;
+	}
+	public Color getColour() {
+		return colour;
+	}
+
+	public void setBGColour(Color colour) {
+		this.backColour = colour;
+	}
+	public Color getBGColour() {
+		return backColour;
+	}
+
+	public void setTransparency(boolean transparent) {
+		transparentBackground = transparent;
+	}
+	public boolean getTransparency() {
+		return transparentBackground;
+	}
+
+	public void setFeatures(String[] features) {
+		this.features = features;
+	}
+	public String[] getFeatures() {
+		return features;
+	}
+
+	public void setStat(String str, Integer num) {
+		baseStats.put(str, num);
+	}
+	public int getBaseStat(String name) {
+		if (baseStats.containsKey(name)) {
+			return baseStats.get(name);
+		} else {
+			return -1;
+		}
+	}
+	public HashMap<String, Integer> getBaseStats() {
+		return baseStats;
+	}
+	public boolean hasStat(String name) {
+		if (baseStats.containsKey(name)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}

@@ -1,0 +1,34 @@
+map1:
+	tiles:
+	 	: Marble Floor
+		x: Marble Wall
+		P: Marble Pillar
+	end
+
+	Exits: Random
+	map:
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+x                x x                         x
+x               x  x           P             x
+x               x x                          x
+x              x  x                          x
+x             x  x             P             x
+x            x  x                            x
+x            x x                             x
+x            x  x              P             x
+x             x x                            x
+x             x  x                           x
+x              x x             P             x
+x              x  x                          x
+x               x  x           P             x
+x               x x                          x
+x              x  x                          x
+x             x  x             P             x
+x            x  x                            x
+x            x x                             x
+x            x  x              P             x
+x             x x                            x
+x             x  x                           x
+x              x x             P             x
+x              x  x                          x
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
