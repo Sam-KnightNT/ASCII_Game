@@ -7,9 +7,9 @@ import java.util.Map.Entry;
 public class EntityTile implements Comparable<EntityTile> {
 
 	private Entity entity;
-	private int x;
-	private int y;
-	private int z;
+	private byte x;
+	private byte y;
+	private byte z;
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 	private ArrayList<Item> inventory = new ArrayList<Item>();
 	private int randomness = 0;
@@ -20,7 +20,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private ArrayList<Location> path;
  
 	
-	public EntityTile(Entity entity, Location loc, int x, int y, int z) {
+	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
@@ -29,7 +29,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		genStats();
 	}
 	
-	public EntityTile(Entity entity, Location loc, int x, int y, int z, int randomness, int id) {
+	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, int randomness, int id) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
@@ -44,27 +44,27 @@ public class EntityTile implements Comparable<EntityTile> {
 		return entity;
 	}
 	
-	public int getX() {
+	public byte getX() {
 		return x;
 	}
 	
-	public int getY() {
+	public byte getY() {
 		return y;
 	}
 	
-	public int getZ() {
+	public byte getZ() {
 		return z;
 	}
 	
-	public void setX(int x) {
+	public void setX(byte x) {
 		this.x = x;
 	}
 	
-	public void setY(int y) {
+	public void setY(byte y) {
 		this.y = y;
 	}
 	
-	public void setZ(int z) {
+	public void setZ(byte z) {
 		this.z = z;
 	}
 
@@ -128,15 +128,16 @@ public class EntityTile implements Comparable<EntityTile> {
 		}
 	}
 		
-	public void setCoords(int x, int y, int z) {
+	public void setCoords(byte x, byte y, byte z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
 
-	public void setCoords(int xy, int z) {
-		int x = (xy % 128);
-		this.setCoords(x, (xy - x) >> 8, z);
+	public void setCoords(short xy, byte z) {
+		this.x = (byte) (xy & 0xff);
+		this.y = (byte) (xy >> 8);
+		this.z = z;
 	}
 
 	public void addToInventory(Item item) {

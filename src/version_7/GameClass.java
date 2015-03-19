@@ -178,7 +178,7 @@ public class GameClass {
 		locations.put("Corridor 1", corridor);
 		
 		cloc = locations.get("Room 1");
-		self = new EntityTile(entities.get("Player"), cloc, 1, 1, 0);
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 1, (byte) 1, (byte) 0);
 		cloc.addEntity(self);
 		//cloc.addEntity(self);
 		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
@@ -373,21 +373,18 @@ public class GameClass {
 	public static void command(String command) {
 		//Move
 		if (command.matches("m([swen])$")) {
-			int x = self.getX();
-			int y = self.getY();
-			int z = self.getZ();
 			switch (command.charAt(1)) {
 			case 's':
-				cycle(x, y+1, z, "south");
+				cycle(Direction.SOUTH);
 				break;
 			case 'w':
-				cycle(x-1, y, z, "west");
+				cycle(Direction.WEST);
 				break;
 			case 'n':
-				cycle(x, y-1, z, "north");
+				cycle(Direction.NORTH);
 				break;
 			case 'e':
-				cycle(x+1, y, z, "east");
+				cycle(Direction.EAST);
 				break;
 			default:
 				print("I've apparently set the command system a bit wrong,\n" +
@@ -502,7 +499,7 @@ public class GameClass {
 		frame.getContentPane().repaint();
 	}
 	
-	public static void cycle(Point3D point, String dir) {
+	public static void cycle(Direction dir) {
 		
 		//HashMap<Triplet<Integer, Tile, Integer>, EntityTile> tiles = 
 		//		new HashMap<Triplet<Integer, Tile, Integer>, EntityTile>();
@@ -510,10 +507,10 @@ public class GameClass {
 		TreeMap<EntityTile, Integer> newList = new TreeMap<EntityTile, Integer>();
 		
 		unfrozenEntities.remove(self);
-			int ticks = self.getTicks();
+		int ticks = self.getTicks();
 		self.resetTicks();
 		
-		boolean leftRoom = move(point, dir, self, cloc);
+		boolean leftRoom = move(dir, self, cloc);
 		if (leftRoom) {
 			//This should obviously be replaced with something in move, but it needs a 2nd boolean.
 			//The boolean should be true if the player moved from a room to another one, false otherwise.
@@ -562,34 +559,31 @@ public class GameClass {
 		mainImage.redrawMap();
 	}
 	
-	public static void cycle(int x, int y, int z, String dir) {
-		cycle(new Point3D(x, y, z), dir);
-	}
-	
 	public static boolean move(Direction dir, EntityTile entTile, Location loc) {
 		byte x = (byte) entTile.getX();
 		byte y = (byte) entTile.getY();
 		short xy = (short) (x + (y << 8));
-		int z = entTile.getZ();
+		byte z = entTile.getZ();
 		if (x>0 && x<loc.getW() && y>0 && y<loc.getH()) {
 			//If all of these are true, there is no way moving will lead to a separate location, so move there.
-			Tile newTile;
-			//No. Have a Short for x/y positions - when doing this, do bitwise operations.
-			newTile = loc.getTile((short) (xy+dir.getNumVal()));
+			
+			//The direction values are selected so that adding them will change xy to the appropriate value
+			short newxy = (short) (xy+dir.getNumVal());
+			Tile newTile = loc.getTile(newxy);
 			if (!newTile.getType().isWalkable()) {
 				print("Cannot move there.");
 			} else {
-				Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, x, y);
+				Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
 				if (otherEntTile.getLeft()) {
 					print("The "+entTile.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
 					fight(entTile, otherEntTile.getRight());
 				} else {
-					/*if (entTile==self) {
-						print("You move "+dir+", to "+entTile.getX()+", "+entTile.getY());
+					entTile.setCoords(newxy, z);
+					if (entTile==self) {
+						print("You move "+dir+" to "+entTile.getX()+", "+entTile.getY());
 					} else {
-						print("The "+entTile.getName()+" moves "+dir+", to "+entTile.getX()+", "+entTile.getY());
-					}*/
-					entTile.setCoords(xy+dir.getNumVal(), z);
+						print("The "+entTile.getName()+" moves "+dir+" to "+entTile.getX()+", "+entTile.getY());
+					}
 				}
 			}
 			//drawMap(cmap);
@@ -635,7 +629,7 @@ public class GameClass {
 			}
 		}
 	}
-	
+
 	public static void moveToPlayer(EntityTile entity) {
 		int ex = entity.getX();
 		int ey = entity.getY();
@@ -726,13 +720,16 @@ public class GameClass {
 		}
 	}
 	
-	public static Pair<Boolean, EntityTile> existsAtLoc(Location loc, int xPos, int yPos) {
+	public static Pair<Boolean, EntityTile> existsAtLoc(Location loc, byte xPos, byte yPos) {
 		for (EntityTile entity : loc.getEntities()) {
 			if (entity.getX()==xPos && entity.getY()==yPos) {
 				return new Pair<Boolean, EntityTile>(true, entity);
 			}
 		}
 		return new Pair<Boolean, EntityTile>(false, null);
+	}
+	private static Pair<Boolean, EntityTile> existsAtLoc(Location loc, short newxy) {
+		return existsAtLoc(loc, (byte) (newxy & 0xff), (byte) (newxy >> 8));
 	}
 	
 	public static Map initialiseMap(int x, int y, Map map, String type) {

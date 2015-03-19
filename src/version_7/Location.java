@@ -34,8 +34,8 @@ public abstract class Location {
 	}
 	//For byte values, modified by a direction.
 	public Tile getTile(short xy) {
-		byte x = (byte) (xy % 128);
-		byte y = (byte) ((xy - x) >> 8);
+		byte x = (byte) (xy & 0xff);
+		byte y = (byte) (xy >> 8);
 		return tiles[x][y];
 	}
 	
