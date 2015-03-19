@@ -61,7 +61,7 @@ public class GameClass {
 	static int dz;
 	
 	public static void main(String[] args) throws Exception {
-		String filename = "..\\ASCII_Game_v7\\mazeInfo.txt";
+		String filename = "..\\ASCII_Game\\mazeInfo.txt";
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String contents = "";
 		String line = reader.readLine();
@@ -566,35 +566,74 @@ public class GameClass {
 		cycle(new Point3D(x, y, z), dir);
 	}
 	
-	public static boolean move(Point3D point, String dir, EntityTile entTile, Location loc) {
-		int x = point.getX();
-		int y = point.getY();
-		int z = point.getZ();
-		boolean leftRoom = false;
-		Tile thisTile = loc.getTile(x, y);
-		if (!thisTile.getType().isWalkable()) {
-			print("Cannot move there.");
-		} else {
-			Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, x, y);
-			if (otherEntTile.getLeft()) {
-				print("The "+entTile.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
-				fight(entTile, otherEntTile.getRight());
+	public static boolean move(Direction dir, EntityTile entTile, Location loc) {
+		byte x = (byte) entTile.getX();
+		byte y = (byte) entTile.getY();
+		short xy = (short) (x + (y << 8));
+		int z = entTile.getZ();
+		if (x>0 && x<loc.getW() && y>0 && y<loc.getH()) {
+			//If all of these are true, there is no way moving will lead to a separate location, so move there.
+			Tile newTile;
+			//No. Have a Short for x/y positions - when doing this, do bitwise operations.
+			newTile = loc.getTile((short) (xy+dir.getNumVal()));
+			if (!newTile.getType().isWalkable()) {
+				print("Cannot move there.");
 			} else {
-				/*if (entTile==self) {
-					print("You move "+dir+", to "+entTile.getX()+", "+entTile.getY());
+				Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, x, y);
+				if (otherEntTile.getLeft()) {
+					print("The "+entTile.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
+					fight(entTile, otherEntTile.getRight());
 				} else {
-					print("The "+entTile.getName()+" moves "+dir+", to "+entTile.getX()+", "+entTile.getY());
-				}*/
-				entTile.setCoords(x, y, z);
+					/*if (entTile==self) {
+						print("You move "+dir+", to "+entTile.getX()+", "+entTile.getY());
+					} else {
+						print("The "+entTile.getName()+" moves "+dir+", to "+entTile.getX()+", "+entTile.getY());
+					}*/
+					entTile.setCoords(xy+dir.getNumVal(), z);
+				}
 			}
-			leftRoom = true;
+			//drawMap(cmap);
+			return false;
+		} else {
+			//Otherwise, it's possible that the entity's at an Entrance, so check against all of them to find the right one.
+			//Once it's found, go through it.
+			HashMap<Location, Entrance> attachments = loc.getAttached();
+			boolean found = false;
+			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
+				Entrance entrance = entry.getValue();
+				switch (entrance.getDirection()) {
+				case NORTH:
+					if (y==0 && x>entrance.getLocation() && x<entrance.getLocation()+entrance.getSize()) {
+						cloc = entry.getKey();
+						found = true;
+					}
+					break;
+				case SOUTH:
+					if (y==loc.getH() && x>entrance.getLocation() && x<entrance.getLocation()+entrance.getSize()) {
+						cloc = entry.getKey();
+						found = true;
+					}
+					break;
+				case WEST:
+					if (x==0 && y>entrance.getLocation() && y<entrance.getLocation()+entrance.getSize()) {
+						cloc = entry.getKey();
+						found = true;
+					}
+					break;
+				case EAST:
+					if (x==0 && y>entrance.getLocation() && y<entrance.getLocation()+entrance.getSize()) {
+						cloc = entry.getKey();
+						found = true;
+					}
+					break;
+				}
+			}
+			if (found) {
+				return true;
+			} else {
+				return false;
+			}
 		}
-		//drawMap(cmap);
-		return leftRoom;
-	}
-	
-	public static boolean move(int x, int y, int z, String dir, EntityTile entTile, Location loc) {
-		return move(new Point3D(x, y, z), dir, entTile, loc);
 	}
 	
 	public static void moveToPlayer(EntityTile entity) {
@@ -609,15 +648,15 @@ public class GameClass {
 		int y = ey-py;
 		if (Math.abs(x)>=Math.abs(y) && pz==ez) {
 			if (x<0) {
-				move(ex+1, ey, ez, "west", entity, cloc);
+				move(Direction.WEST, entity, cloc);
 			} else {
-				move(ex-1, ey, ez, "east", entity, cloc);
+				move(Direction.EAST, entity, cloc);
 			}
 		} else {
 			if (y<0) {
-				move(ex, ey+1, ez, "south", entity, cloc);
+				move(Direction.SOUTH, entity, cloc);
 			} else {
-				move(ex, ey-1, ez, "north", entity, cloc);
+				move(Direction.NORTH, entity, cloc);
 			}
 		}	
 	}

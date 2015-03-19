@@ -48,8 +48,8 @@ public class Room extends Location{
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
-		this.x = x;
-		this.y = y;
+		this.x = (byte) x;
+		this.y = (byte) y;
 		tiles = new Tile[w][h];
 	}
 	
@@ -57,8 +57,8 @@ public class Room extends Location{
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
-		this.x = x;
-		this.y = y;
+		this.x = (byte) x;
+		this.y = (byte) y;
 		tiles = new Tile[w][h];
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {

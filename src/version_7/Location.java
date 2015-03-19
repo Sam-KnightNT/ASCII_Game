@@ -13,8 +13,8 @@ public abstract class Location {
 	private String name;
 	protected int width;
 	protected int height;
-	protected int x;
-	protected int y;
+	protected byte x;
+	protected byte y;
 	
 	public HashMap<Location, Entrance> getAttached() {
 		return attachedLocs;
@@ -30,6 +30,12 @@ public abstract class Location {
 	}
 	
 	public Tile getTile(int x, int y) {
+		return tiles[x][y];
+	}
+	//For byte values, modified by a direction.
+	public Tile getTile(short xy) {
+		byte x = (byte) (xy % 128);
+		byte y = (byte) ((xy - x) >> 8);
 		return tiles[x][y];
 	}
 	

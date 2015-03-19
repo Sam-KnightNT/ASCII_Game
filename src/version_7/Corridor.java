@@ -18,8 +18,8 @@ public class Corridor extends Location {
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
-		this.x = x;
-		this.y = y;
+		this.x = (byte) x;
+		this.y = (byte) y;
 		tiles = new Tile[w][h];
 		//Fill it all in with wall tiles
 		for (int yI=0; yI<h; yI++) {
@@ -36,8 +36,8 @@ public class Corridor extends Location {
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
-		this.x = x;
-		this.y = y;
+		this.x = (byte) x;
+		this.y = (byte) y;
 		attachedLocs = attachments;
 		tiles = new Tile[w][h];
 		//Fill it all in with wall tiles
@@ -59,7 +59,6 @@ public class Corridor extends Location {
 
 		//Now go along the entrances, and progressively carve the paths out while there are entrances in the appropriate direction.
 		boolean carving = true;
-		int carvingLength = 0;
 		//While there are still entrances to be carved
 		while (carving) {
 			//Set carving to be false, only reset it if one needs to be carved
@@ -68,7 +67,7 @@ public class Corridor extends Location {
 			for (Entrance entrance : entrances) {
 				//And each other entrance
 				
-				//Go through the list of other entrances to find the furthest-away entrance (that isn't opposite). Then draw to there.
+				//Go through the list of other entrances to find the farthest-away entrance (that isn't opposite). Then draw to there.
 				int maxLength = 0;
 				switch (entrance.getDirection()) {
 				case NORTH:
@@ -132,39 +131,6 @@ public class Corridor extends Location {
 							break;
 						}
 					}
-					
-					/* These switch statements check for the following.
-					 * 
-					 * E's are the current "entrance" variable and its carved path.
-					 * X's are the otherEntrance variable's entrance.
-					 * .'s are uncarved paths.
-					 *  
-					 * .............
-					 * E............
-					 * E............
-					 * .............
-					 * .......XXXX..
-					 * returns 10, as there are 10 steps before the E carved path gets to the rightmost part of the X's.
-					 * 
-					 * ......EEEEE...
-					 * ..............
-					 * XXX...........
-					 * XXX...........
-					 * ..............
-					 * returns 3.
-					 * 
-					 * ..............
-					 * X.............
-					 * X.............
-					 * X.............
-					 * ..............
-					 * ..............
-					 * X.............
-					 * X.............
-					 * X.............
-					 * .....EE.......
-					 * returns 8, as it looks for the furthest one.
-					 */
 				}
 			}
 		}

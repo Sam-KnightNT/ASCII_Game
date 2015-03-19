@@ -134,6 +134,11 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.z = z;
 	}
 
+	public void setCoords(int xy, int z) {
+		int x = (xy % 128);
+		this.setCoords(x, (xy - x) >> 8, z);
+	}
+
 	public void addToInventory(Item item) {
 		inventory.add(item);
 	}
