@@ -3,11 +3,11 @@ package version_7;
 public class ItemTile {
 	
 	private Item item;
-	private int x;
-	private int y;
-	private int z;
+	private byte x;
+	private byte y;
+	private byte z;
 	
-	public ItemTile(Item item, int x, int y, int z) {
+	public ItemTile(Item item, byte x, byte y, byte z) {
 		this.item = item;
 		this.x = x;
 		this.y = y;
@@ -18,15 +18,15 @@ public class ItemTile {
 		return item;
 	}
 	
-	public int getX() {
+	public byte getX() {
 		return x;
 	}
 	
-	public int getY() {
+	public byte getY() {
 		return y;
 	}
 
-	public int getZ() {
+	public byte getZ() {
 		return z;
 	}
 	

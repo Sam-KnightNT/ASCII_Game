@@ -178,10 +178,10 @@ public class GameImage extends JPanel {
 		for (Location location : locations) {
 			int dx = cloc.getX()-location.getX();
 			int dy = cloc.getY()-location.getY();
-			int h = location.getH();
-			int w = location.getW();
-			for (int y=0; y<h; y++) {
-				for (int x=0; x<w; x++) {
+			byte h = location.getH();
+			byte w = location.getW();
+			for (byte y=0; y<h; y++) {
+				for (byte x=0; x<w; x++) {
 					TileType tile = location.getTile(x, y).getType();
 					g.setColor(tile.getColour());
 					g.setBackground(tile.getBG());

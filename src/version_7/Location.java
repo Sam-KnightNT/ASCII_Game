@@ -11,8 +11,8 @@ public abstract class Location {
 	public ArrayList<ItemTile> items = new ArrayList<ItemTile>();
 	Coord2D corner;
 	private String name;
-	protected int width;
-	protected int height;
+	protected byte width;
+	protected byte height;
 	protected byte x;
 	protected byte y;
 	
@@ -29,7 +29,7 @@ public abstract class Location {
 		return tiles;
 	}
 	
-	public Tile getTile(int x, int y) {
+	public Tile getTile(byte x, byte y) {
 		return tiles[x][y];
 	}
 	//For byte values, modified by a direction.
@@ -39,16 +39,16 @@ public abstract class Location {
 		return tiles[x][y];
 	}
 	
-	public int getX() {
+	public byte getX() {
 		return x;
 	}
-	public int getY() {
+	public byte getY() {
 		return y;
 	}
-	public int getW() {
+	public byte getW() {
 		return width;
 	}
-	public int getH() {
+	public byte getH() {
 		return height;
 	}
 	public Coord2D getCorner() {
@@ -59,15 +59,15 @@ public abstract class Location {
 		this.corner = location;
 	}
 	
-	public void setCorner(int x, int y) {
+	public void setCorner(byte x, byte y) {
 		corner = new Coord2D(x, y);
 	}
 
-	public void setTile(int x, int y, TileType tile) {
+	public void setTile(byte x, byte y, TileType tile) {
 		tiles[x][y] = new Tile(tile);
 	}
 	
-	public Pair<Boolean, Entity> entityAt(int x, int y, int z) {
+	public Pair<Boolean, Entity> entityAt(byte x, byte y, byte z) {
 		for (EntityTile entity:entities) {
 			if (entity.getX()==x && entity.getY()==y && entity.getZ()==z) {
 				return new Pair<Boolean, Entity>(true, entity.getEntity());
@@ -147,7 +147,7 @@ public abstract class Location {
 	}
 	
 	
-	public Pair<Boolean, Item> itemAt(int x, int y, int z) {
+	public Pair<Boolean, Item> itemAt(byte x, byte y, byte z) {
 		for (ItemTile item:items) {
 			if (item.getX()==x && item.getY()==y && item.getZ()==z) {
 				return new Pair<Boolean, Item>(true, item.getItem());

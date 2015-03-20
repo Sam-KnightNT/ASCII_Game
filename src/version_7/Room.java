@@ -44,7 +44,7 @@ public class Room extends Location{
 	 * -------o--------------o---------
 	 */
 	
-	public Room (int w, int h, int x, int y) {
+	public Room (byte w, byte h, byte x, byte y) {
 		width = w;
 		height = h;
 		corner = new Coord2D(x, y);
@@ -53,13 +53,8 @@ public class Room extends Location{
 		tiles = new Tile[w][h];
 	}
 	
-	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType) {
-		width = w;
-		height = h;
-		corner = new Coord2D(x, y);
-		this.x = (byte) x;
-		this.y = (byte) y;
-		tiles = new Tile[w][h];
+	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType) {
+		this(w, h, x, y);
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {
 				tiles[xI][yI] = new Tile(floorTileType);
@@ -75,7 +70,7 @@ public class Room extends Location{
 		}
 	}
 
-	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
+	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
 		this(w, h, x, y, floorTileType, wallTileType);
 		attachedLocs = attachments;
 	}
@@ -88,46 +83,46 @@ public class Room extends Location{
 			for (int s=0; s<entrance.getSize(); s++) {
 				switch (entrance.getDirection()) {
 				case NORTH:
-					tiles[entrance.getLocation()+s][0] = new Tile(floorTileType);
+					tiles[entrance.getCoords()+s][0] = new Tile(floorTileType);
 					break;
 				case SOUTH:
-					tiles[entrance.getLocation()+s][height-1] = new Tile(floorTileType);
+					tiles[entrance.getCoords()+s][height-1] = new Tile(floorTileType);
 					break;
 				case WEST:
-					tiles[0][entrance.getLocation()+s] = new Tile(floorTileType);
+					tiles[0][entrance.getCoords()+s] = new Tile(floorTileType);
 					break;
 				case EAST:
-					tiles[width-1][entrance.getLocation()+s] = new Tile(floorTileType);
+					tiles[width-1][entrance.getCoords()+s] = new Tile(floorTileType);
 					break;
 				}
 			}
 		}
 	}
-	public int getW() {
+	public byte getW() {
 		return width;
 	}
-	public void setW(int w) {
+	public void setW(byte w) {
 		width = w;
 	}
 	public int getWidth() {
 		return width;
 	}
-	public void setWidth(int width) {
+	public void setWidth(byte width) {
 		this.width = width;
 	}
 	
 	
-	public int getH() {
+	public byte getH() {
 		return height;
 	}
-	public void setH(int h) {
+	public void setH(byte h) {
 		height = h;
 	}
-	public int getHeight() {
+	public byte getHeight() {
 		return height;
 	}
 
-	public void setHeight(int height) {
+	public void setHeight(byte height) {
 		this.height = height;
 	}
 

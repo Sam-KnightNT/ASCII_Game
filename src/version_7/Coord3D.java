@@ -1,49 +1,48 @@
 package version_7;
 
-import java.awt.geom.Point2D;
-
 public class Coord3D {
 
-	Point2D point;
-	private double x;
-	private double y;
-	private double z;
+	private byte x;
+	private byte y;
+	private byte z;
 	
-	public Coord3D() {
-		
+	public Coord3D(byte x, byte y, byte z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	public double distance(Coord3D crd) {
 		return Math.sqrt(distanceSq(crd));
 	}
 	
-	public double distance(double px, double py, double pz) {
+	public double distance(byte px, byte py, byte pz) {
 		return Math.sqrt(distanceSq(px, py, pz));
 	}
 	
 	public double distanceSq(Coord3D crd) {
-		double dx = crd.getX()-x;
-		double dy = crd.getY()-y;
-		double dz = crd.getZ()-z;
+		byte dx = (byte) (crd.getX()-x);
+		byte dy = (byte) (crd.getY()-y);
+		byte dz = (byte) (crd.getZ()-z);
 		return (dx*dx)+(dy*dy)+(dz*dz);
 	}
 	
-	public double distanceSq(double px, double py, double pz) {
-		double dx = px-x;
-		double dy = py-y;
-		double dz = pz-z;
+	public double distanceSq(byte px, byte py, byte pz) {
+		byte dx = (byte) (px-x);
+		byte dy = (byte) (py-y);
+		byte dz = (byte) (pz-z);
 		return (dx*dx)+(dy*dy)+(dz*dz);
 	}
 	
-	public double getX() {
+	public byte getX() {
 		return x;
 	}
 	
-	public double getY() {
+	public byte getY() {
 		return y;
 	}
 	
-	public double getZ() {
+	public byte getZ() {
 		return z;
 	}
 	
@@ -53,7 +52,7 @@ public class Coord3D {
 		z = crd.getZ();
 	}
 	
-	public void setLocation(double x, double y, double z) {
+	public void setLocation(byte x, byte y, byte z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;

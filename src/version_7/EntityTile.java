@@ -10,6 +10,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private byte x;
 	private byte y;
 	private byte z;
+	private Coord3D coords;
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 	private ArrayList<Item> inventory = new ArrayList<Item>();
 	private int randomness = 0;
@@ -18,6 +19,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private int id;
 	private Location location;
 	private ArrayList<Location> path;
+	private Entrance entrance;
  
 	
 	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z) {
@@ -25,6 +27,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		this.coords = new Coord3D(x, y, z);
 		this.location = loc;
 		genStats();
 	}
@@ -228,8 +231,41 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.path = path;
 	}
 
-	public void moveToNewRoom(Location location) {
-
+	public Entrance getEntrance() {
+		for (Entrance entrance : this.location.getAttached().values()) {
+			switch (entrance.getDirection()) {
+			case NORTH:
+				if (y==0 && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
+					return entrance;
+				}
+				break;
+			case SOUTH:
+				if (y==this.location.getH() && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
+					return entrance;
+				}
+				break;
+			case WEST:
+				if (x==0 && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
+					return entrance;
+				}
+				break;
+			case EAST:
+				if (x==this.location.getW() && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
+					return entrance;
+				}
+				break;
+			}
+		}
+		return null;
+	}
+	
+	public void setNewEntrance(Entrance entrance) {
+		this.entrance = entrance;
+	}
+	public void moveThroughEntrance(Entrance entrance) {
+		//Set the new location as whatever's on the other side of this
+		//location = entrance.getLinkedEntrance().getLocation();
+		//Give it the new Entrance
 		//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 		Location newRoom = path.get(1);
 		if (newRoom == location) {

@@ -5,6 +5,8 @@ public class Entrance {
 	private Direction direction;
 	private int location;
 	private int size;
+	private Entrance linkedEntrance;
+	private Location containedLocation;
 
 	public Entrance() {
 	}
@@ -20,11 +22,31 @@ public class Entrance {
 		location = details.getMiddle();
 		size = details.getRight();
 	}
+	
+	public Entrance(Direction direction, int location, int size, Entrance linkedEntrance) {
+		this(direction, location, size);
+		this.linkedEntrance = linkedEntrance;
+	}
+	
+	public Entrance(Triplet<Direction, Integer, Integer> details, Entrance linkedEntrance) {
+		this(details);
+		this.linkedEntrance = linkedEntrance;
+	}
+	
+	public Entrance(Direction direction, int location, int size, Entrance linkedEntrance, Location containedLocation) {
+		this(direction, location, size, linkedEntrance);
+		this.containedLocation = containedLocation;
+	}
+	
+	public Entrance(Triplet<Direction, Integer, Integer> details, Entrance linkedEntrance, Location containedLocation) {
+		this(details, linkedEntrance);
+		this.containedLocation = containedLocation;
+	}
 
 	public Direction getDirection() {
 		return direction;
 	}
-	public int getLocation() {
+	public int getCoords() {
 		return location;
 	}
 	public int getSize() {
@@ -33,11 +55,14 @@ public class Entrance {
 	public Triplet<Direction, Integer, Integer> getDetails() {
 		return new Triplet<Direction, Integer, Integer>(direction, location, size);
 	}
+	public Entrance getLinkedEntrance() {
+		return linkedEntrance;
+	}
 
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
-	public void setLocation(int location) {
+	public void setCoords(int location) {
 		this.location = location;
 	}
 	public void setSize(int size) {
@@ -56,6 +81,6 @@ public class Entrance {
 
 	
 	public String toString() {
-		return new String("\tEntrance:\n\t\tDirection: "+direction+"\n\t\tLocation: "+location+"\n\t\tSize: "+size);
+		return new String("Entrance:\n\tDirection: "+direction+"\n\tLocation: "+location+"\n\tSize: "+size);
 	}
 }

@@ -564,6 +564,11 @@ public class GameClass {
 		byte y = (byte) entTile.getY();
 		short xy = (short) (x + (y << 8));
 		byte z = entTile.getZ();
+		if (entTile.getEntrance()!=null && entTile.getEntrance().getDirection()==dir) {
+			//entTile.m
+			//Move to new location
+			//Set entrance to be the one it just went through in its current room
+		}
 		if (x>0 && x<loc.getW() && y>0 && y<loc.getH()) {
 			//If all of these are true, there is no way moving will lead to a separate location, so move there.
 			
@@ -595,27 +600,28 @@ public class GameClass {
 			boolean found = false;
 			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
 				Entrance entrance = entry.getValue();
+				System.out.println(entrance.getDirection());
 				switch (entrance.getDirection()) {
 				case NORTH:
-					if (y==0 && x>entrance.getLocation() && x<entrance.getLocation()+entrance.getSize()) {
+					if (y==0 && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
 						found = true;
 					}
 					break;
 				case SOUTH:
-					if (y==loc.getH() && x>entrance.getLocation() && x<entrance.getLocation()+entrance.getSize()) {
+					if (y==loc.getH() && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
 						found = true;
 					}
 					break;
 				case WEST:
-					if (x==0 && y>entrance.getLocation() && y<entrance.getLocation()+entrance.getSize()) {
+					if (x==0 && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
 						found = true;
 					}
 					break;
 				case EAST:
-					if (x==0 && y>entrance.getLocation() && y<entrance.getLocation()+entrance.getSize()) {
+					if (x==loc.getW() && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
 						found = true;
 					}
