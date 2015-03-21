@@ -46,6 +46,18 @@ public class Coord3D {
 		return z;
 	}
 	
+	public void setX(byte x) {
+		this.x = x;
+	}
+
+	public void setY(byte y) {
+		this.y = y;
+	}
+
+	public void setZ(byte z) {
+		this.z = z;
+	}
+
 	public void setLocation(Coord3D crd) {
 		x = crd.getX();
 		y = crd.getY();
@@ -56,5 +68,9 @@ public class Coord3D {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+	
+	public String toString() {
+		return ("("+x+", "+y+", "+z+")");
 	}
 }

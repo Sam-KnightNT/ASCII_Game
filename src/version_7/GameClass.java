@@ -564,10 +564,23 @@ public class GameClass {
 		byte y = (byte) entTile.getY();
 		short xy = (short) (x + (y << 8));
 		byte z = entTile.getZ();
-		if (entTile.getEntrance()!=null && entTile.getEntrance().getDirection()==dir) {
-			//entTile.m
-			//Move to new location
-			//Set entrance to be the one it just went through in its current room
+		//First, check and see if it has an entrance listed.
+		if (entTile.getEntrance()!=null) {
+			//If it does, compare directions.
+			Entrance entrance = entTile.getEntrance();
+			if (entrance.getDirection()==dir) {
+				//If they are equal, move through the entrance.
+				mainImage.setCurrentLocation(cloc);
+				cloc.removeEntity(entTile);
+				cloc = entrance.getLinkedEntrance().getLocation();
+				entTile.setLocation(cloc);
+				cloc.addEntity(entTile);
+				entTile.setNewEntrance(entrance.getLinkedEntrance());
+				return true;
+			} else if (entrance.getDirection().getOppositeDirection()==dir) {
+				//If they are opposite, remove this entrance and carry on.
+				entTile.setNewEntrance(null);
+			}
 		}
 		if (x>0 && x<loc.getW() && y>0 && y<loc.getH()) {
 			//If all of these are true, there is no way moving will lead to a separate location, so move there.
@@ -595,9 +608,11 @@ public class GameClass {
 			return false;
 		} else {
 			//Otherwise, it's possible that the entity's at an Entrance, so check against all of them to find the right one.
-			//Once it's found, go through it.
+			//Once it's found, if the direction matches up, go through it.
 			HashMap<Location, Entrance> attachments = loc.getAttached();
 			boolean found = false;
+			Entrance foundEntrance = null;
+			search:
 			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
 				Entrance entrance = entry.getValue();
 				System.out.println(entrance.getDirection());
@@ -610,6 +625,8 @@ public class GameClass {
 						Location loc2 = ent2.getLocation();
 						entTile.setCoords(x, (byte) (loc2.getH()-1), z);
 						found = true;
+						foundEntrance = entrance;
+						break search;
 					}
 					break;
 				case SOUTH:
@@ -618,6 +635,8 @@ public class GameClass {
 						entTile.setLocation(cloc);
 						entTile.setCoords(x, (byte) 0, z);
 						found = true;
+						foundEntrance = entrance;
+						break search;
 					}
 					break;
 				case WEST:
@@ -626,6 +645,8 @@ public class GameClass {
 						entTile.setLocation(cloc);
 						entTile.setCoords((byte) (entrance.getLinkedEntrance().getLocation().getW()-1), y, z);
 						found = true;
+						foundEntrance = entrance;
+						break search;
 					}
 					break;
 				case EAST:
@@ -634,17 +655,33 @@ public class GameClass {
 						entTile.setLocation(cloc);
 						entTile.setCoords((byte) 0, y, z);
 						found = true;
+						foundEntrance = entrance;
+						break search;
 					}
 					break;
 				}
 			}
+			//If an entrance has been found, set the entity's current entrance to be the one found.
 			if (found) {
-				mainImage.setCurrentLocation(cloc);
-				return true;
+				//If the direction happens to be the same, move to the new location immediately.
+				if (foundEntrance.getDirection()==dir) {
+					mainImage.setCurrentLocation(cloc);
+					cloc.removeEntity(entTile);
+					cloc = foundEntrance.getLinkedEntrance().getLocation();
+					entTile.setLocation(cloc);
+					cloc.addEntity(entTile);
+					return true;
+				} else {
+					//Else just set the entity's current entrance as this one, to speed up finding it next time.
+					entTile.setNewEntrance(foundEntrance);
+				}
 			} else {
 				return false;
 			}
 		}
+		//I don't think it should ever get to this point - this could be a link to Betweenford if someone manages to get here. For now, return false.
+		//TODO - add Betweenford entrance here
+		return false;
 	}
 
 	public static void moveToPlayer(EntityTile entity) {
@@ -1604,25 +1641,25 @@ public class GameClass {
 		case NORTH:
 			if (relY==loc2.getH()) {
 				isValid = true;
-				entrance2.setDetails(Direction.SOUTH, relX, entrance.getSize());
+				entrance2.setInfo(Direction.SOUTH, relX, entrance.getSize());
 			}
 			break;
 		case SOUTH:
 			if (-relY==loc1.getH()) {
 				isValid = true;
-				entrance2.setDetails(Direction.NORTH, -relX, entrance.getSize());
+				entrance2.setInfo(Direction.NORTH, -relX, entrance.getSize());
 			}
 			break;
 		case EAST:
 			if (-relX==loc1.getW()) {
 				isValid = true;
-				entrance2.setDetails(Direction.WEST, relY, entrance.getSize());
+				entrance2.setInfo(Direction.WEST, relY, entrance.getSize());
 			}
 			break;
 		case WEST:
 			if (relX==loc2.getW()) {
 				isValid = true;
-				entrance2.setDetails(Direction.EAST, -relY, entrance.getSize());
+				entrance2.setInfo(Direction.EAST, -relY, entrance.getSize());
 			}
 			break;
 		}

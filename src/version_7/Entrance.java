@@ -17,10 +17,10 @@ public class Entrance {
 		this.size = size;
 	}
 	
-	public Entrance(Triplet<Direction, Integer, Integer> details) {
-		direction = details.getLeft();
-		locationInRoom = details.getMiddle();
-		size = details.getRight();
+	public Entrance(Triplet<Direction, Integer, Integer> info) {
+		direction = info.getLeft();
+		locationInRoom = info.getMiddle();
+		size = info.getRight();
 	}
 	
 	public Entrance(Direction direction, int location, int size, Entrance linkedEntrance) {
@@ -28,8 +28,8 @@ public class Entrance {
 		this.linkedEntrance = linkedEntrance;
 	}
 	
-	public Entrance(Triplet<Direction, Integer, Integer> details, Entrance linkedEntrance) {
-		this(details);
+	public Entrance(Triplet<Direction, Integer, Integer> info, Entrance linkedEntrance) {
+		this(info);
 		this.linkedEntrance = linkedEntrance;
 	}
 	
@@ -38,8 +38,8 @@ public class Entrance {
 		this.containedLocation = containedLocation;
 	}
 	
-	public Entrance(Triplet<Direction, Integer, Integer> details, Entrance linkedEntrance, Location containedLocation) {
-		this(details, linkedEntrance);
+	public Entrance(Triplet<Direction, Integer, Integer> info, Entrance linkedEntrance, Location containedLocation) {
+		this(info, linkedEntrance);
 		this.containedLocation = containedLocation;
 	}
 
@@ -74,15 +74,15 @@ public class Entrance {
 	public void setSize(int size) {
 		this.size = size;
 	}
-	public void setDetails(Direction direction, int location, int size) {
+	public void setInfo(Direction direction, int location, int size) {
 		this.direction = direction;
 		this.locationInRoom = location;
 		this.size = size;
 	}
-	public void setDetails(Triplet<Direction, Integer, Integer> details) {
-		direction = details.getLeft();
-		locationInRoom = details.getMiddle();
-		size = details.getRight();
+	public void setInfo(Triplet<Direction, Integer, Integer> info) {
+		direction = info.getLeft();
+		locationInRoom = info.getMiddle();
+		size = info.getRight();
 	}
 
 	

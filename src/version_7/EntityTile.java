@@ -33,14 +33,9 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	
 	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, int randomness, int id) {
-		this.entity = entity;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.location = loc;
+		this(entity, loc, x, y, z);
 		this.randomness = randomness;
 		this.id = id;
-		genStats();
 	}
 	
 	public Entity getEntity() {
@@ -59,18 +54,43 @@ public class EntityTile implements Comparable<EntityTile> {
 		return z;
 	}
 	
+	public Coord3D getCoords() {
+		return coords;
+	}
+	
 	public void setX(byte x) {
 		this.x = x;
+		this.coords.setX(x);
 	}
 	
 	public void setY(byte y) {
 		this.y = y;
+		this.coords.setY(y);
 	}
 	
 	public void setZ(byte z) {
 		this.z = z;
+		this.coords.setZ(z);
+	}
+	
+	public void setCoords(Coord3D coords) {
+		this.x = coords.getX();
+		this.y = coords.getY();
+		this.z = coords.getZ();
+		this.coords = coords;
 	}
 
+	public void setCoords(byte x, byte y, byte z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.coords = new Coord3D(x, y, z);
+	}
+
+	public void setCoords(short xy, byte z) {
+		this.setCoords((byte) (xy & 0xff), (byte) (xy >> 8), z); 
+	}
+	
 	public int getStrength() {
 		if (stats.containsKey("strength")) {
 			return stats.get("strength");
@@ -129,18 +149,6 @@ public class EntityTile implements Comparable<EntityTile> {
 		for (Entry<String, Integer> entry : stats.entrySet()) {
 			System.out.println("Stat "+entry.getKey()+" has value "+entry.getValue());
 		}
-	}
-		
-	public void setCoords(byte x, byte y, byte z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-
-	public void setCoords(short xy, byte z) {
-		this.x = (byte) (xy & 0xff);
-		this.y = (byte) (xy >> 8);
-		this.z = z;
 	}
 
 	public void addToInventory(Item item) {

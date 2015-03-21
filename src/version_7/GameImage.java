@@ -212,6 +212,7 @@ public class GameImage extends JPanel {
 			} else {
 				g.setBackground(entity.getBGColour());
 			}
+			System.out.println(entity.getName()+" is at relative coords "+entityT.getCoords().toString());
 			g.drawImage(entity.getImage(), entityT.getX()*xUnit+(getWidth()/2), entityT.getY()*yUnit+(getHeight()/2), null);
 		}
 		this.paintComponent(g);
