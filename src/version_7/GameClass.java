@@ -173,6 +173,9 @@ public class GameClass {
 		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
+		corridor.setName("Corridor 1");
+		room.setName("Room 1");
+		room2.setName("Room 2");
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Corridor 1", corridor);
@@ -570,11 +573,32 @@ public class GameClass {
 			Entrance entrance = entTile.getEntrance();
 			if (entrance.getDirection()==dir) {
 				//If they are equal, move through the entrance.
-				mainImage.setCurrentLocation(cloc);
 				cloc.removeEntity(entTile);
 				cloc = entrance.getLinkedEntrance().getLocation();
-				entTile.setLocation(cloc);
 				cloc.addEntity(entTile);
+				mainImage.setCurrentLocation(cloc);
+				print(entTile.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
+				entTile.setLocation(cloc);
+				byte d;
+				switch (entrance.getDirection()) {
+				case NORTH:
+					//Work out the difference in x positions
+					d = (byte) (cloc.getX()-loc.getX());
+					entTile.setCoords((byte) (x+d), (byte) (cloc.getH()-1), z);
+					break;
+				case SOUTH:
+					d = (byte) (cloc.getX()-loc.getX());
+					entTile.setCoords((byte) (x+d), (byte) 0, z);
+					break;
+				case WEST:
+					d = (byte) (cloc.getY()-loc.getY());
+					entTile.setCoords((byte) (cloc.getW()-1), (byte) (y+d), z);
+					break;
+				case EAST:
+					d = (byte) (cloc.getY()-loc.getY());
+					entTile.setCoords((byte) 0, (byte) (y+d), z);
+					break;
+				}
 				entTile.setNewEntrance(entrance.getLinkedEntrance());
 				return true;
 			} else if (entrance.getDirection().getOppositeDirection()==dir) {
@@ -619,11 +643,6 @@ public class GameClass {
 				switch (entrance.getDirection()) {
 				case NORTH:
 					if (y==0 && x>=entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
-						cloc = entry.getKey();
-						entTile.setLocation(cloc);
-						Entrance ent2 = entrance.getLinkedEntrance();
-						Location loc2 = ent2.getLocation();
-						entTile.setCoords(x, (byte) (loc2.getH()-1), z);
 						found = true;
 						foundEntrance = entrance;
 						break search;
@@ -631,9 +650,6 @@ public class GameClass {
 					break;
 				case SOUTH:
 					if (y==loc.getH() && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
-						cloc = entry.getKey();
-						entTile.setLocation(cloc);
-						entTile.setCoords(x, (byte) 0, z);
 						found = true;
 						foundEntrance = entrance;
 						break search;
@@ -641,9 +657,6 @@ public class GameClass {
 					break;
 				case WEST:
 					if (x==0 && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
-						cloc = entry.getKey();
-						entTile.setLocation(cloc);
-						entTile.setCoords((byte) (entrance.getLinkedEntrance().getLocation().getW()-1), y, z);
 						found = true;
 						foundEntrance = entrance;
 						break search;
@@ -651,9 +664,6 @@ public class GameClass {
 					break;
 				case EAST:
 					if (x==loc.getW() && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
-						cloc = entry.getKey();
-						entTile.setLocation(cloc);
-						entTile.setCoords((byte) 0, y, z);
 						found = true;
 						foundEntrance = entrance;
 						break search;
@@ -664,12 +674,27 @@ public class GameClass {
 			//If an entrance has been found, set the entity's current entrance to be the one found.
 			if (found) {
 				//If the direction happens to be the same, move to the new location immediately.
+				//TODO - stick a breakpoint here and see if it is EVER called.
 				if (foundEntrance.getDirection()==dir) {
-					mainImage.setCurrentLocation(cloc);
 					cloc.removeEntity(entTile);
 					cloc = foundEntrance.getLinkedEntrance().getLocation();
-					entTile.setLocation(cloc);
 					cloc.addEntity(entTile);
+					mainImage.setCurrentLocation(cloc);
+					entTile.setLocation(cloc);
+					switch (foundEntrance.getDirection()) {
+					case NORTH:
+						entTile.setCoords(x, (byte) (cloc.getH()-1), z);
+						break;
+					case SOUTH:
+						entTile.setCoords(x, (byte) 0, z);
+						break;
+					case WEST:
+						entTile.setCoords((byte) (cloc.getW()-1), y, z);
+						break;
+					case EAST:
+						entTile.setCoords((byte) 0, y, z);
+						break;
+					}
 					return true;
 				} else {
 					//Else just set the entity's current entrance as this one, to speed up finding it next time.

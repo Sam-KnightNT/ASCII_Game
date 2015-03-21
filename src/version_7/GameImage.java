@@ -177,9 +177,15 @@ public class GameImage extends JPanel {
 	public void redrawMap() {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, 1400, 1400);
+		int offsetX = (int) ((getWidth()/2.0f)-(cloc.getX()+(cloc.getW()/2.0f)*xUnit));
+		int offsetY = (int) ((getHeight()/2.0f)-(cloc.getY()+(cloc.getH()/2.0f)*yUnit));
+		
+		//Uncomment these to have the camera centred on the player
+		//offsetX = (int) ((getWidth()/2.0f)-(cloc.getEntityByName("Player").get(0).getX()*xUnit));
+		//offsetY = (int) ((getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
 		for (Location location : locations) {
-			int dx = cloc.getX()-location.getX();
-			int dy = cloc.getY()-location.getY();
+			int offsetX2 = (cloc.getX()-location.getX())*xUnit;
+			int offsetY2 = (cloc.getY()-location.getY())*yUnit;
 			byte h = location.getH();
 			byte w = location.getW();
 			for (byte y=0; y<h; y++) {
@@ -187,34 +193,36 @@ public class GameImage extends JPanel {
 					TileType tile = location.getTile(x, y).getType();
 					g.setColor(tile.getColour());
 					g.setBackground(tile.getBG());
+					int xDraw = (x*xUnit)+offsetX+offsetX2;
+					int yDraw = (y*yUnit)+offsetY+offsetY2;
 					//TODO next: Draw it with an offset that's intelligently devised - i.e. that places the centre of the room in the centre of the view, rather than the corner
-					g.drawImage(tile.getImage(), ((x+dx)*xUnit)+(getWidth()/2), ((y+dy)*yUnit)+(getHeight()/2), null);
+					g.drawImage(tile.getImage(), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
 				}
 			}
+			for (ItemTile itemT : location.getItems()) {
+				Item item = itemT.getItem();
+				g.setColor(item.getColour());
+				if (item.getTransparency()) {
+					g.setBackground(location.getTile(itemT.getX(), itemT.getY()).getType().getBG());
+				} else {
+					g.setBackground(item.getBGColour());
+				}
+				g.drawImage(item.getImage(), (itemT.getX()*xUnit)+offsetX+offsetX2, (itemT.getY()*yUnit)+offsetY+offsetY2, null);
+			}
+			for (EntityTile entityT : location.getEntities()) {
+				Entity entity = entityT.getEntity();
+				g.setColor(entity.getColour());
+				if (entity.getTransparency()) {
+					g.setBackground(location.getTile(entityT.getX(), entityT.getY()).getType().getBG());
+				} else {
+					g.setBackground(entity.getBGColour());
+				}
+				System.out.println(entity.getName()+" is at relative coords "+entityT.getCoords().toString());
+				g.drawImage(entity.getImage(), (entityT.getX()*xUnit)+offsetX+offsetX2, (entityT.getY()*yUnit)+offsetY+offsetY2, null);
+			}
 		}
 		
-		for (ItemTile itemT : cloc.getItems()) {
-			Item item = itemT.getItem();
-			g.setColor(item.getColour());
-			if (item.getTransparency()) {
-				g.setBackground(cloc.getTile(itemT.getX(), itemT.getY()).getType().getBG());
-			} else {
-				g.setBackground(item.getBGColour());
-			}
-			g.drawImage(item.getImage(), itemT.getX()*xUnit+(getWidth()/2), itemT.getY()*yUnit+(getHeight()/2), null);
-		}
 		
-		for (EntityTile entityT : cloc.getEntities()) {
-			Entity entity = entityT.getEntity();
-			g.setColor(entity.getColour());
-			if (entity.getTransparency()) {
-				g.setBackground(cloc.getTile(entityT.getX(), entityT.getY()).getType().getBG());
-			} else {
-				g.setBackground(entity.getBGColour());
-			}
-			System.out.println(entity.getName()+" is at relative coords "+entityT.getCoords().toString());
-			g.drawImage(entity.getImage(), entityT.getX()*xUnit+(getWidth()/2), entityT.getY()*yUnit+(getHeight()/2), null);
-		}
 		this.paintComponent(g);
 	}
 	//TODO add dynamic textures
