@@ -177,12 +177,15 @@ public class GameImage extends JPanel {
 	public void redrawMap() {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, 1400, 1400);
+		
+		//If the current location is a Room, have it centre on the centre of the room. If it's a Corridor, have it centre on the player.
 		int offsetX = (int) ((getWidth()/2.0f)-(cloc.getX()+(cloc.getW()/2.0f)*xUnit));
 		int offsetY = (int) ((getHeight()/2.0f)-(cloc.getY()+(cloc.getH()/2.0f)*yUnit));
 		
-		//Uncomment these to have the camera centred on the player
-		//offsetX = (int) ((getWidth()/2.0f)-(cloc.getEntityByName("Player").get(0).getX()*xUnit));
-		//offsetY = (int) ((getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
+		//if (cloc instanceof version_7.Corridor) {
+			offsetX = (int) ((getWidth()/2.0f)-(cloc.getEntityByName("Player").get(0).getX()*xUnit));
+			offsetY = (int) ((getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
+		//}
 		for (Location location : locations) {
 			int offsetX2 = (cloc.getX()-location.getX())*xUnit;
 			int offsetY2 = (cloc.getY()-location.getY())*yUnit;
@@ -217,7 +220,6 @@ public class GameImage extends JPanel {
 				} else {
 					g.setBackground(entity.getBGColour());
 				}
-				System.out.println(entity.getName()+" is at relative coords "+entityT.getCoords().toString());
 				g.drawImage(entity.getImage(), (entityT.getX()*xUnit)+offsetX+offsetX2, (entityT.getY()*yUnit)+offsetY+offsetY2, null);
 			}
 		}

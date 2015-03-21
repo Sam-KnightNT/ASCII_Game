@@ -240,31 +240,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 
 	public Entrance getEntrance() {
-		for (Entrance entrance : this.location.getAttached().values()) {
-			switch (entrance.getDirection()) {
-			case NORTH:
-				if (y==0 && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
-					return entrance;
-				}
-				break;
-			case SOUTH:
-				if (y==this.location.getH() && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
-					return entrance;
-				}
-				break;
-			case WEST:
-				if (x==0 && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
-					return entrance;
-				}
-				break;
-			case EAST:
-				if (x==this.location.getW() && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
-					return entrance;
-				}
-				break;
-			}
-		}
-		return null;
+		return entrance;
 	}
 	
 	public void setNewEntrance(Entrance entrance) {

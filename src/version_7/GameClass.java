@@ -165,23 +165,23 @@ public class GameClass {
 		entrances.add(new Entrance(Direction.EAST, 6, 2));
 
 		Corridor corridor = new Corridor(9, 9, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		corridor.setName("Corridor 1");
+		room.setName("Room 1");
+		room2.setName("Room 2");
 		attachTwoLocations(corridor, room, entrances.get(0));
 		attachTwoLocations(corridor, room2, entrances.get(1));
-		attachTwoLocations(corridor, room3, entrances.get(2));
-		attachTwoLocations(corridor, room4, entrances.get(3));
+		//attachTwoLocations(corridor, room3, entrances.get(2));
+		//attachTwoLocations(corridor, room4, entrances.get(3));
 		
 		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
-		corridor.setName("Corridor 1");
-		room.setName("Room 1");
-		room2.setName("Room 2");
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Corridor 1", corridor);
 		
-		cloc = locations.get("Room 1");
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 1, (byte) 1, (byte) 0);
+		cloc = locations.get("Corridor 1");
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 7, (byte) 0);
 		cloc.addEntity(self);
 		//cloc.addEntity(self);
 		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
@@ -500,6 +500,9 @@ public class GameClass {
 		mainImage.setCurrentLocation(cloc);
 		//Change this to only repaint the small area being changed
 		frame.getContentPane().repaint();
+		//TODO - have pictorial representations of engravings, like the DF engravings. See jef's stream on 21/03/2015, about 2:10 in, for an example of engravings. Before the coffin guy gets possessed.
+		//So, for example, "This is an image of "Yui8856" and bucklers. "Yui8856" is surrounded by the bucklers." would have an image of a red-haired, long-bearded dorf surrounded by bucklers.
+		//You can have more control over the engravings - such as, plating the bucklers in iron, or making carved drawings/embossed drawings.
 	}
 	
 	public static void cycle(Direction dir) {
@@ -606,7 +609,7 @@ public class GameClass {
 				entTile.setNewEntrance(null);
 			}
 		}
-		if (x>0 && x<loc.getW() && y>0 && y<loc.getH()) {
+		if (x>0 && x<loc.getW()-1 && y>0 && y<loc.getH()-1) {
 			//If all of these are true, there is no way moving will lead to a separate location, so move there.
 			
 			//The direction values are selected so that adding them will change xy to the appropriate value
@@ -632,7 +635,7 @@ public class GameClass {
 			return false;
 		} else {
 			//Otherwise, it's possible that the entity's at an Entrance, so check against all of them to find the right one.
-			//Once it's found, if the direction matches up, go through it.
+			//Once it's found, if the direction matches up, go straight through it.
 			HashMap<Location, Entrance> attachments = loc.getAttached();
 			boolean found = false;
 			Entrance foundEntrance = null;
@@ -649,21 +652,21 @@ public class GameClass {
 					}
 					break;
 				case SOUTH:
-					if (y==loc.getH() && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
+					if (y==loc.getH()-1 && x>=entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
 						found = true;
 						foundEntrance = entrance;
 						break search;
 					}
 					break;
 				case WEST:
-					if (x==0 && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
+					if (x==0 && y>=entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
 						found = true;
 						foundEntrance = entrance;
 						break search;
 					}
 					break;
 				case EAST:
-					if (x==loc.getW() && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
+					if (x==loc.getW()-1 && y>=entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
 						found = true;
 						foundEntrance = entrance;
 						break search;
@@ -674,31 +677,55 @@ public class GameClass {
 			//If an entrance has been found, set the entity's current entrance to be the one found.
 			if (found) {
 				//If the direction happens to be the same, move to the new location immediately.
-				//TODO - stick a breakpoint here and see if it is EVER called.
 				if (foundEntrance.getDirection()==dir) {
 					cloc.removeEntity(entTile);
 					cloc = foundEntrance.getLinkedEntrance().getLocation();
 					cloc.addEntity(entTile);
 					mainImage.setCurrentLocation(cloc);
 					entTile.setLocation(cloc);
+					print(entTile.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
+					byte d;
 					switch (foundEntrance.getDirection()) {
 					case NORTH:
-						entTile.setCoords(x, (byte) (cloc.getH()-1), z);
+						d = (byte) (cloc.getX()-loc.getX());
+						entTile.setCoords((byte) (x+d), (byte) (cloc.getH()-1), z);
 						break;
 					case SOUTH:
-						entTile.setCoords(x, (byte) 0, z);
+						d = (byte) (cloc.getX()-loc.getX());
+						entTile.setCoords((byte) (x+d), (byte) 0, z);
 						break;
 					case WEST:
-						entTile.setCoords((byte) (cloc.getW()-1), y, z);
+						d = (byte) (cloc.getY()-loc.getY());
+						entTile.setCoords((byte) (cloc.getW()-1), (byte) (y+d), z);
 						break;
 					case EAST:
-						entTile.setCoords((byte) 0, y, z);
+						d = (byte) (cloc.getY()-loc.getY());
+						entTile.setCoords((byte) 0, (byte) (y+d), z);
 						break;
 					}
 					return true;
 				} else {
-					//Else just set the entity's current entrance as this one, to speed up finding it next time.
-					entTile.setNewEntrance(foundEntrance);
+					//If the entity does not go through the door, just perform the movement.
+					if (foundEntrance.getDirection().getOppositeDirection()!=dir) {
+						//If the direction is not opposite, it is still in the entrance, so set that as the current entrance.
+						entTile.setNewEntrance(foundEntrance);
+					}
+					//Else just set the entity's current entrance as this one (as long as it's not opposite), to speed up finding it next time, as well as actually moving over there.
+					switch (dir) {
+					case NORTH:
+						entTile.setCoords(x, (byte) (y-1), z);
+						break;
+					case SOUTH:
+						entTile.setCoords(x, (byte) (y+1), z);
+						break;
+					case WEST:
+						entTile.setCoords((byte) (x-1), y, z);
+						break;
+					case EAST:
+						entTile.setCoords((byte) (x+1), y, z);
+						break;
+					}
+					return false;
 				}
 			} else {
 				return false;
@@ -706,7 +733,6 @@ public class GameClass {
 		}
 		//I don't think it should ever get to this point - this could be a link to Betweenford if someone manages to get here. For now, return false.
 		//TODO - add Betweenford entrance here
-		return false;
 	}
 
 	public static void moveToPlayer(EntityTile entity) {
@@ -1666,25 +1692,25 @@ public class GameClass {
 		case NORTH:
 			if (relY==loc2.getH()) {
 				isValid = true;
-				entrance2.setInfo(Direction.SOUTH, relX, entrance.getSize());
+				entrance2.setInfo(Direction.SOUTH, relX+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		case SOUTH:
 			if (-relY==loc1.getH()) {
 				isValid = true;
-				entrance2.setInfo(Direction.NORTH, -relX, entrance.getSize());
+				entrance2.setInfo(Direction.NORTH, relX+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		case EAST:
 			if (-relX==loc1.getW()) {
 				isValid = true;
-				entrance2.setInfo(Direction.WEST, relY, entrance.getSize());
+				entrance2.setInfo(Direction.WEST, relY+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		case WEST:
 			if (relX==loc2.getW()) {
 				isValid = true;
-				entrance2.setInfo(Direction.EAST, -relY, entrance.getSize());
+				entrance2.setInfo(Direction.EAST, relY+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		}
