@@ -264,8 +264,12 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	public void moveThroughEntrance(Entrance entrance) {
 		//Set the new location as whatever's on the other side of this
-		//location = entrance.getLinkedEntrance().getLocation();
+		location = entrance.getLinkedEntrance().getLocation();
 		//Give it the new Entrance
+		setNewEntrance(entrance.getLinkedEntrance());
+	}
+
+	public void alterPathBeginning(Location newLocation) {
 		//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 		Location newRoom = path.get(1);
 		if (newRoom == location) {
@@ -274,8 +278,7 @@ public class EntityTile implements Comparable<EntityTile> {
 			path.add(0, location);
 		}
 	}
-
-	public void alterPath(Location newDestination) {
+	public void alterPathEnd(Location newDestination) {
 		 //If passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
 		if (path.contains(newDestination)) {
 			//Remove the sublist of the path beginning at the index of this location (+1, since it starts at 0).

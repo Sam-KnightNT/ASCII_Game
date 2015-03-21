@@ -474,9 +474,9 @@ public class GameClass {
 			if (matcher.matches()) {
 				//Must be valid, so get it
 				String tileName = matcher.group(1);
-				int x = Integer.parseInt(matcher.group(2));
-				int y = Integer.parseInt(matcher.group(3))+1;
-				int z = Integer.parseInt(matcher.group(4));
+				byte x = Byte.parseByte(matcher.group(2));
+				byte y = (byte) (Byte.parseByte(matcher.group(3))+1);
+				byte z = Byte.parseByte(matcher.group(4));
 				//TODO - test this and damage, add other things that cause these to change (maze generator?)
 				if (tiles.containsKey(tileName)) {
 					TileType tile = tiles.get(tileName);
@@ -517,7 +517,7 @@ public class GameClass {
 			//If true, all entities should either remove the last Room from their pathfinding or add one to it.
 			for (EntityTile entity : unfrozenEntities.keySet()) {
 				//alterPath pseudocode: if passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
-				entity.alterPath(self.getLocation());
+				entity.alterPathEnd(self.getLocation());
 			}
 		}
 		newList.put(self, self.getTicks());
@@ -543,7 +543,7 @@ public class GameClass {
 				//Again, should be part of the move method.
 				//The entity should alter its path again, this time the pseudocode is:
 				//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
-				entity.moveToNewRoom(entity.getLocation());
+				entity.alterPathBeginning(entity.getLocation());
 			}
 			moveToPlayer(entity);
 			newList.put(entity, entity.getTicks());
@@ -603,32 +603,43 @@ public class GameClass {
 				System.out.println(entrance.getDirection());
 				switch (entrance.getDirection()) {
 				case NORTH:
-					if (y==0 && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
+					if (y==0 && x>=entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
+						entTile.setLocation(cloc);
+						Entrance ent2 = entrance.getLinkedEntrance();
+						Location loc2 = ent2.getLocation();
+						entTile.setCoords(x, (byte) (loc2.getH()-1), z);
 						found = true;
 					}
 					break;
 				case SOUTH:
 					if (y==loc.getH() && x>entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
+						entTile.setLocation(cloc);
+						entTile.setCoords(x, (byte) 0, z);
 						found = true;
 					}
 					break;
 				case WEST:
 					if (x==0 && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
+						entTile.setLocation(cloc);
+						entTile.setCoords((byte) (entrance.getLinkedEntrance().getLocation().getW()-1), y, z);
 						found = true;
 					}
 					break;
 				case EAST:
 					if (x==loc.getW() && y>entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
 						cloc = entry.getKey();
+						entTile.setLocation(cloc);
+						entTile.setCoords((byte) 0, y, z);
 						found = true;
 					}
 					break;
 				}
 			}
 			if (found) {
+				mainImage.setCurrentLocation(cloc);
 				return true;
 			} else {
 				return false;
@@ -1616,6 +1627,8 @@ public class GameClass {
 			break;
 		}
 		if (isValid) {
+			entrance.setLinkedEntrance(entrance2);
+			entrance2.setLinkedEntrance(entrance);
 			loc1.addAttachment(loc2, entrance);
 			//Modify the Entrance here to contain the relative location
 			loc2.addAttachment(loc1, entrance2);

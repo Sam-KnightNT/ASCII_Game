@@ -3,7 +3,7 @@ package version_7;
 public class Entrance {
 
 	private Direction direction;
-	private int location;
+	private int locationInRoom;
 	private int size;
 	private Entrance linkedEntrance;
 	private Location containedLocation;
@@ -13,13 +13,13 @@ public class Entrance {
 	
 	public Entrance(Direction direction, int location, int size) {
 		this.direction = direction;
-		this.location = location;
+		this.locationInRoom = location;
 		this.size = size;
 	}
 	
 	public Entrance(Triplet<Direction, Integer, Integer> details) {
 		direction = details.getLeft();
-		location = details.getMiddle();
+		locationInRoom = details.getMiddle();
 		size = details.getRight();
 	}
 	
@@ -47,13 +47,16 @@ public class Entrance {
 		return direction;
 	}
 	public int getCoords() {
-		return location;
+		return locationInRoom;
+	}
+	public Location getLocation() {
+		return containedLocation;
 	}
 	public int getSize() {
 		return size;
 	}
 	public Triplet<Direction, Integer, Integer> getDetails() {
-		return new Triplet<Direction, Integer, Integer>(direction, location, size);
+		return new Triplet<Direction, Integer, Integer>(direction, locationInRoom, size);
 	}
 	public Entrance getLinkedEntrance() {
 		return linkedEntrance;
@@ -62,25 +65,32 @@ public class Entrance {
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
-	public void setCoords(int location) {
-		this.location = location;
+	public void setCoords(int coords) {
+		this.locationInRoom = coords;
+	}
+	public void setLocation(Location location) {
+		containedLocation = location;
 	}
 	public void setSize(int size) {
 		this.size = size;
 	}
 	public void setDetails(Direction direction, int location, int size) {
 		this.direction = direction;
-		this.location = location;
+		this.locationInRoom = location;
 		this.size = size;
 	}
 	public void setDetails(Triplet<Direction, Integer, Integer> details) {
 		direction = details.getLeft();
-		location = details.getMiddle();
+		locationInRoom = details.getMiddle();
 		size = details.getRight();
 	}
 
 	
 	public String toString() {
-		return new String("Entrance:\n\tDirection: "+direction+"\n\tLocation: "+location+"\n\tSize: "+size);
+		return new String("Entrance:\n\tDirection: "+direction+"\n\tLocation: "+locationInRoom+"\n\tSize: "+size);
+	}
+
+	public void setLinkedEntrance(Entrance linkedEntrance) {
+		this.linkedEntrance = linkedEntrance;
 	}
 }

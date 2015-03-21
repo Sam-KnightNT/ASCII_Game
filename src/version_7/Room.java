@@ -74,6 +74,37 @@ public class Room extends Location{
 		this(w, h, x, y, floorTileType, wallTileType);
 		attachedLocs = attachments;
 	}
+
+	//Casting ints as bytes (using bytes saves a lot of space, as there will be a LOT of these coordinates flying around. It'll save 75% of the coordinate memory)
+	public Room (int w, int h, int x, int y) {
+		width = (byte) w;
+		height = (byte) h;
+		corner = new Coord2D((byte) x,(byte)  y);
+		this.x = (byte) x;
+		this.y = (byte) y;
+		tiles = new Tile[w][h];
+	}
+	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType) {
+		this(w, h, x, y);
+		for (int yI = 1; yI < h-1; yI++) {
+			for (int xI = 1; xI < w-1; xI++) {
+				tiles[xI][yI] = new Tile(floorTileType);
+			}
+		}
+		for (int xI = 0; xI < w; xI++) {
+			tiles[xI][0] = new Tile(wallTileType);
+			tiles[xI][h-1] = new Tile(wallTileType);
+		}
+		for (int yI = 0; yI < h; yI++) {
+			tiles[0][yI] = new Tile(wallTileType);
+			tiles[w-1][yI] = new Tile(wallTileType);
+		}
+	}
+	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
+		this(w, h, x, y, floorTileType, wallTileType);
+		attachedLocs = attachments;
+	}
+	
 	
 	public void carveEntrancesWithCurrentAttachments(TileType floor) {
 		carveEntrances(new ArrayList<Entrance>(attachedLocs.values()), floor);

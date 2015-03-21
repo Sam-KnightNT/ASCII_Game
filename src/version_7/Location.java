@@ -22,6 +22,7 @@ public abstract class Location {
 	
 	public void addAttachment(Location attachment, Entrance entrance) {
 		attachedLocs.put(attachment, entrance);
+		entrance.setLocation(this);
 		//TODO - this needs more information about the attachment. How wide is the connection, and where is it?
 	}
 

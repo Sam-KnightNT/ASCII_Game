@@ -175,6 +175,8 @@ public class GameImage extends JPanel {
 	}
 	
 	public void redrawMap() {
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, 1400, 1400);
 		for (Location location : locations) {
 			int dx = cloc.getX()-location.getX();
 			int dy = cloc.getY()-location.getY();
