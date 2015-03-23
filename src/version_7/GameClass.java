@@ -778,6 +778,8 @@ public class GameClass {
 			if (x < c) {
 				if (entrance.getDirection()==Direction.NORTH) {
 					move(entity, new Coord2D(c, (byte) 0));
+				} else {
+					move(entity, new Coord2D(c, (byte) ));
 				}
 			}
 		}
