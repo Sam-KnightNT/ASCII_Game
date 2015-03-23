@@ -21,13 +21,17 @@ public class EntityTile implements Comparable<EntityTile> {
 	private ArrayList<Location> path;
 	private Entrance entrance;
  
-	
-	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z) {
+	public EntityTile(Entity entity, byte x, byte y, byte z) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.coords = new Coord3D(x, y, z);
+		genStats();
+	}
+	
+	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z) {
+		this(entity, x, y, z);
 		this.location = loc;
 		genStats();
 	}
@@ -270,5 +274,9 @@ public class EntityTile implements Comparable<EntityTile> {
 		} else {
 			path.add(newDestination);
 		}
+	}
+	
+	public String toString() {
+		return (getName()+" in "+location.getName()+" at coordinates "+coords.toString());
 	}
 }

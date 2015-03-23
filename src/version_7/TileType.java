@@ -9,22 +9,19 @@ public class TileType {
 	private String name;
 	private BufferedImage image;
 	private boolean walkable;
-	private Color colour;
-	private Color background;
 	
-	public TileType(String name, BufferedImage image, boolean walkable, Color colour, Color BGColour, int[] properties, int[] actions) {
+	public TileType(String name, BufferedImage image, boolean walkable, int[] properties, int[] actions) {
 		this.actions = actions;
 		this.name = name;
 		this.image = image;
 		this.walkable = walkable;
-		this.colour = colour;
-		background = BGColour;
 	}
 	
-	public TileType(String name, BufferedImage[] image, int imageNum, boolean walkable, Color colour, Color BGColour, int[] properties, int[] actions) {
+	public TileType(String name, BufferedImage[] image, int imageNum, boolean walkable, int[] properties, int[] actions) {
 		this.actions = actions;
 		this.name = name;
 		this.image = image[imageNum];
+		this.walkable = walkable;
 	}
 	
 	public TileType() {
@@ -55,19 +52,4 @@ public class TileType {
 	public int[] getActions() {
 		return actions;
 	}
-	
-	public Color getColour() {
-		return colour;
-	}
-	public void setColour(Color colour) {
-		this.colour = colour;
-	}
-	
-	public Color getBG() {
-		return background;
-	}
-	public void setBG(Color colour) {
-		background = colour;
-	}
-	
 }

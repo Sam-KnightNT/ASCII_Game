@@ -194,8 +194,6 @@ public class GameImage extends JPanel {
 			for (byte y=0; y<h; y++) {
 				for (byte x=0; x<w; x++) {
 					TileType tile = location.getTile(x, y).getType();
-					g.setColor(tile.getColour());
-					g.setBackground(tile.getBG());
 					int xDraw = (x*xUnit)+offsetX+offsetX2;
 					int yDraw = (y*yUnit)+offsetY+offsetY2;
 					//TODO next: Draw it with an offset that's intelligently devised - i.e. that places the centre of the room in the centre of the view, rather than the corner
@@ -204,22 +202,10 @@ public class GameImage extends JPanel {
 			}
 			for (ItemTile itemT : location.getItems()) {
 				Item item = itemT.getItem();
-				g.setColor(item.getColour());
-				if (item.getTransparency()) {
-					g.setBackground(location.getTile(itemT.getX(), itemT.getY()).getType().getBG());
-				} else {
-					g.setBackground(item.getBGColour());
-				}
 				g.drawImage(item.getImage(), (itemT.getX()*xUnit)+offsetX+offsetX2, (itemT.getY()*yUnit)+offsetY+offsetY2, null);
 			}
 			for (EntityTile entityT : location.getEntities()) {
 				Entity entity = entityT.getEntity();
-				g.setColor(entity.getColour());
-				if (entity.getTransparency()) {
-					g.setBackground(location.getTile(entityT.getX(), entityT.getY()).getType().getBG());
-				} else {
-					g.setBackground(entity.getBGColour());
-				}
 				g.drawImage(entity.getImage(), (entityT.getX()*xUnit)+offsetX+offsetX2, (entityT.getY()*yUnit)+offsetY+offsetY2, null);
 			}
 		}

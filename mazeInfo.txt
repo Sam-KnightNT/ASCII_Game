@@ -18,7 +18,6 @@ begin item definitions
 
 item:
 	name: Gold Piece
-	colour: hex(FF, D7, 00)
 end
 
 item:
@@ -28,8 +27,6 @@ item:
 		defence: 23
 		speed: 100
 	end
-	colour: green
-	background: transparent
 end
 
 item:
@@ -127,14 +124,34 @@ begin material definitions
 
 material:
 	name: Marble
-	colour: green
-	background: green
 end
 
 material:
 	name: Grass
-	colour: [green, brown, #636F57, #78AB46, #324F17, #003300, #00611C]
-	background: [green, brown, #636F57, #78AB46, #324F17, #003300, #00611C]
+end
+
+material:
+	name: Bronze
+end
+
+material:
+	name: Bronze 6
+end
+
+material:
+	name: Iron 6
+end
+
+material:
+	name: Gold 6
+end
+
+material:
+	name: Tin 6
+end
+
+material:
+	name: Grass 2
 end
 
 end material definitions
@@ -151,7 +168,6 @@ entity:
 		mana: 10
 		speed: 60
 	end
-	colour: orange
 end
 
 entity:
@@ -164,8 +180,6 @@ entity:
 		mana: 0
 		speed: 10
 	end
-	colour: dec(207, 127, 50)
-	background: white
 end
 
 entity:
@@ -178,7 +192,6 @@ entity:
 		mana: 2
 		speed: 160
 	end
-	colour: green
 end
 
 end entity definitions

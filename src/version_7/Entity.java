@@ -1,6 +1,5 @@
 package version_7;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
@@ -9,11 +8,8 @@ public class Entity {
 	// The general entity name
 	private String name;
 	private BufferedImage image;
-	private Color colour;
-	private Color backColour;
 	private String[] features;
 	private HashMap<String, Integer> baseStats = new HashMap<String, Integer>();
-	private boolean transparentBackground = false;
 
 	// Work more on hashmaps
 
@@ -21,13 +17,9 @@ public class Entity {
 
 	}
 
-	public Entity(String name, BufferedImage image, Color colour,
-			Color backColour, String[] features,
-			HashMap<String, Integer> baseStats) {
+	public Entity(String name, BufferedImage image, String[] features, HashMap<String, Integer> baseStats) {
 		this.name = name;
 		this.image = image;
-		this.colour = colour;
-		this.backColour = backColour;
 		this.features = features;
 		this.baseStats = baseStats;
 	}
@@ -46,28 +38,7 @@ public class Entity {
 	public BufferedImage getImage() {
 		return image;
 	}
-
-	public void setColour(Color colour) {
-		this.colour = colour;
-	}
-	public Color getColour() {
-		return colour;
-	}
-
-	public void setBGColour(Color colour) {
-		this.backColour = colour;
-	}
-	public Color getBGColour() {
-		return backColour;
-	}
-
-	public void setTransparency(boolean transparent) {
-		transparentBackground = transparent;
-	}
-	public boolean getTransparency() {
-		return transparentBackground;
-	}
-
+	
 	public void setFeatures(String[] features) {
 		this.features = features;
 	}

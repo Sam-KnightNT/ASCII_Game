@@ -1,6 +1,5 @@
 package version_7;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.Map.Entry;
@@ -9,11 +8,8 @@ public class Item {
 
 	private String name;
 	private BufferedImage image;
-	private Color colour;
-	private Color backColour;
 	private String description;
 	private HashMap<String, Integer> stats;
-	private boolean transparentBackground = false;
 	
 	public Item() {
 		stats = new HashMap<String, Integer>();
@@ -78,27 +74,6 @@ public class Item {
 	
 	public int getStat(String name) {
 		return stats.get(name);
-	}
-	
-	public void setColour(Color colour) {
-		this.colour =colour;
-	}
-	public Color getColour() {
-		return colour;
-	}
-	
-	public void setBGColour(Color colour) {
-		backColour = colour;
-	}
-	public Color getBGColour() {
-		return backColour;
-	}
-	
-	public void setTransparency(boolean transparent) {
-		transparentBackground = transparent;
-	}
-	public boolean getTransparency() {
-		return transparentBackground;
 	}
 	
 	public Pair<Boolean, ItemTile> getTileAt(ArrayList<ItemTile> tiles, int x, int y) {

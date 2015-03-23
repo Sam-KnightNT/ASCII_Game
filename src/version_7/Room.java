@@ -76,7 +76,7 @@ public class Room extends Location{
 	}
 
 	//Casting ints as bytes (using bytes saves a lot of space, as there will be a LOT of these coordinates flying around. It'll save 75% of the coordinate memory)
-	public Room (int w, int h, int x, int y) {
+	public Room(int w, int h, int x, int y) {
 		width = (byte) w;
 		height = (byte) h;
 		corner = new Coord2D((byte) x,(byte)  y);
@@ -129,6 +129,14 @@ public class Room extends Location{
 			}
 		}
 	}
+	
+	public void pillarCorners(TileType pillarType) {
+		tiles[0][0] = new Tile(pillarType);
+		tiles[0][height-1] = new Tile(pillarType);
+		tiles[width-1][0] = new Tile(pillarType);
+		tiles[width-1][height-1] = new Tile(pillarType);
+	}
+	
 	public byte getW() {
 		return width;
 	}

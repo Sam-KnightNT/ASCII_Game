@@ -79,6 +79,7 @@ public abstract class Location {
 	
 	public void addEntity(EntityTile entity) {
 		entities.add(entity);
+		entity.setLocation(this);
 	}
 	public boolean removeEntity(EntityTile entity) {
 		boolean removed = entities.remove(entity);

@@ -153,31 +153,48 @@ public class GameClass {
 		String command = "";
 		
 		//Construct 2 rooms and a corridor to connect them
-		Room room = new Room(9, 6, 6, 11, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
-		Room room2 = new Room(7, 8, 15, 16, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
-		Room room3 = new Room(7, 8, 15, 1, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
-		Room room4 = new Room(7, 8, 1, 16, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
+		Room room = new Room(9, 6, 6, 11, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
+		Room room2 = new Room(7, 8, 15, 16, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
+		Room room3 = new Room(7, 8, 7, 28, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
+		Room room4 = new Room(7, 8, -1, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
+		Room room5 = new Room(24, 12, 12, 40, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
 		entrances.add(new Entrance(Direction.SOUTH, 4, 3));
 		entrances.add(new Entrance(Direction.WEST, 6, 2));
-		entrances.add(new Entrance(Direction.NORTH, 6, 2));
-		entrances.add(new Entrance(Direction.EAST, 6, 2));
+		entrances.add(new Entrance(Direction.NORTH, 3, 2));
+		entrances.add(new Entrance(Direction.EAST, 4, 2));
 
 		Corridor corridor = new Corridor(9, 9, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		corridor.setName("Corridor 1");
 		room.setName("Room 1");
 		room2.setName("Room 2");
+		room3.setName("Room 3");
+		room4.setName("Room 4");
+		room5.setName("Room 5");
+		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		unfrozenEntities.put(mino, 100);
+		room.addEntity(mino);
 		attachTwoLocations(corridor, room, entrances.get(0));
 		attachTwoLocations(corridor, room2, entrances.get(1));
-		//attachTwoLocations(corridor, room3, entrances.get(2));
-		//attachTwoLocations(corridor, room4, entrances.get(3));
+		attachTwoLocations(corridor, room3, entrances.get(2));
+		attachTwoLocations(corridor, room4, entrances.get(3));
+		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4));
 		
 		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
+		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze Floor"));
+		room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
+		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
+		print("BLGTRUADG");
+		room.pillarCorners(tiles.get("Marble Pillar"));
+		print("FLUGERSG");
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
+		locations.put("Room 3", room3);
+		locations.put("Room 4", room4);
+		locations.put("Room 5", room5);
 		locations.put("Corridor 1", corridor);
 		
 		cloc = locations.get("Corridor 1");
@@ -506,48 +523,57 @@ public class GameClass {
 	}
 	
 	public static void cycle(Direction dir) {
-		
-		//HashMap<Triplet<Integer, Tile, Integer>, EntityTile> tiles = 
-		//		new HashMap<Triplet<Integer, Tile, Integer>, EntityTile>();
-		//TODO - add stuff to this HashMap, send it to redrawMap
 		TreeMap<EntityTile, Integer> newList = new TreeMap<EntityTile, Integer>();
 		
+		//Reset your own tick count
 		unfrozenEntities.remove(self);
 		int ticks = self.getTicks();
 		self.resetTicks();
 		
+		//Print out all the locatios and their entities
+		//TODO - delete this
+		for (Location loc : locations.values()) {
+			System.out.println(loc.getName());
+			for (EntityTile ent : loc.getEntities()) {
+				System.out.println("\t"+ent.getName());
+			}
+		}
+		
+		//Move the player
 		boolean leftRoom = move(dir, self, cloc);
+		
+		//If the player entered a new room, alter the path of every entity that needs it
 		if (leftRoom) {
-			//This should obviously be replaced with something in move, but it needs a 2nd boolean.
-			//The boolean should be true if the player moved from a room to another one, false otherwise.
-			//If true, all entities should either remove the last Room from their pathfinding or add one to it.
 			for (EntityTile entity : unfrozenEntities.keySet()) {
 				//alterPath pseudocode: if passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
 				entity.alterPathEnd(self.getLocation());
 			}
 		}
+		
+		//Put the player into the new list, as well as every other entity
 		newList.put(self, self.getTicks());
 		for (EntityTile other : unfrozenEntities.keySet()) {
 			other.setTicks(other.getTicks()-ticks);
 			newList.put(other, other.getTicks()-ticks);
 		}
 
+		//And set the unfrozen entity list to this new list
 		unfrozenEntities = newList;
 		
+		//Cycle through unfrozenEntities while there are entities to move
 		while (!unfrozenEntities.firstKey().equals(self)) {
+			
+			//Recreate the new list and pop the entity off
 			newList = new TreeMap<EntityTile, Integer>();
-			EntityTile entity = unfrozenEntities.firstKey();
+			EntityTile entity = unfrozenEntities.pollFirstEntry().getKey();
 			
-			unfrozenEntities.remove(entity);
-			
+			//Reset the entity's tick rate after getting its current remaining
 			ticks = entity.getTicks();
 			entity.resetTicks();
 			
-			
+			//Attempt to pathfind to the player
 			boolean leftRoomEnt = pathfindToPlayer(entity);
 			if (leftRoomEnt) {
-				//Again, should be part of the move method.
-				//The entity should alter its path again, this time the pseudocode is:
 				//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 				entity.alterPathBeginning(entity.getLocation());
 			}
@@ -711,20 +737,25 @@ public class GameClass {
 						entTile.setNewEntrance(foundEntrance);
 					}
 					//Else just set the entity's current entrance as this one (as long as it's not opposite), to speed up finding it next time, as well as actually moving over there.
-					switch (dir) {
-					case NORTH:
-						entTile.setCoords(x, (byte) (y-1), z);
-						break;
-					case SOUTH:
-						entTile.setCoords(x, (byte) (y+1), z);
-						break;
-					case WEST:
-						entTile.setCoords((byte) (x-1), y, z);
-						break;
-					case EAST:
-						entTile.setCoords((byte) (x+1), y, z);
-						break;
+					short newxy = (short) (xy+dir.getNumVal());
+					Tile newTile = loc.getTile(newxy);
+					if (!newTile.getType().isWalkable()) {
+						print("Cannot move there.");
+					} else {
+						Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
+						if (otherEntTile.getLeft()) {
+							print("The "+entTile.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
+							fight(entTile, otherEntTile.getRight());
+						} else {
+							entTile.setCoords(newxy, z);
+							if (entTile==self) {
+								print("You move "+dir+" to "+entTile.getX()+", "+entTile.getY());
+							} else {
+								print("The "+entTile.getName()+" moves "+dir+" to "+entTile.getX()+", "+entTile.getY());
+							}
+						}
 					}
+					//drawMap(cmap);
 					return false;
 				}
 			} else {
@@ -778,12 +809,18 @@ public class GameClass {
 				Location currentLocation = entity.getLocation();
 				
 				//Depth-first search to get to the new room
-				ArrayList<ArrayList<Location>> searchLocations = new ArrayList<ArrayList<Location>>();
-				Location location = null;
+				LinkedList<ArrayList<Location>> searchLocations = new LinkedList<ArrayList<Location>>();
+				for (Location loc : entity.getLocation().attachedLocs.keySet()) {
+					ArrayList<Location> locs = new ArrayList<Location>();
+					locs.add(loc);
+					searchLocations.add(locs);
+				}
+				
+				//We have a list of paths to search. Go through each one in turn. For each one, 
+				Location location = searchLocations.get(0).get(0);
 				while (location != self.getLocation()) {
 					//Choose the next node to expand (the first in the list)
-					ArrayList<Location> locationPath = searchLocations.get(0);
-					searchLocations.remove(0);
+					ArrayList<Location> locationPath = searchLocations.pop();
 					Location expandingLocation = locationPath.get(locationPath.size()-1);
 					
 					//Look at all the Rooms attached
@@ -888,25 +925,7 @@ public class GameClass {
 								i++;
 							}
 						}
-						else if (strs[i].contains("colour:")) {
-							strs[i] = strs[i].replace("colour: ", "");
-							item.setColour(parseColour(strs[i], Color.WHITE));
-						}
-						else if (strs[i].contains("background:")) {
-							strs[i] = strs[i].replace("background: ", "");
-							item.setBGColour(parseColour(strs[i], Color.BLACK)); 
-							if (strs[i].equals("transparent")) {
-								item.setTransparency(true);
-							}
-						}
 						i++;
-					}
-					if (item.getColour() == null) {
-						item.setColour(Color.WHITE);
-					}
-					if (item.getBGColour() == null) {
-						item.setBGColour(Color.BLACK);
-						item.setTransparency(true);
 					}/*
 					try { entity.getColour().equals(null); } catch (NullPointerException e) {
 						entity.setColour(Color.BLACK);
@@ -916,7 +935,7 @@ public class GameClass {
 						entity.setTransparency(true);
 					}*/
 					try {
-						item.setImage(ImageIO.read(new File("images/"+item.getName()+".png")));
+						item.setImage(ImageIO.read(new File("images/items/"+item.getName()+".png")));
 					} catch (IOException e) {
 						e.printStackTrace();
 						print("Cannot get image for "+item.getName());
@@ -951,18 +970,6 @@ public class GameClass {
 							strs[i] = strs[i].replace("name: ", "");
 							entity.setName(strs[i]);
 						}
-						else if (strs[i].contains("colour:")) {
-							Color colour = parseColour(strs[i].replace("colour: ", ""), Color.WHITE);
-							entity.setColour(colour);
-						}
-						else if (strs[i].contains("background:")) {
-							String strBG = strs[i].replace("background: ", "");
-							Color colour = parseColour(strs[i].replace("background: ", ""), Color.BLACK); 
-							if (strBG.equals("transparent")) {
-								entity.setTransparency(true);
-							}
-							entity.setBGColour(colour);
-						}
 						else if (strs[i].contains("stats:")) {
 							i++;
 							strs[i] = strs[i].trim();
@@ -994,15 +1001,8 @@ public class GameClass {
 						}
 						i++;
 					}
-					try { entity.getColour().equals(null); } catch (NullPointerException e) {
-						entity.setColour(Color.BLACK);
-					}
-					try { entity.getBGColour().equals(null); } catch (NullPointerException e) {
-						entity.setBGColour(Color.WHITE);
-						entity.setTransparency(true);
-					}
 					try {
-						entity.setImage(ImageIO.read(new File("images/"+entity.getName()+".png")));
+						entity.setImage(ImageIO.read(new File("images/entities/"+entity.getName()+".png")));
 					} catch (IOException e) {
 						e.printStackTrace();
 						print(entity.getName());
@@ -1053,13 +1053,15 @@ public class GameClass {
 		BufferedImage upStairs = null;
 		BufferedImage downStairs = null;
 		BufferedImage upDownStairs = null;
+		BufferedImage pillar = null;
 		try {
-			upStairs = ImageIO.read(new File("images/Up.png"));
-			downStairs = ImageIO.read(new File("images/Down.png"));
-			upDownStairs = ImageIO.read(new File("images/Stairs.png"));
+			upStairs = ImageIO.read(new File("images/masks/Up.png"));
+			downStairs = ImageIO.read(new File("images/masks/Down.png"));
+			upDownStairs = ImageIO.read(new File("images/masks/Stairs.png"));
+			pillar = ImageIO.read(new File("images/masks/Pillar.png"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
-			print("One or more masks not present; please check you have \"Up.png\", \"Down.png\" and \"Stairs.png\" in your images folder");
+			print("One or more masks not present; please check you have \"Up.png\", \"Down.png\", \"Stairs.png\" and \"Pillar.png\" in your images folder");
 		}
 		Pattern pattern = Pattern.compile("material:\n((?:.+\n)+)end");
 		Matcher matcher = pattern.matcher(str);
@@ -1071,47 +1073,47 @@ public class GameClass {
 			if (nMatch.find()) {
 				name = nMatch.group(1);
 				print("Name: "+name);
-				Matcher fMatch = Pattern.compile("colou?r: (.+)").matcher(mat);
-				Matcher bMatch = Pattern.compile("background: (.+)").matcher(mat);
-				fMatch.find();
-				bMatch.find();
-				Color FGCol = parseColour(fMatch.group(1), Color.WHITE);
-				Color BGCol = parseColour(bMatch.group(1), Color.BLACK).darker();
-				String filepath = "images/"+name+".png";
+				String filepath = "images/materials/"+name+".png";
 				BufferedImage img = null;
 				BufferedImage floorImg = null;
 				BufferedImage upImg = null;
 				BufferedImage downImg = null;
 				BufferedImage upDownImg = null;
+				BufferedImage pillarImg = null;
 				try {
 					img = ImageIO.read(new File(filepath));
 					upImg = ImageIO.read(new File(filepath));
 					downImg = ImageIO.read(new File(filepath));
 					upDownImg = ImageIO.read(new File(filepath));
+					pillarImg = ImageIO.read(new File(filepath));
 					float scaleFactor = 0.7f;
 					RescaleOp op = new RescaleOp(scaleFactor, 0, null);
 					floorImg = op.filter(img, null);
 					upImg = op.filter(img, null);
 					downImg = op.filter(img, null);
 					upDownImg = op.filter(img, null);
+					//pillarImg = op.filter(img, null);
 					Graphics2D upG = upImg.createGraphics();
 					Graphics2D downG = downImg.createGraphics();
 					Graphics2D upDownG = upDownImg.createGraphics();
+					Graphics2D pillarG = pillarImg.createGraphics();
 					upG.drawImage(upStairs, null, 0, 0);
 					downG.drawImage(downStairs, null, 0, 0);
 					upDownG.drawImage(upDownStairs, null, 0, 0);
+					pillarG.drawImage(pillar, null, 0, 0);
 				} catch (IOException e) {
 					e.printStackTrace();
-					print("AFADSG"+filepath);
+					print("Path of invalid material: "+filepath);
 				}
 				
-				tiles.put(name+" Wall", new TileType(name+" Wall", img, false, FGCol, BGCol, null, null));
-				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, true, FGCol, BGCol, null, null));
-				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, true, FGCol, BGCol, null, null));
-				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, true, FGCol, BGCol, null, null));
-				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, true, FGCol, BGCol, null, null));
-				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, true, FGCol, BGCol, null, null));
-				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, true, FGCol, BGCol, null, null));
+				tiles.put(name+" Wall", new TileType(name+" Wall", img, false, null, null));
+				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, true, null, null));
+				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, true, null, null));
+				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, true, null, null));
+				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, true, null, null));
+				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, true, null, null));
+				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, true, null, null));
+				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, true, null, null));
 			} else {
 				print("Material name not found, please check syntax");
 			}
@@ -1376,27 +1378,12 @@ public class GameClass {
 				player.setStat("max health", player.getBaseStat("health"));
 				player.setStat("max mana", player.getBaseStat("mana"));
 			}
-			else if (strs[i].startsWith("colour:")) {
-				player.setColour(parseColour(strs[i].replace("colour: ", ""), Color.BLACK));
-			}
 			else if (strs[i].startsWith("background:")) {
 				String bg = strs[i].replace("background: ", "");
-				if (bg.equals("transparent")) {
-					player.setBGColour(new Color(0,0,0,0));
-					player.setTransparency(true);
-				} else {
-					player.setBGColour(parseColour(bg, Color.WHITE).darker());
-				}
 			}
 		}
-		try { player.getColour().equals(null); } catch (NullPointerException e) {
-			player.setColour(Color.WHITE);
-		}
-		try { player.getBGColour().equals(null); } catch (NullPointerException e) {
-			player.setBGColour(Color.BLACK);
-		}
 		try {
-			player.setImage(ImageIO.read(new File("images/Dwarf.png")));
+			player.setImage(ImageIO.read(new File("images/entities/Dwarf.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 			print("Player");
@@ -1690,25 +1677,25 @@ public class GameClass {
 		Entrance entrance2 = new Entrance();
 		switch(entrance.getDirection()) {
 		case NORTH:
-			if (relY==loc2.getH()) {
+			if (relY==loc2.getH() && relX < loc1.getW()) {
 				isValid = true;
 				entrance2.setInfo(Direction.SOUTH, relX+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		case SOUTH:
-			if (-relY==loc1.getH()) {
+			if (-relY==loc1.getH() && relX < loc1.getW()) {
 				isValid = true;
 				entrance2.setInfo(Direction.NORTH, relX+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		case EAST:
-			if (-relX==loc1.getW()) {
+			if (-relX==loc1.getW() && relY < loc1.getH()) {
 				isValid = true;
 				entrance2.setInfo(Direction.WEST, relY+entrance.getCoords(), entrance.getSize());
 			}
 			break;
 		case WEST:
-			if (relX==loc2.getW()) {
+			if (relX==loc2.getW() && relY < loc1.getH()) {
 				isValid = true;
 				entrance2.setInfo(Direction.EAST, relY+entrance.getCoords(), entrance.getSize());
 			}
@@ -1720,9 +1707,6 @@ public class GameClass {
 			loc1.addAttachment(loc2, entrance);
 			//Modify the Entrance here to contain the relative location
 			loc2.addAttachment(loc1, entrance2);
-			print("Attachment created.\nloc1 details:\n"+loc1.toString()+"\nloc2 details:\n"+loc2.toString()+"\nEntrance details:\n"+entrance.toString()+"\nNew entrance details:\n"+entrance2.toString());
-		} else {
-			print("Invalid attachment.\nloc1 details:\n"+loc1.toString()+"\nloc2 details:\n"+loc2.toString()+"\nEntrance details:\n"+entrance.toString());
 		}
 	}
 }
