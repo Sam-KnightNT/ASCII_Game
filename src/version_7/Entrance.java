@@ -11,34 +11,52 @@ public class Entrance {
 	public Entrance() {
 	}
 	
-	public Entrance(Direction direction, byte location, byte size) {
+	public Entrance(Direction direction, Coord2D locationA, Coord2D locationB) {
 		this.direction = direction;
-		this.locationInRoom = location;
-		this.size = size;
+		this.locationA = locationA;
+		this.locationB = locationB;
 	}
 	
-	public Entrance(Triplet<Direction, Byte, Byte> info) {
+	public Entrance(Triplet<Direction, Coord2D, Coord2D> info) {
 		direction = info.getLeft();
-		locationInRoom = info.getMiddle();
-		size = info.getRight();
+		locationA = info.getMiddle();
+		locationB = info.getRight();
 	}
 	
-	public Entrance(Direction direction, byte location, byte size, Entrance linkedEntrance) {
-		this(direction, location, size);
+	public Entrance(Direction direction, int location, int size, Location containedLocation) {
+		this.direction = direction;
+		this.containedLocation = containedLocation;
+		switch (direction) {
+		case NORTH:
+			locationA = new Coord2D(containedLocation.getH()-1, location);
+			locationB = new Coord2D(containedLocation.getH()-1, location+size);
+		case SOUTH:
+			locationA = new Coord2D(0, location);
+			locationB = new Coord2D(0, location+size);
+		case WEST:
+			locationA = new Coord2D(location, containedLocation.getW()-1);
+			locationB = new Coord2D(location+size, containedLocation.getW()-1);
+		case EAST:
+			locationA = new Coord2D(location, 0);
+			locationB = new Coord2D(location+size, 0);
+		}
+	}
+	public Entrance(Direction direction, Coord2D locationA, Coord2D locationB, Entrance linkedEntrance) {
+		this(direction, locationA, locationB);
 		this.linkedEntrance = linkedEntrance;
 	}
 	
-	public Entrance(Triplet<Direction, Byte, Byte> info, Entrance linkedEntrance) {
+	public Entrance(Triplet<Direction, Coord2D, Coord2D> info, Entrance linkedEntrance) {
 		this(info);
 		this.linkedEntrance = linkedEntrance;
 	}
 	
-	public Entrance(Direction direction, byte location, byte size, Entrance linkedEntrance, Location containedLocation) {
-		this(direction, location, size, linkedEntrance);
+	public Entrance(Direction direction, Coord2D locationA, Coord2D locationB, Entrance linkedEntrance, Location containedLocation) {
+		this(direction, locationA, locationB, linkedEntrance);
 		this.containedLocation = containedLocation;
 	}
 	
-	public Entrance(Triplet<Direction, Byte, Byte> info, Entrance linkedEntrance, Location containedLocation) {
+	public Entrance(Triplet<Direction, Coord2D, Coord2D> info, Entrance linkedEntrance, Location containedLocation) {
 		this(info, linkedEntrance);
 		this.containedLocation = containedLocation;
 	}
@@ -46,17 +64,17 @@ public class Entrance {
 	public Direction getDirection() {
 		return direction;
 	}
-	public byte getCoords() {
-		return locationInRoom;
-	}
 	public Location getLocation() {
 		return containedLocation;
 	}
-	public int getSize() {
-		return size;
+	public Coord2D getLocA() {
+		return locationA;
 	}
-	public Triplet<Direction, Byte, Byte> getDetails() {
-		return new Triplet<Direction, Byte, Byte>(direction, locationInRoom, size);
+	public Coord2D getLocB() {
+		return locationB;
+	}
+	public Triplet<Direction, Coord2D, Coord2D> getDetails() {
+		return new Triplet<Direction, Coord2D, Coord2D>(direction, locationA, locationB);
 	}
 	public Entrance getLinkedEntrance() {
 		return linkedEntrance;
@@ -65,29 +83,29 @@ public class Entrance {
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
-	public void setCoords(byte coords) {
-		this.locationInRoom = coords;
-	}
 	public void setLocation(Location location) {
 		containedLocation = location;
 	}
-	public void setSize(byte size) {
-		this.size = size;
+	public void setLocA(Coord2D coords) {
+		this.locationA = coords;
 	}
-	public void setInfo(Direction direction, byte location, byte size) {
+	public void setLocB(Coord2D coords) {
+		this.locationB = coords;
+	}
+	public void setInfo(Direction direction, Coord2D locationA, Coord2D locationB) {
 		this.direction = direction;
-		this.locationInRoom = location;
-		this.size = size;
+		this.locationA = locationA;
+		this.locationB = locationB;
 	}
-	public void setInfo(Triplet<Direction, Byte, Byte> info) {
+	public void setInfo(Triplet<Direction, Coord2D, Coord2D> info) {
 		direction = info.getLeft();
-		locationInRoom = info.getMiddle();
-		size = info.getRight();
+		locationA = info.getMiddle();
+		locationB = info.getRight();
 	}
 
 	
 	public String toString() {
-		return new String("Entrance:\n\tDirection: "+direction+"\n\tLocation: "+locationInRoom+"\n\tSize: "+size);
+		return new String("Entrance:\n\tDirection: "+direction+"\n\tLocation A: "+locationA+"\n\tLocation B: "+locationB);
 	}
 
 	public void setLinkedEntrance(Entrance linkedEntrance) {

@@ -12,6 +12,10 @@ public class Coord3D {
 		this.z = z;
 	}
 	
+	public Coord3D(int x, int y, int z) {
+		this((byte) x, (byte) y, (byte) z);
+	}
+
 	public double distance(Coord3D crd) {
 		return Math.sqrt(distanceSq(crd));
 	}

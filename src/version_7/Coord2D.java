@@ -4,10 +4,15 @@ public class Coord2D {
  
     byte x;
     byte y;
-     
+    
     public Coord2D(byte x, byte y) {
         this.x = x;
         this.y = y;
+    }
+    
+    public Coord2D(int x, int y) {
+        this.x = (byte) x;
+        this.y = (byte) y;
     }
  
     public byte getX() {

@@ -1,7 +1,6 @@
 package version_7;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.*;
@@ -160,10 +159,10 @@ public class GameClass {
 		Room room5 = new Room(24, 12, 12, 40, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
-		entrances.add(new Entrance(Direction.SOUTH, 4, 3));
-		entrances.add(new Entrance(Direction.WEST, 6, 2));
-		entrances.add(new Entrance(Direction.NORTH, 3, 2));
-		entrances.add(new Entrance(Direction.EAST, 4, 2));
+		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 9), new Coord2D(7, 9)));
+		entrances.add(new Entrance(Direction.WEST, new Coord2D(9, 6), new Coord2D(9, 8)));
+		entrances.add(new Entrance(Direction.NORTH, new Coord2D(3, 0), new Coord2D(6, 0)));
+		entrances.add(new Entrance(Direction.EAST, new Coord2D(0, 4), new Coord2D(0, 6)));
 
 		Corridor corridor = new Corridor(9, 9, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		corridor.setName("Corridor 1");
@@ -179,7 +178,7 @@ public class GameClass {
 		attachTwoLocations(corridor, room2, entrances.get(1));
 		attachTwoLocations(corridor, room3, entrances.get(2));
 		attachTwoLocations(corridor, room4, entrances.get(3));
-		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4));
+		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4, room3));
 		
 		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
@@ -669,35 +668,12 @@ public class GameClass {
 			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
 				Entrance entrance = entry.getValue();
 				System.out.println(entrance.getDirection());
-				switch (entrance.getDirection()) {
-				case NORTH:
-					if (y==0 && x>=entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
-						found = true;
-						foundEntrance = entrance;
-						break search;
-					}
-					break;
-				case SOUTH:
-					if (y==loc.getH()-1 && x>=entrance.getCoords() && x<entrance.getCoords()+entrance.getSize()) {
-						found = true;
-						foundEntrance = entrance;
-						break search;
-					}
-					break;
-				case WEST:
-					if (x==0 && y>=entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
-						found = true;
-						foundEntrance = entrance;
-						break search;
-					}
-					break;
-				case EAST:
-					if (x==loc.getW()-1 && y>=entrance.getCoords() && y<entrance.getCoords()+entrance.getSize()) {
-						found = true;
-						foundEntrance = entrance;
-						break search;
-					}
-					break;
+				//Make sure the current location is within the entrance
+				if (	   entrance.getLocB().getY()>=y && entrance.getLocA().getY()<=y
+						&& entrance.getLocA().getX()<=x && entrance.getLocB().getX()>=x) {
+					found = true;
+					foundEntrance = entrance;
+					break search;
 				}
 			}
 			//If an entrance has been found, set the entity's current entrance to be the one found.
@@ -766,36 +742,48 @@ public class GameClass {
 		//TODO - add Betweenford entrance here
 	}
 
-	public static moveToEntrance(EntityTile entity, Entrance entrance) {
+	public static void moveToEntrance(EntityTile entity, Entrance entrance) {
 		//Check the orientation of the Entrance. If it is east/west, check the entity's y position. If it's above the entrance, moveTo the northernmost point.
 		//If it's below the entrance (plus size), moveTo the southernmost. If it's between, move east/west.
 		//Do the same with north/south and the x position.
-		switch (entrance.getDirection()) {
-		case NORTH: case SOUTH:
-			byte x = entity.getX();
-			byte c = entrance.getCoords();
-			byte s = (byte) (entrance.getCoords()+entrance.getSize());
-			if (x < c) {
-				if (entrance.getDirection()==Direction.NORTH) {
-					move(entity, new Coord2D(c, (byte) 0));
-				} else {
-					move(entity, new Coord2D(c, (byte) ));
-				}
-			}
+		//Find the closest point in the entrance, then attempt to move to there.
+		
+		byte x = entity.getX();
+		byte y = entity.getY();
+		Coord2D ca = entrance.getLocA();
+		Coord2D cb = entrance.getLocB();
+		int minX;
+		if (x<ca.getX()) {
+			minX = ca.getX();
+		} else if (x>cb.getX()) {
+			minX = cb.getX();
+		} else {
+			minX = x;
 		}
+		
+		int minY;
+		if (y<ca.getY()) {
+			minY = ca.getY();
+		} else if (y>cb.getY()) {
+			minY = cb.getY();
+		} else {
+			minY = y;
+		}
+		
+		moveTo(entity, new Coord3D(minX, minY, 0));
 	}
 	public static void moveToPlayer(EntityTile entity) {
 		moveTo(entity, self.getCoords());
-		int ex = entity.getX();
-		int ey = entity.getY();
-		int ez = entity.getZ();
-		int px = self.getX();
-		int py = self.getY();
-		int pz = self.getZ();
+	}
+	
+	public static void moveTo(EntityTile entity, Coord3D coords) {
+		//Assuming it's all handled and the stuff is all valid
 		
-		int x = ex-px;
-		int y = ey-py;
-		if (Math.abs(x)>=Math.abs(y) && pz==ez) {
+		//Get the relative differences. If abs(diffX)>=abs(diffY), try to move EAST or WEST depending on signum(diffX).
+		int x = entity.getX()-coords.getX();
+		int y = entity.getY()-coords.getY();
+		
+		if (Math.abs(x)>=Math.abs(y)) {
 			if (x<0) {
 				move(Direction.WEST, entity, cloc);
 			} else {
@@ -867,14 +855,6 @@ public class GameClass {
 			Entrance entrance = entity.getLocation().findEntranceFor(aimingFor);
 			if (entrance != null) {
 				moveToEntrance(entity, entrance);
-			}
-			if (entity.hasAim()) {
-				move
-				//If x is greater and you can move in that direction, do so. Otherwise go in the y-direction.
-				Coord2D relative = entity.getRelativeAim();
-				if (relative.getX()>relative.getY() && cloc.getTile((byte) (entity.getX()+1), entity.getY()).isWalkable()) {
-					move
-				}
 			}
 			return false;
 		}
@@ -1688,7 +1668,7 @@ public class GameClass {
 		//Creating: Take the Direction, and place it onto loc1 in that direction, with the second in the Triplet as the location, third width.
 		//Then, reverse the Direction, calculate the relative 2nd point on loc2 (relative to loc1) and put it in that too.
 		
-		//If it is a valid connection, do this
+		//In order to be a valid connection, the other location must be in an appropriate place. take the relative x and y coords, and check the entrance's direction.
 		int relX = loc2.getX()-loc1.getX();
 		int relY = loc2.getY()-loc1.getY();
 		boolean isValid = false;
@@ -1697,25 +1677,25 @@ public class GameClass {
 		case NORTH:
 			if (relY==loc2.getH() && relX < loc1.getW()) {
 				isValid = true;
-				entrance2.setInfo(Direction.SOUTH, relX+entrance.getCoords(), entrance.getSize());
+				entrance2.setInfo(Direction.SOUTH, new Coord2D(loc2.getH()-1, relY+entrance.getLocA().getY()), new Coord2D(loc2.getH()-1, relY+entrance.getLocB().getY()));
 			}
 			break;
 		case SOUTH:
 			if (-relY==loc1.getH() && relX < loc1.getW()) {
 				isValid = true;
-				entrance2.setInfo(Direction.NORTH, relX+entrance.getCoords(), entrance.getSize());
+				entrance2.setInfo(Direction.NORTH, new Coord2D(0, relY+entrance.getLocA().getY()), new Coord2D(0, relY+entrance.getLocB().getY()));
 			}
 			break;
 		case EAST:
 			if (-relX==loc1.getW() && relY < loc1.getH()) {
 				isValid = true;
-				entrance2.setInfo(Direction.WEST, relY+entrance.getCoords(), entrance.getSize());
+				entrance2.setInfo(Direction.WEST, new Coord2D(relX+entrance.getLocA().getX(), loc2.getW()-1), new Coord2D(relX+entrance.getLocB().getX(), loc2.getW()-1));
 			}
 			break;
 		case WEST:
 			if (relX==loc2.getW() && relY < loc1.getH()) {
 				isValid = true;
-				entrance2.setInfo(Direction.EAST, relY+entrance.getCoords(), entrance.getSize());
+				entrance2.setInfo(Direction.EAST, new Coord2D(relX+entrance.getLocA().getX(), 0), new Coord2D(relX+entrance.getLocB().getX(), 0));
 			}
 			break;
 		}
