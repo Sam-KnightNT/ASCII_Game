@@ -800,7 +800,7 @@ public class GameClass {
 			//If the entity has a path to follow, follow it. Otherwise, create the path to the player.
 			Location aimingFor = null;
 			try {
-				ArrayList<Location> path = entity.getPath();
+				Path path = entity.getPath();
 				aimingFor = path.get(1);
 			} catch (NullPointerException e) {
 				System.out.println("Path is null - creating it.");
@@ -809,50 +809,38 @@ public class GameClass {
 				Location currentLocation = entity.getLocation();
 				
 				//Depth-first search to get to the new room
-				LinkedList<ArrayList<Location>> searchLocations = new LinkedList<ArrayList<Location>>();
-				for (Location loc : entity.getLocation().attachedLocs.keySet()) {
-					ArrayList<Location> locs = new ArrayList<Location>();
-					locs.add(loc);
-					searchLocations.add(locs);
+				//Path is basically syntactic sugar for ArrayList<Location>, and a couple more methods
+				LinkedList<Path> searchLocations = new LinkedList<Path>();
+				for (Location loc : currentLocation.getAttached().keySet()) {
+					searchLocations.add(new Path(loc));
 				}
+				//We have a list of paths to search - at first, it is a list of paths that are single-length starting at the entity's location.
+				//For each path, we want to check the last index.
+				Path path = searchLocations.pop();
+				Location location = path.peekLast();
 				
-				//We have a list of paths to search. Go through each one in turn. For each one, 
-				Location location = searchLocations.get(0).get(0);
+				search:
 				while (location != self.getLocation()) {
-					//Choose the next node to expand (the first in the list)
-					ArrayList<Location> locationPath = searchLocations.pop();
-					Location expandingLocation = locationPath.get(locationPath.size()-1);
-					
-					//Look at all the Rooms attached
-					for (Location attachedLocation : expandingLocation.getAttached().keySet()) {
-						//If this is the one you are aiming for, set the path to it. Otherwise, construct a new path and add it to the path list.
-						if (attachedLocation.equals(self.getLocation())) {
-							//If this one is the desired location, get the second Room in the list and break the loop.
-							location = locationPath.get(1);
-							//TODO - set aimingFor in entity's code that reflects this and the stuff in try so you don't have to go through all this every step.
-							locationPath.add(attachedLocation);
-							entity.setPath(locationPath);
-							aimingFor = locationPath.get(2);
-							break;
+					//If it isn't, in a while loop, get all of the attachments of it, put them on the end of the list, and get the first one and do the same thing.
+					//You already have the path to expand - expand it.
+					for (Location attachedLoc : location.getAttached().keySet()) {
+						if (attachedLoc.equals(self.getLocation())) {
+							//If the location is found, break the loop.
+							location = attachedLoc;
+							path.add(attachedLoc);
+							break search;
 						} else {
-							//Otherwise, construct a new path (equivalent to the current one plus the new Room)
-							locationPath.add(attachedLocation);
-							//THIS WILL NOT WORK! It needs to be a deep copy, not a shallow copy.
-							searchLocations.add(locationPath);
-							locationPath.remove(locationPath.size()-1);
-						}
-						// Check if the new Location is the same as a previous one (i.e. if it's a cycle) and add them to the list if not.
-						boolean alreadyContained = false;
-						for (Location locationToCheck : locationPath) {
-							if (locationToCheck == attachedLocation) {
-								alreadyContained = true;
-							}
-						}
-						if (!alreadyContained) {
-							locationPath.add(attachedLocation);
+							//Otherwise add the new path to the list of paths you are looking for.
+							Path newPath = new Path(path);
+							newPath.add(attachedLoc);
+							searchLocations.addLast(newPath);
 						}
 					}
+					//Then choose the next path on the list and end the while loop.
+					path = searchLocations.pop();
+					location = path.peekLast();
 				}
+				
 				//Need to find a way to say where the links are, so the entity can path to them.
 				//If these are both 0, it is at the point where it can move into the other room. So move there!
 				int xDiff = 4;

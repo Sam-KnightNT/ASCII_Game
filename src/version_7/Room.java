@@ -45,124 +45,99 @@ public class Room extends Location{
 	 */
 	
 	public Room (byte w, byte h, byte x, byte y) {
-		width = w;
-		height = h;
-		corner = new Coord2D(x, y);
-		this.x = (byte) x;
-		this.y = (byte) y;
-		tiles = new Tile[w][h];
+		this.setW(w);
+		this.setH(h);
+		this.setX(x);
+		this.setY(y);
+		this.setCorner(x, y);
+		setTiles(new Tile[w][h]);
 	}
 	
 	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType) {
 		this(w, h, x, y);
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {
-				tiles[xI][yI] = new Tile(floorTileType);
+				setTile(xI, yI, floorTileType);
 			}
 		}
 		for (int xI = 0; xI < w; xI++) {
-			tiles[xI][0] = new Tile(wallTileType);
-			tiles[xI][h-1] = new Tile(wallTileType);
+			setTile(xI, 0, wallTileType);
+			setTile(xI, h-1, wallTileType);
 		}
 		for (int yI = 0; yI < h; yI++) {
-			tiles[0][yI] = new Tile(wallTileType);
-			tiles[w-1][yI] = new Tile(wallTileType);
+			setTile(0, yI, wallTileType);
+			setTile(w-1, yI, wallTileType);
 		}
 	}
 
 	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
 		this(w, h, x, y, floorTileType, wallTileType);
-		attachedLocs = attachments;
+		setAttachments(attachments);
 	}
 
 	//Casting ints as bytes (using bytes saves a lot of space, as there will be a LOT of these coordinates flying around. It'll save 75% of the coordinate memory)
 	public Room(int w, int h, int x, int y) {
-		width = (byte) w;
-		height = (byte) h;
-		corner = new Coord2D((byte) x,(byte)  y);
-		this.x = (byte) x;
-		this.y = (byte) y;
-		tiles = new Tile[w][h];
+		this((byte) w, (byte) h, (byte) x, (byte) y);
 	}
 	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType) {
 		this(w, h, x, y);
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {
-				tiles[xI][yI] = new Tile(floorTileType);
+				setTile(xI, yI, floorTileType);
 			}
 		}
 		for (int xI = 0; xI < w; xI++) {
-			tiles[xI][0] = new Tile(wallTileType);
-			tiles[xI][h-1] = new Tile(wallTileType);
+			setTile(xI, 0, wallTileType);
+			setTile(xI, h-1, wallTileType);
 		}
 		for (int yI = 0; yI < h; yI++) {
-			tiles[0][yI] = new Tile(wallTileType);
-			tiles[w-1][yI] = new Tile(wallTileType);
+			setTile(0, yI, wallTileType);
+			setTile(w-1, yI, wallTileType);
 		}
 	}
 	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
 		this(w, h, x, y, floorTileType, wallTileType);
-		attachedLocs = attachments;
+		this.setAttachments(attachments);
 	}
 	
 	
 	public void carveEntrancesWithCurrentAttachments(TileType floor) {
-		carveEntrances(new ArrayList<Entrance>(attachedLocs.values()), floor);
+		carveEntrances(new ArrayList<Entrance>(getAttached().values()), floor);
 	}
 	public void carveEntrances(ArrayList<Entrance> entrances, TileType floorTileType) {
 		for (Entrance entrance : entrances) {
 			for (int s=0; s<entrance.getSize(); s++) {
+				int t = entrance.getCoords()+s;
 				switch (entrance.getDirection()) {
 				case NORTH:
-					tiles[entrance.getCoords()+s][0] = new Tile(floorTileType);
+					setTile(t, 0, floorTileType);
 					break;
 				case SOUTH:
-					tiles[entrance.getCoords()+s][height-1] = new Tile(floorTileType);
+					setTile(t, getH()-1, floorTileType);
 					break;
 				case WEST:
-					tiles[0][entrance.getCoords()+s] = new Tile(floorTileType);
+					setTile(0, t, floorTileType);
 					break;
 				case EAST:
-					tiles[width-1][entrance.getCoords()+s] = new Tile(floorTileType);
+					setTile(getW()-1, t, floorTileType);
 					break;
 				}
 			}
 		}
 	}
 	
-	public void pillarCorners(TileType pillarType) {
-		tiles[0][0] = new Tile(pillarType);
-		tiles[0][height-1] = new Tile(pillarType);
-		tiles[width-1][0] = new Tile(pillarType);
-		tiles[width-1][height-1] = new Tile(pillarType);
-	}
-	
-	public byte getW() {
-		return width;
-	}
-	public void setW(byte w) {
-		width = w;
-	}
-	public int getWidth() {
-		return width;
-	}
-	public void setWidth(byte width) {
-		this.width = width;
-	}
-	
-	
-	public byte getH() {
-		return height;
-	}
-	public void setH(byte h) {
-		height = h;
-	}
-	public byte getHeight() {
-		return height;
+	private void setTile(int i, int j, Tile tile) {
+		// TODO Auto-generated method stub
+		
 	}
 
-	public void setHeight(byte height) {
-		this.height = height;
+	public void pillarCorners(TileType type) {
+		byte h = (byte) (getH()-1);
+		byte w = (byte) (getW()-1);
+		setTile(0, 0, type);
+		setTile(0, h, type);
+		setTile(w, 0, type);
+		setTile(w, h, type);
 	}
 
 	@Override
@@ -172,6 +147,16 @@ public class Room extends Location{
 	}
 	
 	public String toString() {
-		return new String("\tRoom:\n\t\tWidth: "+width+"\n\t\tHeight: "+height+"\n\t\tX position: "+x+"\n\t\tY position: "+y);
+		return new String("Room:\n\tWidth: "+this.getW()+"\n\tHeight: "+this.getH()+"\n\tX position: "+this.getX()+"\n\tY position: "+this.getY());
+	}
+	
+	//This method give an extra t tabs to the string - if, for example, you have a nested hierarchy in which this is an element. This method is used to convey it is within another structure.
+	public String toString(int t) {
+		String tabs = "";
+		//Create the desired number of tabs.
+		for (int i=0; i<t; i++) {
+			tabs += "\t";
+		}
+		return new String("Room:\n"+tabs+"Width: "+this.getW()+"\n"+tabs+"\tHeight: "+this.getH()+"\n"+tabs+"\tX position: "+this.getX()+"\n"+tabs+"\tY position: "+this.getY());
 	}
 }

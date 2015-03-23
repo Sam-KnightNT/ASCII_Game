@@ -18,7 +18,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private int ticksLeft;
 	private int id;
 	private Location location;
-	private ArrayList<Location> path;
+	private Path path;
 	private Entrance entrance;
  
 	public EntityTile(Entity entity, byte x, byte y, byte z) {
@@ -235,12 +235,12 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.location = location;
 	}
 	
-	public ArrayList<Location> getPath() {
+	public Path getPath() {
 		return path;
 	}
 
-	public void setPath(ArrayList<Location> path) {
-		this.path = path;
+	public void setPath(Path locationPath) {
+		this.path = locationPath.get();
 	}
 
 	public Entrance getEntrance() {

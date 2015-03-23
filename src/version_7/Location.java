@@ -5,16 +5,16 @@ import java.util.HashMap;
 
 public abstract class Location {
 
-	public Tile[][] tiles;
-	protected HashMap<Location, Entrance> attachedLocs = new HashMap<Location, Entrance>();
-	public ArrayList<EntityTile> entities = new ArrayList<EntityTile>();
-	public ArrayList<ItemTile> items = new ArrayList<ItemTile>();
-	Coord2D corner;
+	private Tile[][] tiles;
+	private HashMap<Location, Entrance> attachedLocs = new HashMap<Location, Entrance>();
+	private ArrayList<EntityTile> entities = new ArrayList<EntityTile>();
+	private ArrayList<ItemTile> items = new ArrayList<ItemTile>();
+	private Coord2D corner;
 	private String name;
-	protected byte width;
-	protected byte height;
-	protected byte x;
-	protected byte y;
+	private byte width;
+	private byte height;
+	private byte x;
+	private byte y;
 	
 	public HashMap<Location, Entrance> getAttached() {
 		return attachedLocs;
@@ -24,6 +24,10 @@ public abstract class Location {
 		attachedLocs.put(attachment, entrance);
 		entrance.setLocation(this);
 		//TODO - this needs more information about the attachment. How wide is the connection, and where is it?
+	}
+	
+	public void setAttachments(HashMap<Location, Entrance> attachments) {
+		this.attachedLocs = attachments;
 	}
 
 	public Tile[][] getTiles() {
@@ -55,17 +59,47 @@ public abstract class Location {
 	public Coord2D getCorner() {
 		return corner;
 	}
+
+	public int getWidth() {
+		return width;
+	}
+	public void setWidth(byte width) {
+		this.width = width;
+	}
 	
+	public byte getHeight() {
+		return height;
+	}
+	public void setHeight(byte height) {
+		this.height = height;
+	}
+	
+	public void setX(byte x) {
+		this.x = x;
+	}
+	public void setY(byte y) {
+		this.y = y;
+	}
+	public void setW(byte w) {
+		width = w;
+	}
+	public void setH(byte h) {
+		height = h;
+	}
 	public void setCorner(Coord2D location) {
 		this.corner = location;
 	}
-	
 	public void setCorner(byte x, byte y) {
 		corner = new Coord2D(x, y);
 	}
-
 	public void setTile(byte x, byte y, TileType tile) {
 		tiles[x][y] = new Tile(tile);
+	}
+	public void setTile(int x, int y, TileType tile) {
+		tiles[x][y] = new Tile(tile);
+	}
+	public void setTiles(Tile[][] tiles) {
+		this.tiles = tiles;
 	}
 	
 	public Pair<Boolean, Entity> entityAt(byte x, byte y, byte z) {

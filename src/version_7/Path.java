@@ -1,21 +1,38 @@
 package version_7;
 
 import java.util.ArrayList;
+public class Path extends ArrayList<Location> {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1978933604504823917L;
 
-public class Path {
-	
-	private ArrayList<Location> path;
-	
-	public Path(ArrayList<Location> path) {
-		this.path = path;
+	public Path(Location loc) {
+		this.add(loc);
+	}
+
+	public Path(Path path) {
+		this.addAll(path);
 	}
 	
-	public ArrayList<Location> get() {
-		return path;
+	public Location pop() {
+		return this.remove(0);
 	}
 	
-	public void set(ArrayList<Location> path) {
-		this.path = path;
+	public Location peek() {
+		return this.get(0);
 	}
 	
+	public Location popLast() {
+		return this.remove(this.size()-1);
+	}
+	
+	public Location peekLast() {
+		return this.get(this.size()-1);
+	}
+	
+	public Path get() {
+		return this;
+	}
 }
