@@ -766,7 +766,24 @@ public class GameClass {
 		//TODO - add Betweenford entrance here
 	}
 
+	public static moveToEntrance(EntityTile entity, Entrance entrance) {
+		//Check the orientation of the Entrance. If it is east/west, check the entity's y position. If it's above the entrance, moveTo the northernmost point.
+		//If it's below the entrance (plus size), moveTo the southernmost. If it's between, move east/west.
+		//Do the same with north/south and the x position.
+		switch (entrance.getDirection()) {
+		case NORTH: case SOUTH:
+			byte x = entity.getX();
+			byte c = entrance.getCoords();
+			byte s = (byte) (entrance.getCoords()+entrance.getSize());
+			if (x < c) {
+				if (entrance.getDirection()==Direction.NORTH) {
+					move(entity, new Coord2D(c, (byte) 0));
+				}
+			}
+		}
+	}
 	public static void moveToPlayer(EntityTile entity) {
+		moveTo(entity, self.getCoords());
 		int ex = entity.getX();
 		int ey = entity.getY();
 		int ez = entity.getZ();
@@ -801,7 +818,7 @@ public class GameClass {
 			Location aimingFor = null;
 			try {
 				Path path = entity.getPath();
-				aimingFor = path.get(1);
+				aimingFor = path.get(0);
 			} catch (NullPointerException e) {
 				System.out.println("Path is null - creating it.");
 				
@@ -840,11 +857,22 @@ public class GameClass {
 					path = searchLocations.pop();
 					location = path.peekLast();
 				}
-				
-				//Need to find a way to say where the links are, so the entity can path to them.
-				//If these are both 0, it is at the point where it can move into the other room. So move there!
-				int xDiff = 4;
-				return false;
+				entity.setPath(path);
+				aimingFor = path.get(0);
+			}
+			//Now pathfind to the entrance that takes you to that location.
+			//Find the Entrance corresponding to that Location it wants to get to.
+			Entrance entrance = entity.getLocation().findEntranceFor(aimingFor);
+			if (entrance != null) {
+				moveToEntrance(entity, entrance);
+			}
+			if (entity.hasAim()) {
+				move
+				//If x is greater and you can move in that direction, do so. Otherwise go in the y-direction.
+				Coord2D relative = entity.getRelativeAim();
+				if (relative.getX()>relative.getY() && cloc.getTile((byte) (entity.getX()+1), entity.getY()).isWalkable()) {
+					move
+				}
 			}
 			return false;
 		}

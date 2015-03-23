@@ -3,42 +3,42 @@ package version_7;
 public class Entrance {
 
 	private Direction direction;
-	private int locationInRoom;
-	private int size;
+	private Coord2D locationA;
+	private Coord2D locationB;
 	private Entrance linkedEntrance;
 	private Location containedLocation;
 
 	public Entrance() {
 	}
 	
-	public Entrance(Direction direction, int location, int size) {
+	public Entrance(Direction direction, byte location, byte size) {
 		this.direction = direction;
 		this.locationInRoom = location;
 		this.size = size;
 	}
 	
-	public Entrance(Triplet<Direction, Integer, Integer> info) {
+	public Entrance(Triplet<Direction, Byte, Byte> info) {
 		direction = info.getLeft();
 		locationInRoom = info.getMiddle();
 		size = info.getRight();
 	}
 	
-	public Entrance(Direction direction, int location, int size, Entrance linkedEntrance) {
+	public Entrance(Direction direction, byte location, byte size, Entrance linkedEntrance) {
 		this(direction, location, size);
 		this.linkedEntrance = linkedEntrance;
 	}
 	
-	public Entrance(Triplet<Direction, Integer, Integer> info, Entrance linkedEntrance) {
+	public Entrance(Triplet<Direction, Byte, Byte> info, Entrance linkedEntrance) {
 		this(info);
 		this.linkedEntrance = linkedEntrance;
 	}
 	
-	public Entrance(Direction direction, int location, int size, Entrance linkedEntrance, Location containedLocation) {
+	public Entrance(Direction direction, byte location, byte size, Entrance linkedEntrance, Location containedLocation) {
 		this(direction, location, size, linkedEntrance);
 		this.containedLocation = containedLocation;
 	}
 	
-	public Entrance(Triplet<Direction, Integer, Integer> info, Entrance linkedEntrance, Location containedLocation) {
+	public Entrance(Triplet<Direction, Byte, Byte> info, Entrance linkedEntrance, Location containedLocation) {
 		this(info, linkedEntrance);
 		this.containedLocation = containedLocation;
 	}
@@ -46,7 +46,7 @@ public class Entrance {
 	public Direction getDirection() {
 		return direction;
 	}
-	public int getCoords() {
+	public byte getCoords() {
 		return locationInRoom;
 	}
 	public Location getLocation() {
@@ -55,8 +55,8 @@ public class Entrance {
 	public int getSize() {
 		return size;
 	}
-	public Triplet<Direction, Integer, Integer> getDetails() {
-		return new Triplet<Direction, Integer, Integer>(direction, locationInRoom, size);
+	public Triplet<Direction, Byte, Byte> getDetails() {
+		return new Triplet<Direction, Byte, Byte>(direction, locationInRoom, size);
 	}
 	public Entrance getLinkedEntrance() {
 		return linkedEntrance;
@@ -65,21 +65,21 @@ public class Entrance {
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
-	public void setCoords(int coords) {
+	public void setCoords(byte coords) {
 		this.locationInRoom = coords;
 	}
 	public void setLocation(Location location) {
 		containedLocation = location;
 	}
-	public void setSize(int size) {
+	public void setSize(byte size) {
 		this.size = size;
 	}
-	public void setInfo(Direction direction, int location, int size) {
+	public void setInfo(Direction direction, byte location, byte size) {
 		this.direction = direction;
 		this.locationInRoom = location;
 		this.size = size;
 	}
-	public void setInfo(Triplet<Direction, Integer, Integer> info) {
+	public void setInfo(Triplet<Direction, Byte, Byte> info) {
 		direction = info.getLeft();
 		locationInRoom = info.getMiddle();
 		size = info.getRight();

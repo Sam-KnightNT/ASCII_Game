@@ -2,6 +2,7 @@ package version_7;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public abstract class Location {
 
@@ -211,6 +212,15 @@ public abstract class Location {
 		return count;
 	}
 
+	public Entrance findEntranceFor(Location location) {
+		for (Entry<Location, Entrance> entry : attachedLocs.entrySet()) {
+			if (entry.getKey()==location) {
+				return entry.getValue();
+			}
+		}
+		System.out.println("No entrance found between "+this.getName()+" and "+location.getName());
+		return null;
+	}
 	public void update(ArrayList<EntityTile> entities, ArrayList<ItemTile> items) {
 		this.entities = entities;
 		this.items = items;
