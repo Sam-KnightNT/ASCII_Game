@@ -40,7 +40,7 @@ public class GameClass {
 	static Random random = new Random();
 	//TODO - Remove all static modifiers, since they should be unique to each GameClass
 	private static GameImage mainImage;
-	private static InfoPanel infoPanel;
+	//private static InfoPanel infoPanel;
 	private final static JFrame frame = new JFrame();
 	private static final int PT_SIZE = 40;
 	static int playerIndex;
@@ -186,9 +186,7 @@ public class GameClass {
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze Floor"));
 		room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
-		print("BLGTRUADG");
 		room.pillarCorners(tiles.get("Marble Pillar"));
-		print("FLUGERSG");
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Room 3", room3);
@@ -1376,9 +1374,6 @@ public class GameClass {
 				player.setStat("max health", player.getBaseStat("health"));
 				player.setStat("max mana", player.getBaseStat("mana"));
 			}
-			else if (strs[i].startsWith("background:")) {
-				String bg = strs[i].replace("background: ", "");
-			}
 		}
 		try {
 			player.setImage(ImageIO.read(new File("images/entities/Dwarf.png")));
@@ -1489,6 +1484,7 @@ public class GameClass {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private static Color parseColour(String str, Color colour) {
 		switch (str.toLowerCase()) {
 		case "blue":
@@ -1705,6 +1701,10 @@ public class GameClass {
 			loc1.addAttachment(loc2, entrance);
 			//Modify the Entrance here to contain the relative location
 			loc2.addAttachment(loc1, entrance2);
+			print("Valid connection between "+entrance.getLocation()+" and "+entrance2.getLocation());
+			//TODO next time - figure out why all entrances created are valid, but only the one from one Room to another gets drawn
+		} else {
+			print("Invalid connection between "+entrance.getLocation()+" and "+entrance2.getLocation());
 		}
 	}
 }

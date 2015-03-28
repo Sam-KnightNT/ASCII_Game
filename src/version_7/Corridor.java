@@ -59,30 +59,33 @@ public class Corridor extends Location {
 				case NORTH:
 					for (Entrance otherEntrance : entrances) {
 						if (otherEntrance.getDirection() == Direction.WEST || otherEntrance.getDirection() == Direction.EAST) {
-							int loc = otherEntrance.getCoords();
-							int size = otherEntrance.getSize();
-							if (loc+size>maxLength) {
-								maxLength = loc+size;
+							//Northern entrances want the southernmost point. So, go for the second location's y value.
+							int loc = otherEntrance.getLocB().getY();
+							if (loc>maxLength) {
+								maxLength = loc;
 							}
 						}
 					}
 					break;
 				case SOUTH:
+					byte lowPoint = this.getH();
 					for (Entrance otherEntrance : entrances) {
 						if (otherEntrance.getDirection() == Direction.WEST || otherEntrance.getDirection() == Direction.EAST) {
-							int loc = otherEntrance.getCoords();
-							if (loc>maxLength) {
-								maxLength = loc;
+							//Want northernmost point
+							int loc = otherEntrance.getLocA().getY();
+							if (lowPoint-loc>maxLength) {
+								maxLength = lowPoint-loc;
 							}
 						}
 					}
 					break;
 				case EAST:
+					byte sidePoint = this.getH();
 					for (Entrance otherEntrance : entrances) {
 						if (otherEntrance.getDirection() == Direction.SOUTH || otherEntrance.getDirection() == Direction.NORTH) {
-							int loc = otherEntrance.getCoords();
-							if (loc>maxLength) {
-								maxLength = loc;
+							int loc = otherEntrance.getLocA().getX();
+							if (sidePoint-loc>maxLength) {
+								maxLength = sidePoint-loc;
 							}
 						}
 					}
@@ -90,10 +93,9 @@ public class Corridor extends Location {
 				case WEST:
 					for (Entrance otherEntrance : entrances) {
 						if (otherEntrance.getDirection() == Direction.SOUTH || otherEntrance.getDirection() == Direction.NORTH) {
-							int loc = otherEntrance.getCoords();
-							int size = otherEntrance.getSize();
-							if (loc+size>maxLength) {
-								maxLength = loc+size;
+							int loc = otherEntrance.getLocB().getX();
+							if (loc>maxLength) {
+								maxLength = loc;
 							}
 						}
 					}
@@ -101,20 +103,19 @@ public class Corridor extends Location {
 				}
 				//Now, carve out a path that is that many units long.
 				for (int l=0; l<maxLength; l++) {
-					for (int r=0; r<entrance.getSize(); r++) {
-						int s = entrance.getCoords()+r;
+					for (int r=entrance.getNearSide(); r<entrance.getFarSide(); r++) {
 						switch (entrance.getDirection()) {
 						case NORTH:
-							setTile(s, l, floor);
+							setTile(r, l, floor);
 							break;
 						case SOUTH:
-							setTile(s, getH()-(l+1), floor);
+							setTile(r, getH()-(l+1), floor);
 							break;
 						case WEST:
-							setTile(l, s, floor);
+							setTile(l, r, floor);
 							break;
 						case EAST:
-							setTile(getW()-(l+1), s, floor);
+							setTile(getW()-(l+1), r, floor);
 							break;
 						}
 					}

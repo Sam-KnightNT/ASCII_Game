@@ -1,6 +1,5 @@
 package version_7;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 public class TileType {

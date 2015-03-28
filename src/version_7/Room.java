@@ -44,7 +44,7 @@ public class Room extends Location{
 	 * -------o--------------o---------
 	 */
 	
-	public Room (byte w, byte h, byte x, byte y) {
+	public Room(byte w, byte h, byte x, byte y) {
 		this.setW(w);
 		this.setH(h);
 		this.setX(x);
@@ -106,31 +106,29 @@ public class Room extends Location{
 	}
 	public void carveEntrances(ArrayList<Entrance> entrances, TileType floorTileType) {
 		for (Entrance entrance : entrances) {
-			for (int s=0; s<entrance.getSize(); s++) {
-				int t = entrance.getCoords()+s;
+			for (int s=entrance.getNearSide(); s<entrance.getFarSide(); s++) {
 				switch (entrance.getDirection()) {
 				case NORTH:
-					setTile(t, 0, floorTileType);
+					setTile(s, 0, floorTileType);
+					System.out.println("Drawing "+this.getName()+" at "+s+", 0. Direction "+entrance.getDirection());
 					break;
 				case SOUTH:
-					setTile(t, getH()-1, floorTileType);
+					setTile(s, getH()-1, floorTileType);
+					System.out.println("Drawing "+this.getName()+" at "+s+", "+(getH()-1)+". Direction "+entrance.getDirection());
 					break;
 				case WEST:
-					setTile(0, t, floorTileType);
+					setTile(0, s, floorTileType);
+					System.out.println("Drawing "+this.getName()+" at 0, "+s+". Direction "+entrance.getDirection());
 					break;
 				case EAST:
-					setTile(getW()-1, t, floorTileType);
+					setTile(getW()-1, s, floorTileType);
+					System.out.println("Drawing "+this.getName()+" at "+(getH()-1)+", "+s+". Direction "+entrance.getDirection());
 					break;
 				}
 			}
 		}
 	}
 	
-	private void setTile(int i, int j, Tile tile) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void pillarCorners(TileType type) {
 		byte h = (byte) (getH()-1);
 		byte w = (byte) (getW()-1);

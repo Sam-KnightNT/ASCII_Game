@@ -2,8 +2,8 @@ package version_7;
  
 public class Coord2D {
  
-    byte x;
-    byte y;
+    private byte x;
+    private byte y;
     
     public Coord2D(byte x, byte y) {
         this.x = x;
@@ -29,6 +29,10 @@ public class Coord2D {
  
     public void setY(byte y) {
         this.y = y;
+    }
+    
+    public String toString() {
+    	return "("+x+", "+y+")";
     }
      
 }

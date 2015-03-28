@@ -22,8 +22,7 @@ public class GameImage extends JPanel {
 	private Graphics2D gSide;
 	private int xDim, yDim;			//Overall size of the image
 	private int xUnit = 20, yUnit = 30;		//Size of a single character
-	private int xArray, yArray;		//Size of the grid
-	private int z;					//Current slice of the map
+	//private int z;					//Current slice of the map
 	//Instead of a Map, have a list of Locations, one of these being the centralLocation.
 	//On drawing, each of these Locations are drawn, relative to the centralLocation.
 	private ArrayList<Location> locations;
@@ -37,8 +36,6 @@ public class GameImage extends JPanel {
 	public GameImage(ArrayList<Location> locations, Location location, int ptSize, int xArray, int yArray) {
 		this.locations = locations;
 		this.cloc = location;
-		this.xArray = xArray;
-		this.yArray = yArray;
 		xDim = xUnit*xArray;
 		yDim = yUnit*yArray;
 		setSize(1040, 730);
@@ -194,9 +191,6 @@ public class GameImage extends JPanel {
 			for (byte y=0; y<h; y++) {
 				for (byte x=0; x<w; x++) {
 					TileType tile = location.getTile(x, y).getType();
-					int xDraw = (x*xUnit)+offsetX+offsetX2;
-					int yDraw = (y*yUnit)+offsetY+offsetY2;
-					//TODO next: Draw it with an offset that's intelligently devised - i.e. that places the centre of the room in the centre of the view, rather than the corner
 					g.drawImage(tile.getImage(), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
 				}
 			}
@@ -213,7 +207,7 @@ public class GameImage extends JPanel {
 		
 		this.paintComponent(g);
 	}
-	//TODO add dynamic textures
+	//TODO add dynamic textures, or large textures that take up (20n, 30n) and are wrappable
 	//2 coordinates - old pair, EntityTile
 	public void redrawMap(HashMap<Triplet<Integer, Tile, Integer>, EntityTile> changes) {
 		for (Entry<Triplet<Integer, Tile, Integer>, EntityTile> entry : changes.entrySet()) {
@@ -245,9 +239,9 @@ public class GameImage extends JPanel {
 		return new IntPair(xDim, yDim);
 	}
 	
-	public void zLevel(int z) {
+/*	public void zLevel(int z) {
 		this.z = z;
-	}
+	}*/
 	
 	public void setInfo(String info) {
 		gSide.drawString(info, 20, 20);

@@ -73,7 +73,18 @@ public class Entrance {
 	public Coord2D getLocB() {
 		return locationB;
 	}
-	public Triplet<Direction, Coord2D, Coord2D> getDetails() {
+	public byte getWidth() {
+		switch(direction) {
+		case NORTH: case SOUTH:
+			return (byte) (getLocB().getX()-getLocA().getX());
+		case EAST: case WEST:
+			return (byte) (getLocB().getY()-getLocA().getY());
+		default:
+			System.out.println("Direction is invalid - I've cocked this up a lot. Direction is "+direction);
+			return 0b1;
+		}
+	}
+	public Triplet<Direction, Coord2D, Coord2D> getInfo() {
 		return new Triplet<Direction, Coord2D, Coord2D>(direction, locationA, locationB);
 	}
 	public Entrance getLinkedEntrance() {
@@ -110,5 +121,24 @@ public class Entrance {
 
 	public void setLinkedEntrance(Entrance linkedEntrance) {
 		this.linkedEntrance = linkedEntrance;
+	}
+
+	public int getNearSide() {
+		switch(direction) {
+		case NORTH: case SOUTH:
+			return this.getLocA().getX();
+		case EAST: case WEST:
+			return this.getLocA().getY();
+		}
+		return 0;
+	}
+	public int getFarSide() {
+		switch(direction) {
+		case NORTH: case SOUTH:
+			return this.getLocB().getX();
+		case EAST: case WEST:
+			return this.getLocB().getY();
+		}
+		return 0;
 	}
 }
