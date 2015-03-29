@@ -1659,7 +1659,7 @@ public class GameClass {
 		}
 	}
 	
-	private static void attachTwoLocations(Location loc1, Location loc2, Entrance entrance) {
+	public static void attachTwoLocations(Location loc1, Location loc2, Entrance entrance) {
 		//First, check if they are allowed to have a connection (if they're aligned right). If so, create the connection.
 		//Creating: Take the Direction, and place it onto loc1 in that direction, with the second in the Triplet as the location, third width.
 		//Then, reverse the Direction, calculate the relative 2nd point on loc2 (relative to loc1) and put it in that too.
@@ -1667,44 +1667,76 @@ public class GameClass {
 		//In order to be a valid connection, the other location must be in an appropriate place. take the relative x and y coords, and check the entrance's direction.
 		int relX = loc2.getX()-loc1.getX();
 		int relY = loc2.getY()-loc1.getY();
-		boolean isValid = false;
+		Coord2D locA = entrance.getLocA();
+		Coord2D locB = entrance.getLocB();
+		Direction dir = entrance.getDirection();
+		boolean cond1;
+		boolean cond2;
+		boolean cond3;
+		Coord2D entrA;
+		Coord2D entrB;
 		Entrance entrance2 = new Entrance();
-		switch(entrance.getDirection()) {
+		switch(dir) {
 		case NORTH:
-			if (relY==loc2.getH() && relX < loc1.getW()) {
-				isValid = true;
-				entrance2.setInfo(Direction.SOUTH, new Coord2D(loc2.getH()-1, relY+entrance.getLocA().getY()), new Coord2D(loc2.getH()-1, relY+entrance.getLocB().getY()));
-			}
+			cond1 = (-relY==loc2.getH());
+			cond2 = (relX < locA.getX());
+			cond3 = (relX+loc2.getW() > locB.getX());
+			entrA = new Coord2D(loc2.getH()-1, relY+entrance.getLocA().getY());
+			entrB = new Coord2D(loc2.getH()-1, relY+entrance.getLocB().getY());
 			break;
 		case SOUTH:
-			if (-relY==loc1.getH() && relX < loc1.getW()) {
-				isValid = true;
-				entrance2.setInfo(Direction.NORTH, new Coord2D(0, relY+entrance.getLocA().getY()), new Coord2D(0, relY+entrance.getLocB().getY()));
-			}
+			cond1 = (relY==loc1.getH());
+			cond2 = (relX < locA.getX());
+			cond3 = (relX+loc2.getW() > locB.getX());
+			entrA = new Coord2D(0, relY+entrance.getLocA().getY());
+			entrB = new Coord2D(0, relY+entrance.getLocB().getY());
 			break;
 		case EAST:
-			if (-relX==loc1.getW() && relY < loc1.getH()) {
-				isValid = true;
-				entrance2.setInfo(Direction.WEST, new Coord2D(relX+entrance.getLocA().getX(), loc2.getW()-1), new Coord2D(relX+entrance.getLocB().getX(), loc2.getW()-1));
-			}
+			cond1 = (relX==loc1.getW());
+			cond2 = (relY < locA.getY());
+			cond3 = (relY+loc2.getH() > locB.getY());
+			entrA = new Coord2D(relX+entrance.getLocA().getX(), loc2.getW()-1);
+			entrB = new Coord2D(relX+entrance.getLocB().getX(), loc2.getW()-1);
 			break;
 		case WEST:
-			if (relX==loc2.getW() && relY < loc1.getH()) {
-				isValid = true;
-				entrance2.setInfo(Direction.EAST, new Coord2D(relX+entrance.getLocA().getX(), 0), new Coord2D(relX+entrance.getLocB().getX(), 0));
-			}
+			cond1 = (-relX==loc2.getW());
+			cond2 = (relY < locA.getY());
+			cond3 = (relY+loc2.getH() > locB.getY());
+			entrA = new Coord2D(relX+entrance.getLocA().getX(), 0);
+			entrB = new Coord2D(relX+entrance.getLocB().getX(), 0);
 			break;
+		default:
+			cond1 = false;
+			cond2 = false;
+			cond3 = false;
+			entrA = null;
+			entrB = null;
 		}
-		if (isValid) {
+		if (cond1 && cond2 && cond3) {
+			entrance2.setInfo(entrance.getDirection().getOppositeDirection(), entrA, entrB);
 			entrance.setLinkedEntrance(entrance2);
 			entrance2.setLinkedEntrance(entrance);
 			loc1.addAttachment(loc2, entrance);
 			//Modify the Entrance here to contain the relative location
 			loc2.addAttachment(loc1, entrance2);
-			print("Valid connection between "+entrance.getLocation()+" and "+entrance2.getLocation());
+			print("Valid connection between "+loc1+" and "+loc2);
 			//TODO next time - figure out why all entrances created are valid, but only the one from one Room to another gets drawn
 		} else {
-			print("Invalid connection between "+entrance.getLocation()+" and "+entrance2.getLocation());
+			String printStr = "Invalid connection between "+loc1+" and "+loc2+": ";
+			char direc = dir.getDirectionality();
+			char oppDirec = dir.getDirectionality()=='X' ? 'Y' : 'X';
+			String sign = (dir==Direction.NORTH || dir==Direction.WEST) ? "negative " : "positive ";
+			String oppSign = (dir==Direction.NORTH || dir==Direction.WEST) ? "positive " : "negative ";
+			if (!cond1) {
+				printStr += "the locations were not aligned in the "+direc+" direction.";
+			} else if (!cond2) {
+				printStr += "the first location is too far in the "+sign+oppDirec+" direction.";
+			} else if (!cond3) {
+				printStr += "the first location is too far in the "+oppSign+oppDirec+" direction.";
+			} else {
+				printStr += "something completely weird went on and I don't know what. The locations are as follows: "+loc1.toString()+", and "+loc2.toString()+". The entrance is "+entrance.toString();
+			}
+			print(printStr);
 		}
 	}
 }

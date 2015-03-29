@@ -60,20 +60,6 @@ public abstract class Location {
 	public Coord2D getCorner() {
 		return corner;
 	}
-
-	public int getWidth() {
-		return width;
-	}
-	public void setWidth(byte width) {
-		this.width = width;
-	}
-	
-	public byte getHeight() {
-		return height;
-	}
-	public void setHeight(byte height) {
-		this.height = height;
-	}
 	
 	public void setX(byte x) {
 		this.x = x;
