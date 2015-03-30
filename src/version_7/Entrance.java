@@ -116,7 +116,7 @@ public class Entrance {
 
 	
 	public String toString() {
-		return new String("Entrance:\n\tDirection: "+direction+"\n\tLocation A: "+locationA+"\n\tLocation B: "+locationB);
+		return new String(direction+" entrance, with boundaries "+locationA+", "+locationB);
 	}
 
 	public void setLinkedEntrance(Entrance linkedEntrance) {

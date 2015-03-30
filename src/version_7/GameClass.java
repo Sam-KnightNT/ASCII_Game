@@ -528,12 +528,12 @@ public class GameClass {
 		
 		//Print out all the locatios and their entities
 		//TODO - delete this
-		for (Location loc : locations.values()) {
+		/*for (Location loc : locations.values()) {
 			System.out.println(loc.getName());
 			for (EntityTile ent : loc.getEntities()) {
 				System.out.println("\t"+ent.getName());
 			}
-		}
+		}*/
 		
 		//Move the player
 		boolean leftRoom = move(dir, self, cloc);
@@ -573,7 +573,6 @@ public class GameClass {
 				//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 				entity.alterPathBeginning(entity.getLocation());
 			}
-			moveToPlayer(entity);
 			newList.put(entity, entity.getTicks());
 			for (EntityTile other : unfrozenEntities.keySet()) {
 				other.setTicks(other.getTicks()-ticks);
@@ -587,48 +586,50 @@ public class GameClass {
 		mainImage.redrawMap();
 	}
 	
-	public static boolean move(Direction dir, EntityTile entTile, Location loc) {
-		byte x = (byte) entTile.getX();
-		byte y = (byte) entTile.getY();
+	public static boolean move(Direction dir, EntityTile entity, Location loc) {
+		//TODO - replace the location parameter, replace it with this line
+		//Location loc = entity.getLocation();
+		byte x = (byte) entity.getX();
+		byte y = (byte) entity.getY();
 		short xy = (short) (x + (y << 8));
-		byte z = entTile.getZ();
+		byte z = entity.getZ();
 		//First, check and see if it has an entrance listed.
-		if (entTile.getEntrance()!=null) {
+		if (entity.getEntrance()!=null) {
 			//If it does, compare directions.
-			Entrance entrance = entTile.getEntrance();
+			Entrance entrance = entity.getEntrance();
 			if (entrance.getDirection()==dir) {
 				//If they are equal, move through the entrance.
-				cloc.removeEntity(entTile);
+				cloc.removeEntity(entity);
 				cloc = entrance.getLinkedEntrance().getLocation();
-				cloc.addEntity(entTile);
+				cloc.addEntity(entity);
 				mainImage.setCurrentLocation(cloc);
-				print(entTile.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
-				entTile.setLocation(cloc);
+				print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
+				entity.setLocation(cloc);
 				byte d;
 				switch (entrance.getDirection()) {
 				case NORTH:
 					//Work out the difference in x positions
 					d = (byte) (cloc.getX()-loc.getX());
-					entTile.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
+					entity.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
 					break;
 				case SOUTH:
 					d = (byte) (cloc.getX()-loc.getX());
-					entTile.setCoords((byte) (x-d), (byte) 0, z);
+					entity.setCoords((byte) (x-d), (byte) 0, z);
 					break;
 				case WEST:
 					d = (byte) (cloc.getY()-loc.getY());
-					entTile.setCoords((byte) 0, (byte) (y-d), z);
+					entity.setCoords((byte) 0, (byte) (y-d), z);
 					break;
 				case EAST:
 					d = (byte) (cloc.getY()-loc.getY());
-					entTile.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
+					entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 					break;
 				}
-				entTile.setNewEntrance(entrance.getLinkedEntrance());
+				entity.setNewEntrance(entrance.getLinkedEntrance());
 				return true;
 			} else if (entrance.getDirection().getOppositeDirection()==dir) {
 				//If they are opposite, remove this entrance and carry on.
-				entTile.setNewEntrance(null);
+				entity.setNewEntrance(null);
 			}
 		}
 		if (x>0 && x<loc.getW()-1 && y>0 && y<loc.getH()-1) {
@@ -642,14 +643,14 @@ public class GameClass {
 			} else {
 				Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
 				if (otherEntTile.getLeft()) {
-					print("The "+entTile.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
-					fight(entTile, otherEntTile.getRight());
+					print("The "+entity.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
+					fight(entity, otherEntTile.getRight());
 				} else {
-					entTile.setCoords(newxy, z);
-					if (entTile==self) {
-						print("You move "+dir+" to "+entTile.getX()+", "+entTile.getY());
+					entity.setCoords(newxy, z);
+					if (entity==self) {
+						print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
 					} else {
-						print("The "+entTile.getName()+" moves "+dir+" to "+entTile.getX()+", "+entTile.getY());
+						print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
 					}
 				}
 			}
@@ -664,7 +665,6 @@ public class GameClass {
 			search:
 			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
 				Entrance entrance = entry.getValue();
-				System.out.println(entrance.getDirection());
 				//Make sure the current location is within the entrance
 				if (	   entrance.getLocB().getY()>=y && entrance.getLocA().getY()<=y
 						&& entrance.getLocA().getX()<=x && entrance.getLocB().getX()>=x) {
@@ -677,29 +677,36 @@ public class GameClass {
 			if (found) {
 				//If the direction happens to be the same, move to the new location immediately.
 				if (foundEntrance.getDirection()==dir) {
-					cloc.removeEntity(entTile);
-					cloc = foundEntrance.getLinkedEntrance().getLocation();
-					cloc.addEntity(entTile);
-					mainImage.setCurrentLocation(cloc);
-					entTile.setLocation(cloc);
-					print(entTile.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
+					//If the entity moving is the player, change cloc
+					if (entity.getName()=="Player") {
+						cloc.removeEntity(entity);
+						cloc = foundEntrance.getLinkedEntrance().getLocation();
+						cloc.addEntity(entity);
+						mainImage.setCurrentLocation(cloc);
+					} else {
+						//Otherwise remove the entity from its current location and move it to the new location
+						Location newLoc = foundEntrance.getLinkedEntrance().getLocation();
+						entity.getLocation().removeEntity(entity);
+						newLoc.addEntity(entity);
+					}
+					print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
 					byte d;
 					switch (foundEntrance.getDirection()) {
 					case NORTH:
 						d = (byte) (cloc.getX()-loc.getX());
-						entTile.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
+						entity.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
 						break;
 					case SOUTH:
 						d = (byte) (cloc.getX()-loc.getX());
-						entTile.setCoords((byte) (x-d), (byte) 0, z);
+						entity.setCoords((byte) (x-d), (byte) 0, z);
 						break;
 					case WEST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entTile.setCoords((byte) 0, (byte) (y-d), z);
+						entity.setCoords((byte) 0, (byte) (y-d), z);
 						break;
 					case EAST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entTile.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
+						entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 						break;
 					}
 					return true;
@@ -707,7 +714,7 @@ public class GameClass {
 					//If the entity does not go through the door, just perform the movement.
 					if (foundEntrance.getDirection().getOppositeDirection()!=dir) {
 						//If the direction is not opposite, it is still in the entrance, so set that as the current entrance.
-						entTile.setNewEntrance(foundEntrance);
+						entity.setNewEntrance(foundEntrance);
 					}
 					//Else just set the entity's current entrance as this one (as long as it's not opposite), to speed up finding it next time, as well as actually moving over there.
 					short newxy = (short) (xy+dir.getNumVal());
@@ -717,14 +724,14 @@ public class GameClass {
 					} else {
 						Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
 						if (otherEntTile.getLeft()) {
-							print("The "+entTile.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
-							fight(entTile, otherEntTile.getRight());
+							print("The "+entity.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
+							fight(entity, otherEntTile.getRight());
 						} else {
-							entTile.setCoords(newxy, z);
-							if (entTile==self) {
-								print("You move "+dir+" to "+entTile.getX()+", "+entTile.getY());
+							entity.setCoords(newxy, z);
+							if (entity==self) {
+								print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
 							} else {
-								print("The "+entTile.getName()+" moves "+dir+" to "+entTile.getX()+", "+entTile.getY());
+								print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
 							}
 						}
 					}
@@ -740,6 +747,8 @@ public class GameClass {
 	}
 
 	public static void moveToEntrance(EntityTile entity, Entrance entrance) {
+		//If the entity isn't yet at the entrance, move towards it. If the entity is at the entrance, move right through it.
+		
 		//Check the orientation of the Entrance. If it is east/west, check the entity's y position. If it's above the entrance, moveTo the northernmost point.
 		//If it's below the entrance (plus size), moveTo the southernmost. If it's between, move east/west.
 		//Do the same with north/south and the x position.
@@ -750,9 +759,9 @@ public class GameClass {
 		Coord2D ca = entrance.getLocA();
 		Coord2D cb = entrance.getLocB();
 		int minX;
-		if (x<ca.getX()) {
+		if (x<=ca.getX()) {
 			minX = ca.getX();
-		} else if (x>cb.getX()) {
+		} else if (x>=cb.getX()) {
 			minX = cb.getX();
 		} else {
 			minX = x;
@@ -767,7 +776,13 @@ public class GameClass {
 			minY = y;
 		}
 		
-		moveTo(entity, new Coord3D(minX, minY, 0));
+		if (minX == x && minY == y) {
+			//If the entity is at the entrance, move straight through it.
+			move(entrance.getDirection(), entity, entity.getLocation());
+		} else {
+			//Otherwise move towards it
+			moveTo(entity, new Coord3D(minX, minY, 0));
+		}
 	}
 	public static void moveToPlayer(EntityTile entity) {
 		moveTo(entity, self.getCoords());
@@ -782,15 +797,15 @@ public class GameClass {
 		
 		if (Math.abs(x)>=Math.abs(y)) {
 			if (x<0) {
-				move(Direction.WEST, entity, cloc);
+				move(Direction.WEST, entity, entity.getLocation());
 			} else {
-				move(Direction.EAST, entity, cloc);
+				move(Direction.EAST, entity, entity.getLocation());
 			}
 		} else {
 			if (y<0) {
-				move(Direction.SOUTH, entity, cloc);
+				move(Direction.SOUTH, entity, entity.getLocation());
 			} else {
-				move(Direction.NORTH, entity, cloc);
+				move(Direction.NORTH, entity, entity.getLocation());
 			}
 		}	
 	}
@@ -807,7 +822,7 @@ public class GameClass {
 				Path path = entity.getPath();
 				aimingFor = path.get(0);
 			} catch (NullPointerException e) {
-				System.out.println("Path is null - creating it.");
+				print("Path is null - creating it.");
 				
 				//Work out which linked location to aim for, and take the best route to there.
 				Location currentLocation = entity.getLocation();
@@ -822,9 +837,10 @@ public class GameClass {
 				//For each path, we want to check the last index.
 				Path path = searchLocations.pop();
 				Location location = path.peekLast();
+				Location target = self.getLocation();
 				
 				search:
-				while (location != self.getLocation()) {
+				while (location != target) {
 					//If it isn't, in a while loop, get all of the attachments of it, put them on the end of the list, and get the first one and do the same thing.
 					//You already have the path to expand - expand it.
 					for (Location attachedLoc : location.getAttached().keySet()) {
@@ -852,6 +868,12 @@ public class GameClass {
 			Entrance entrance = entity.getLocation().findEntranceFor(aimingFor);
 			if (entrance != null) {
 				moveToEntrance(entity, entrance);
+			} else {
+				print("This should never be reached - here's a dump of all the relevant information.\nEntity:\n"+entity+"\nLocation:\n"+entity.getLocation()+"\nEntrance list:");
+				for (Entrance entranceP : entity.getLocation().getAttached().values()) {
+					print(entranceP);
+				}
+				print("\nLocation it is aiming for:\n"+aimingFor);
 			}
 			return false;
 		}
@@ -1585,6 +1607,9 @@ public class GameClass {
 		System.out.println(c);	
 	}
 	
+	public static void print(Object o) {
+		System.out.println(o);
+	}
 	
 	//TODO - put this and other things in a GameUtilities class
 	public static void floorify(int dimX, int dimY, int centreX, int centreY, Map map) {

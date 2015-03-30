@@ -123,16 +123,14 @@ public class Corridor extends Location {
 	}
 
 	public String toString() {
-		return new String("Corridor:\n\tWidth: "+this.getW()+"\n\tHeight: "+this.getH()+"\n\tX position: "+this.getX()+"\n\tY position: "+this.getY());
+		return "Corridor named "+getName()+", which is of size ("+getW()+", "+getH()+"), at location ("+getX()+", "+getY()+")";
 	}
 	
-	//This method give an extra t tabs to the string - if, for example, you have a nested hierarchy in which this is an element. This method is used to convey it is within another structure.
-	public String toString(int t) {
-		String tabs = "";
-		//Create the desired number of tabs.
-		for (int i=0; i<t; i++) {
-			tabs += "\t";
+	public String stringEntrances() {
+		String str = "";
+		for (Entrance entrance : getAttached().values()) {
+			str += entrance+"\n";
 		}
-		return new String("Corridor:\n"+tabs+"Width: "+this.getW()+"\n"+tabs+"\tHeight: "+this.getH()+"\n"+tabs+"\tX position: "+this.getX()+"\n"+tabs+"\tY position: "+this.getY());
+		return str;
 	}
 }

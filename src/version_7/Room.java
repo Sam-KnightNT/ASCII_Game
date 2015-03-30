@@ -139,19 +139,9 @@ public class Room extends Location{
 	}
 	
 	public String toString() {
-		return new String("Room:\n\tWidth: "+this.getW()+"\n\tHeight: "+this.getH()+"\n\tX position: "+this.getX()+"\n\tY position: "+this.getY());
+		return "Room named "+getName()+", which is of size ("+getW()+", "+getH()+"), at location ("+getX()+", "+getY()+")";
 	}
 	
-	//This method give an extra t tabs to the string - if, for example, you have a nested hierarchy in which this is an element. This method is used to convey it is within another structure.
-	public String toString(int t) {
-		String tabs = "";
-		//Create the desired number of tabs.
-		for (int i=0; i<t; i++) {
-			tabs += "\t";
-		}
-		return new String("Room:\n"+tabs+"Width: "+this.getW()+"\n"+tabs+"\tHeight: "+this.getH()+"\n"+tabs+"\tX position: "+this.getX()+"\n"+tabs+"\tY position: "+this.getY());
-	}
-
 	public void setCorner(int x, int y) {
 		setCorner((byte) x, (byte) y);
 	}

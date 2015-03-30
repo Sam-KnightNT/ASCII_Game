@@ -47,5 +47,8 @@ public class Tile {
 		return tile.isWalkable();
 	}
 	
+	public String toString() {
+		return tile.getName();
+	}
 	
 }
