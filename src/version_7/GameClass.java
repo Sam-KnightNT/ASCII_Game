@@ -155,42 +155,42 @@ public class GameClass {
 		Room room = new Room(9, 6, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
 		Room room2 = new Room(7, 8, 17, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
-		//Room room4 = new Room(7, 8, 1, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
+		Room room4 = new Room(7, 8, 1, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
 		Room room5 = new Room(24, 12, 0, 0, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
 		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 8), new Coord2D(7, 8)));
 		entrances.add(new Entrance(Direction.WEST, new Coord2D(8, 6), new Coord2D(8, 8)));
 		entrances.add(new Entrance(Direction.NORTH, new Coord2D(3, 0), new Coord2D(6, 0)));
-		//entrances.add(new Entrance(Direction.EAST, new Coord2D(0, 4), new Coord2D(0, 6)));
+		entrances.add(new Entrance(Direction.EAST, new Coord2D(0, 4), new Coord2D(0, 6)));
 
 		Corridor corridor = new Corridor(9, 9, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		corridor.setName("Corridor 1");
 		room.setName("Room 1");
 		room2.setName("Room 2");
 		room3.setName("Room 3");
-		//room4.setName("Room 4");
+		room4.setName("Room 4");
 		room5.setName("Room 5");
-		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
-		//unfrozenEntities.put(mino, 100);
-		//room.addEntity(mino);
+		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		unfrozenEntities.put(mino, 100);
+		room.addEntity(mino);
 		attachTwoLocations(corridor, room, entrances.get(0));
 		attachTwoLocations(corridor, room2, entrances.get(1));
 		attachTwoLocations(corridor, room3, entrances.get(2));
-		//attachTwoLocations(corridor, room4, entrances.get(3));
+		attachTwoLocations(corridor, room4, entrances.get(3));
 		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4, room3));
 		
 		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze Floor"));
-		//room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
+		room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
 		room.pillarCorners(tiles.get("Marble Pillar"));
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Room 3", room3);
-		//locations.put("Room 4", room4);
+		locations.put("Room 4", room4);
 		locations.put("Room 5", room5);
 		locations.put("Corridor 1", corridor);
 		
@@ -609,19 +609,19 @@ public class GameClass {
 				case NORTH:
 					//Work out the difference in x positions
 					d = (byte) (cloc.getX()-loc.getX());
-					entTile.setCoords((byte) (x+d), (byte) (cloc.getH()-1), z);
+					entTile.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
 					break;
 				case SOUTH:
 					d = (byte) (cloc.getX()-loc.getX());
-					entTile.setCoords((byte) (x+d), (byte) 0, z);
+					entTile.setCoords((byte) (x-d), (byte) 0, z);
 					break;
 				case WEST:
 					d = (byte) (cloc.getY()-loc.getY());
-					entTile.setCoords((byte) (cloc.getW()-1), (byte) (y+d), z);
+					entTile.setCoords((byte) 0, (byte) (y-d), z);
 					break;
 				case EAST:
 					d = (byte) (cloc.getY()-loc.getY());
-					entTile.setCoords((byte) 0, (byte) (y+d), z);
+					entTile.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 					break;
 				}
 				entTile.setNewEntrance(entrance.getLinkedEntrance());
@@ -695,11 +695,11 @@ public class GameClass {
 						break;
 					case WEST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entTile.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
+						entTile.setCoords((byte) 0, (byte) (y-d), z);
 						break;
 					case EAST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entTile.setCoords((byte) 0, (byte) (y-d), z);
+						entTile.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 						break;
 					}
 					return true;
