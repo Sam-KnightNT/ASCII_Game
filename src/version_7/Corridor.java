@@ -14,8 +14,6 @@ public class Corridor extends Location {
 	public Corridor(byte w, byte h, byte x, byte y, TileType floor, TileType wall) {
 		this.setW(w);
 		this.setH(h);
-		this.setX(x);
-		this.setY(y);
 		this.setCorner(x, y);
 		setTiles(new Tile[w][h]);
 		//Fill it all in with wall tiles
@@ -112,10 +110,10 @@ public class Corridor extends Location {
 							setTile(r, getH()-(l+1), floor);
 							break;
 						case WEST:
-							setTile(l, r, floor);
+							setTile(getW()-(l+1), r, floor);
 							break;
 						case EAST:
-							setTile(getW()-(l+1), r, floor);
+							setTile(l, r, floor);
 							break;
 						}
 					}

@@ -152,24 +152,24 @@ public class GameClass {
 		String command = "";
 		
 		//Construct 2 rooms and a corridor to connect them
-		Room room = new Room(9, 6, 6, 11, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
-		Room room2 = new Room(7, 8, 15, 16, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
-		Room room3 = new Room(7, 8, 7, 28, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
-		Room room4 = new Room(7, 8, -1, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
-		Room room5 = new Room(24, 12, 12, 40, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
+		Room room = new Room(9, 6, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
+		Room room2 = new Room(7, 8, 17, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
+		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
+		//Room room4 = new Room(7, 8, 1, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
+		Room room5 = new Room(24, 12, 0, 0, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
 		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 9), new Coord2D(7, 9)));
 		entrances.add(new Entrance(Direction.WEST, new Coord2D(9, 6), new Coord2D(9, 8)));
 		entrances.add(new Entrance(Direction.NORTH, new Coord2D(3, 0), new Coord2D(6, 0)));
-		entrances.add(new Entrance(Direction.EAST, new Coord2D(0, 4), new Coord2D(0, 6)));
+		//entrances.add(new Entrance(Direction.EAST, new Coord2D(0, 4), new Coord2D(0, 6)));
 
 		Corridor corridor = new Corridor(9, 9, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		corridor.setName("Corridor 1");
 		room.setName("Room 1");
 		room2.setName("Room 2");
 		room3.setName("Room 3");
-		room4.setName("Room 4");
+		//room4.setName("Room 4");
 		room5.setName("Room 5");
 		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
 		unfrozenEntities.put(mino, 100);
@@ -177,20 +177,20 @@ public class GameClass {
 		attachTwoLocations(corridor, room, entrances.get(0));
 		attachTwoLocations(corridor, room2, entrances.get(1));
 		attachTwoLocations(corridor, room3, entrances.get(2));
-		attachTwoLocations(corridor, room4, entrances.get(3));
+		//attachTwoLocations(corridor, room4, entrances.get(3));
 		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4, room3));
 		
 		corridor.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze Floor"));
-		room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
+		//room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
 		room.pillarCorners(tiles.get("Marble Pillar"));
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Room 3", room3);
-		locations.put("Room 4", room4);
+		//locations.put("Room 4", room4);
 		locations.put("Room 5", room5);
 		locations.put("Corridor 1", corridor);
 		
@@ -1673,6 +1673,9 @@ public class GameClass {
 		boolean cond1;
 		boolean cond2;
 		boolean cond3;
+		//TODO - implement cond4, which is true iff the first location is wide enough for the entrance
+		//TODO - generalise cond1, 2, 3 and 4 so I don't need different things for each direction
+		boolean cond4;
 		Coord2D entrA;
 		Coord2D entrB;
 		Entrance entrance2 = new Entrance();
@@ -1681,29 +1684,29 @@ public class GameClass {
 			cond1 = (-relY==loc2.getH());
 			cond2 = (relX < locA.getX());
 			cond3 = (relX+loc2.getW() > locB.getX());
-			entrA = new Coord2D(loc2.getH()-1, relY+entrance.getLocA().getY());
-			entrB = new Coord2D(loc2.getH()-1, relY+entrance.getLocB().getY());
+			entrA = new Coord2D(entrance.getLocA().getX()-relX, loc2.getH()-1);
+			entrB = new Coord2D(entrance.getLocB().getX()-relX, loc2.getH()-1);
 			break;
 		case SOUTH:
 			cond1 = (relY==loc1.getH());
 			cond2 = (relX < locA.getX());
 			cond3 = (relX+loc2.getW() > locB.getX());
-			entrA = new Coord2D(0, relY+entrance.getLocA().getY());
-			entrB = new Coord2D(0, relY+entrance.getLocB().getY());
+			entrA = new Coord2D(entrance.getLocA().getX()-relX, 0);
+			entrB = new Coord2D(entrance.getLocB().getX()-relX, 0);
 			break;
 		case EAST:
-			cond1 = (relX==loc1.getW());
-			cond2 = (relY < locA.getY());
-			cond3 = (relY+loc2.getH() > locB.getY());
-			entrA = new Coord2D(relX+entrance.getLocA().getX(), loc2.getW()-1);
-			entrB = new Coord2D(relX+entrance.getLocB().getX(), loc2.getW()-1);
-			break;
-		case WEST:
 			cond1 = (-relX==loc2.getW());
 			cond2 = (relY < locA.getY());
 			cond3 = (relY+loc2.getH() > locB.getY());
-			entrA = new Coord2D(relX+entrance.getLocA().getX(), 0);
-			entrB = new Coord2D(relX+entrance.getLocB().getX(), 0);
+			entrA = new Coord2D(loc2.getW()-1, entrance.getLocA().getY()-relY);
+			entrB = new Coord2D(loc2.getW()-1, entrance.getLocB().getY()-relY);
+			break;
+		case WEST:
+			cond1 = (relX==loc1.getW());
+			cond2 = (relY < locA.getY());
+			cond3 = (relY+loc2.getH() > locB.getY());
+			entrA = new Coord2D(0, entrance.getLocA().getY()-relY);
+			entrB = new Coord2D(0, entrance.getLocB().getY()-relY);
 			break;
 		default:
 			cond1 = false;
@@ -1719,14 +1722,14 @@ public class GameClass {
 			loc1.addAttachment(loc2, entrance);
 			//Modify the Entrance here to contain the relative location
 			loc2.addAttachment(loc1, entrance2);
-			print("Valid connection between "+loc1+" and "+loc2);
+			print("Valid connection between\n"+loc1+"\nand\n"+loc2);
 			//TODO next time - figure out why all entrances created are valid, but only the one from one Room to another gets drawn
 		} else {
-			String printStr = "Invalid connection between "+loc1+" and "+loc2+": ";
+			String printStr = "Invalid connection between\n"+loc1+"\nand\n"+loc2+"\nfrom entrance\n"+entrance+"\nbecause: ";
 			char direc = dir.getDirectionality();
 			char oppDirec = dir.getDirectionality()=='X' ? 'Y' : 'X';
-			String sign = (dir==Direction.NORTH || dir==Direction.WEST) ? "negative " : "positive ";
-			String oppSign = (dir==Direction.NORTH || dir==Direction.WEST) ? "positive " : "negative ";
+			String sign = (dir==Direction.SOUTH || dir==Direction.WEST) ? "negative " : "positive ";
+			String oppSign = (dir==Direction.SOUTH || dir==Direction.WEST) ? "positive " : "negative ";
 			if (!cond1) {
 				printStr += "the locations were not aligned in the "+direc+" direction.";
 			} else if (!cond2) {
@@ -1737,6 +1740,7 @@ public class GameClass {
 				printStr += "something completely weird went on and I don't know what. The locations are as follows: "+loc1.toString()+", and "+loc2.toString()+". The entrance is "+entrance.toString();
 			}
 			print(printStr);
+			System.exit(1);
 		}
 	}
 }

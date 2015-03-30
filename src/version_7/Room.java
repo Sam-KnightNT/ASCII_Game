@@ -47,8 +47,6 @@ public class Room extends Location{
 	public Room(byte w, byte h, byte x, byte y) {
 		this.setW(w);
 		this.setH(h);
-		this.setX(x);
-		this.setY(y);
 		this.setCorner(x, y);
 		setTiles(new Tile[w][h]);
 	}
@@ -110,19 +108,15 @@ public class Room extends Location{
 				switch (entrance.getDirection()) {
 				case NORTH:
 					setTile(s, 0, floorTileType);
-					System.out.println("Drawing "+this.getName()+" at "+s+", 0. Direction "+entrance.getDirection());
 					break;
 				case SOUTH:
 					setTile(s, getH()-1, floorTileType);
-					System.out.println("Drawing "+this.getName()+" at "+s+", "+(getH()-1)+". Direction "+entrance.getDirection());
 					break;
 				case WEST:
-					setTile(0, s, floorTileType);
-					System.out.println("Drawing "+this.getName()+" at 0, "+s+". Direction "+entrance.getDirection());
+					setTile(getW()-1, s, floorTileType);
 					break;
 				case EAST:
-					setTile(getW()-1, s, floorTileType);
-					System.out.println("Drawing "+this.getName()+" at "+(getH()-1)+", "+s+". Direction "+entrance.getDirection());
+					setTile(0, s, floorTileType);
 					break;
 				}
 			}
@@ -156,5 +150,9 @@ public class Room extends Location{
 			tabs += "\t";
 		}
 		return new String("Room:\n"+tabs+"Width: "+this.getW()+"\n"+tabs+"\tHeight: "+this.getH()+"\n"+tabs+"\tX position: "+this.getX()+"\n"+tabs+"\tY position: "+this.getY());
+	}
+
+	public void setCorner(int x, int y) {
+		setCorner((byte) x, (byte) y);
 	}
 }

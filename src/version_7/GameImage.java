@@ -184,8 +184,8 @@ public class GameImage extends JPanel {
 			offsetY = (int) ((getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
 		//}
 		for (Location location : locations) {
-			int offsetX2 = (cloc.getX()-location.getX())*xUnit;
-			int offsetY2 = (cloc.getY()-location.getY())*yUnit;
+			int offsetX2 = (location.getX()-cloc.getX())*xUnit;
+			int offsetY2 = (location.getY()-cloc.getY())*yUnit;
 			byte h = location.getH();
 			byte w = location.getW();
 			for (byte y=0; y<h; y++) {

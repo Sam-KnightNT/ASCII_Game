@@ -14,8 +14,6 @@ public abstract class Location {
 	private String name;
 	private byte width;
 	private byte height;
-	private byte x;
-	private byte y;
 	
 	public HashMap<Location, Entrance> getAttached() {
 		return attachedLocs;
@@ -46,10 +44,10 @@ public abstract class Location {
 	}
 	
 	public byte getX() {
-		return x;
+		return corner.getX();
 	}
 	public byte getY() {
-		return y;
+		return corner.getY();
 	}
 	public byte getW() {
 		return width;
@@ -62,10 +60,10 @@ public abstract class Location {
 	}
 	
 	public void setX(byte x) {
-		this.x = x;
+		corner = new Coord2D(x, corner.getY());
 	}
 	public void setY(byte y) {
-		this.y = y;
+		corner = new Coord2D(corner.getX(), y);
 	}
 	public void setW(byte w) {
 		width = w;
@@ -83,7 +81,12 @@ public abstract class Location {
 		tiles[x][y] = new Tile(tile);
 	}
 	public void setTile(int x, int y, TileType tile) {
-		tiles[x][y] = new Tile(tile);
+		try {
+			tiles[x][y] = new Tile(tile);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			e.printStackTrace();
+			//System.exit(1);
+		}
 	}
 	public void setTiles(Tile[][] tiles) {
 		this.tiles = tiles;

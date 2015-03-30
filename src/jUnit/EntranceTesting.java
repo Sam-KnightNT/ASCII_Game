@@ -8,7 +8,19 @@ import version_7.*;
 
 public class EntranceTesting {
 
-
+	@Test
+	public void roomSetNewCorner() {
+		Room room1 = new Room(6, 6, 6, 6);
+		assertEquals(room1.getX(), 6);
+		assertEquals(room1.getY(), 6);
+		room1.setCorner(12, 14);
+		assertEquals(12, room1.getX());
+		assertEquals(14, room1.getY());
+		room1.setCorner(new Coord2D(4, 9));
+		assertEquals(4, room1.getX());
+		assertEquals(9, room1.getY());
+	}
+	
 	@Test
 	public void roomConnectionTestNorth() {
 		Room room1 = new Room(6, 6, 6, 6);
