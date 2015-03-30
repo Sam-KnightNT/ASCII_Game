@@ -159,8 +159,8 @@ public class GameClass {
 		Room room5 = new Room(24, 12, 0, 0, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
-		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 9), new Coord2D(7, 9)));
-		entrances.add(new Entrance(Direction.WEST, new Coord2D(9, 6), new Coord2D(9, 8)));
+		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 8), new Coord2D(7, 8)));
+		entrances.add(new Entrance(Direction.WEST, new Coord2D(8, 6), new Coord2D(8, 8)));
 		entrances.add(new Entrance(Direction.NORTH, new Coord2D(3, 0), new Coord2D(6, 0)));
 		//entrances.add(new Entrance(Direction.EAST, new Coord2D(0, 4), new Coord2D(0, 6)));
 
@@ -171,9 +171,9 @@ public class GameClass {
 		room3.setName("Room 3");
 		//room4.setName("Room 4");
 		room5.setName("Room 5");
-		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
-		unfrozenEntities.put(mino, 100);
-		room.addEntity(mino);
+		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		//unfrozenEntities.put(mino, 100);
+		//room.addEntity(mino);
 		attachTwoLocations(corridor, room, entrances.get(0));
 		attachTwoLocations(corridor, room2, entrances.get(1));
 		attachTwoLocations(corridor, room3, entrances.get(2));
@@ -197,7 +197,6 @@ public class GameClass {
 		cloc = locations.get("Corridor 1");
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 7, (byte) 0);
 		cloc.addEntity(self);
-		//cloc.addEntity(self);
 		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
 		mainImage.setSize(1040, 730);
 		SwingUtilities.invokeLater(new Runnable() {
@@ -688,19 +687,19 @@ public class GameClass {
 					switch (foundEntrance.getDirection()) {
 					case NORTH:
 						d = (byte) (cloc.getX()-loc.getX());
-						entTile.setCoords((byte) (x+d), (byte) (cloc.getH()-1), z);
+						entTile.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
 						break;
 					case SOUTH:
 						d = (byte) (cloc.getX()-loc.getX());
-						entTile.setCoords((byte) (x+d), (byte) 0, z);
+						entTile.setCoords((byte) (x-d), (byte) 0, z);
 						break;
 					case WEST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entTile.setCoords((byte) (cloc.getW()-1), (byte) (y+d), z);
+						entTile.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 						break;
 					case EAST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entTile.setCoords((byte) 0, (byte) (y+d), z);
+						entTile.setCoords((byte) 0, (byte) (y-d), z);
 						break;
 					}
 					return true;
