@@ -172,6 +172,7 @@ public class GameClass {
 		room4.setName("Room 4");
 		room5.setName("Room 5");
 		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 		unfrozenEntities.put(mino, 100);
 		room.addEntity(mino);
 		attachTwoLocations(corridor, room, entrances.get(0));
@@ -513,8 +514,10 @@ public class GameClass {
 		mainImage.setCurrentLocation(cloc);
 		//Change this to only repaint the small area being changed
 		frame.getContentPane().repaint();
-		//TODO - have pictorial representations of engravings, like the DF engravings. See jef's stream on 21/03/2015, about 2:10 in, for an example of engravings. Before the coffin guy gets possessed.
+		//TODO - have pictorial representations of engravings, like the DF engravings. See jef's stream on 21/03/2015 (http://www.twitch.tv/jefmajor/b/639760684)
+		//about 1:10 in, for an example of engravings. Before the coffin guy gets possessed.
 		//So, for example, "This is an image of "Yui8856" and bucklers. "Yui8856" is surrounded by the bucklers." would have an image of a red-haired, long-bearded dorf surrounded by bucklers.
+		//Yui is at 1:15:15
 		//You can have more control over the engravings - such as, plating the bucklers in iron, or making carved drawings/embossed drawings.
 	}
 	
@@ -599,10 +602,15 @@ public class GameClass {
 			Entrance entrance = entity.getEntrance();
 			if (entrance.getDirection()==dir) {
 				//If they are equal, move through the entrance.
-				cloc.removeEntity(entity);
-				cloc = entrance.getLinkedEntrance().getLocation();
-				cloc.addEntity(entity);
-				mainImage.setCurrentLocation(cloc);
+				if (entity.getName()=="Player") {
+					cloc.removeEntity(entity);
+					cloc = entrance.getLinkedEntrance().getLocation();
+					cloc.addEntity(entity);
+					mainImage.setCurrentLocation(cloc);
+				}
+				loc.removeEntity(entity);
+				loc = entrance.getLinkedEntrance().getLocation();
+				loc.addEntity(entity);
 				print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
 				entity.setLocation(cloc);
 				byte d;
@@ -688,6 +696,9 @@ public class GameClass {
 						Location newLoc = foundEntrance.getLinkedEntrance().getLocation();
 						entity.getLocation().removeEntity(entity);
 						newLoc.addEntity(entity);
+						if (entity.getPath().get(0)==newLoc) {
+							entity.updatePath();
+						}
 					}
 					print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
 					byte d;

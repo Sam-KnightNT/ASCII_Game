@@ -276,6 +276,11 @@ public class EntityTile implements Comparable<EntityTile> {
 		}
 	}
 	
+	public void updatePath() {
+		//Occurs when the entity moves through an entrance. Remove the first location in the path - it's got to there.
+		path.remove(0);
+	}
+	
 	public String toString() {
 		return (getName()+" in "+location.getName()+" at coordinates "+coords.toString());
 	}
