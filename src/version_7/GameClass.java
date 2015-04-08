@@ -931,7 +931,7 @@ public class GameClass {
 		for (int i=0; i<strs.length; i++) {
 			while(i<strs.length && !strs[i].trim().equals("end")) {
 				if (strs[i].trim().contains("item")) {
-					Item item = new Item();
+					ItemEquippable item = new ItemEquippable();
 					while(!strs[i].trim().equals("end")) {
 						strs[i] = strs[i].trim();
 						if (strs[i].contains("name:")) {
@@ -940,7 +940,7 @@ public class GameClass {
 						}
 						else if (strs[i].trim().contains("description:")) {
 							strs[i] = strs[i].replace("description: ", "");
-							item.addDescription(strs[i]);
+							item.setDescription(strs[i]);
 						}
 						else if (strs[i].contains("stats:")) {
 							i++;
@@ -1705,41 +1705,46 @@ public class GameClass {
 		Coord2D locA = entrance.getLocA();
 		Coord2D locB = entrance.getLocB();
 		Direction dir = entrance.getDirection();
+		//TODO - generalise cond1, entrA and entrB so I don't need different things for each direction
 		boolean cond1;
-		boolean cond2;
-		boolean cond3;
-		//TODO - implement cond4, which is true iff the first location is wide enough for the entrance
-		//TODO - generalise cond1, 2, 3 and 4 so I don't need different things for each direction
-		boolean cond4;
+		
+		//Is the entrance vertical, i.e. NORTH/SOUTH?
+		//	If so, these 2 conditions are only true iff the 2nd location begins left of the entrance, and ends to the right of it.
+		//	If not these 2 conditions are only true iff the 2nd location begins above the entrance, and ends below it.
+		boolean cond2 = dir.verticality() ?
+				(relX < locA.getX()):
+				(relY < locA.getY());
+		boolean cond3 = dir.verticality() ?
+				(relX+loc2.getW() > locB.getX()):
+				(relY+loc2.getH() > locB.getY());
+		
+		//Is the entrance vertical, i.e. NORTH/SOUTH?
+		//	If so, this is true iff both locations are wider than the entrance.
+		//	If not this is true iff both locations are taller than the entrance.
+		boolean cond4 = dir.verticality() ?
+				(loc1.getW() >= entrance.getWidth() && loc2.getW() >= entrance.getWidth()):
+				(loc1.getH() >= entrance.getWidth() && loc2.getH() >= entrance.getWidth());
 		Coord2D entrA;
 		Coord2D entrB;
 		Entrance entrance2 = new Entrance();
 		switch(dir) {
 		case NORTH:
 			cond1 = (-relY==loc2.getH());
-			cond2 = (relX < locA.getX());
-			cond3 = (relX+loc2.getW() > locB.getX());
 			entrA = new Coord2D(entrance.getLocA().getX()-relX, loc2.getH()-1);
 			entrB = new Coord2D(entrance.getLocB().getX()-relX, loc2.getH()-1);
 			break;
 		case SOUTH:
 			cond1 = (relY==loc1.getH());
-			cond2 = (relX < locA.getX());
-			cond3 = (relX+loc2.getW() > locB.getX());
 			entrA = new Coord2D(entrance.getLocA().getX()-relX, 0);
 			entrB = new Coord2D(entrance.getLocB().getX()-relX, 0);
 			break;
 		case EAST:
-			cond1 = (-relX==loc2.getW());
-			cond2 = (relY < locA.getY());
-			cond3 = (relY+loc2.getH() > locB.getY());
+			cond1 = (relX==loc1.getW());
 			entrA = new Coord2D(loc2.getW()-1, entrance.getLocA().getY()-relY);
 			entrB = new Coord2D(loc2.getW()-1, entrance.getLocB().getY()-relY);
 			break;
 		case WEST:
-			cond1 = (relX==loc1.getW());
-			cond2 = (relY < locA.getY());
-			cond3 = (relY+loc2.getH() > locB.getY());
+			cond1 = (-relX==loc2.getW());
 			entrA = new Coord2D(0, entrance.getLocA().getY()-relY);
 			entrB = new Coord2D(0, entrance.getLocB().getY()-relY);
 			break;
@@ -1750,7 +1755,7 @@ public class GameClass {
 			entrA = null;
 			entrB = null;
 		}
-		if (cond1 && cond2 && cond3) {
+		if (cond1 && cond2 && cond3 && cond4) {
 			entrance2.setInfo(entrance.getDirection().getOppositeDirection(), entrA, entrB);
 			entrance.setLinkedEntrance(entrance2);
 			entrance2.setLinkedEntrance(entrance);
@@ -1762,15 +1767,18 @@ public class GameClass {
 		} else {
 			String printStr = "Invalid connection between\n"+loc1+"\nand\n"+loc2+"\nfrom entrance\n"+entrance+"\nbecause: ";
 			char direc = dir.getDirectionality();
-			char oppDirec = dir.getDirectionality()=='X' ? 'Y' : 'X';
+			char oppDirec = dir.getOppositeDirectionality();
 			String sign = (dir==Direction.SOUTH || dir==Direction.WEST) ? "negative " : "positive ";
 			String oppSign = (dir==Direction.SOUTH || dir==Direction.WEST) ? "positive " : "negative ";
+			String widthStr = dir.verticality() ? "wide" : "tall";
 			if (!cond1) {
 				printStr += "the locations were not aligned in the "+direc+" direction.";
 			} else if (!cond2) {
 				printStr += "the first location is too far in the "+sign+oppDirec+" direction.";
 			} else if (!cond3) {
 				printStr += "the first location is too far in the "+oppSign+oppDirec+" direction.";
+			} else if (!cond4) {
+				printStr += "one of the locations is not "+widthStr+" enough.";
 			} else {
 				printStr += "something completely weird went on and I don't know what. The locations are as follows: "+loc1.toString()+", and "+loc2.toString()+". The entrance is "+entrance.toString();
 			}

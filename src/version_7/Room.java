@@ -72,6 +72,11 @@ public class Room extends Location{
 		this(w, h, x, y, floorTileType, wallTileType);
 		setAttachments(attachments);
 	}
+	
+	public Room(byte w, byte h, byte x, byte y, String name) {
+		this(w, h, x, y);
+		this.setName(name);
+	}
 
 	//Casting ints as bytes (using bytes saves a lot of space, as there will be a LOT of these coordinates flying around. It'll save 75% of the coordinate memory)
 	public Room(int w, int h, int x, int y) {
@@ -99,6 +104,11 @@ public class Room extends Location{
 	}
 	
 	
+	public Room(int w, int h, int x, int y, String name) {
+		this(w, h, x, y);
+		this.setName(name);
+	}
+
 	public void carveEntrancesWithCurrentAttachments(TileType floor) {
 		carveEntrances(new ArrayList<Entrance>(getAttached().values()), floor);
 	}

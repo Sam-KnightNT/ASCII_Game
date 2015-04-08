@@ -7,7 +7,7 @@ public enum Direction {
 	NORTH((short) -256), SOUTH((short) 256), EAST((short) -1), WEST((short) 1);
 	
 	private Direction opposite;
-	private char directionality;
+	private boolean isVertical;
 	private short numVal;
 
     static {
@@ -18,18 +18,29 @@ public enum Direction {
     }
     
     static {
-    	NORTH.directionality = 'Y';
-    	SOUTH.directionality = 'Y';
-    	EAST.directionality = 'X';
-    	WEST.directionality = 'X';
+    	NORTH.isVertical = true;
+    	SOUTH.isVertical = true;
+    	EAST.isVertical = false;
+    	WEST.isVertical = false;
     }
 
     public Direction getOppositeDirection() {
         return opposite;
     }
     
+    public boolean verticality() {
+    	return isVertical;
+    }
+    
+    public boolean horizontality() {
+    	return !isVertical;
+    }
+    
     public char getDirectionality() {
-    	return directionality;
+    	return isVertical ? 'Y' : 'X';
+    }
+    public char getOppositeDirectionality() {
+    	return isVertical ? 'X' : 'Y';
     }
     
     Direction(short numVal) {

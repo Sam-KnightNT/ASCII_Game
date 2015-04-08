@@ -179,6 +179,13 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	
 	public void pickupItem(Item item) {
+		System.out.println("Picked up item that may or may not be equippable");
+		this.addToInventory(item);
+		System.out.println(entity.getName()+" picked up "+item.getName());
+	}
+	
+	public void pickupItem(ItemEquippable item) {
+		System.out.println("Picked up equippable item");
 		this.addToInventory(item);
 		System.out.println(entity.getName()+" picked up "+item.getName());
 		for (Entry<String, Integer> stat:item.getAllStats().entrySet()) {
