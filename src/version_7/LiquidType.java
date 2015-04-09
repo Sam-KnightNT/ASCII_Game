@@ -3,31 +3,40 @@ package version_7;
 public class LiquidType {
 
 	//Should have drink effects (e.g. restore health, restore mana, modify stats) and touch effects (burn, poison)
+	//TODO - change drinkStat and touchStat to Stat objects - give the ability to either affect a stat or cause an effect (e.g. paralysis)
 	
-	private Pair<String, Integer> effect;
+	private String drinkEffect;
+	private String touchEffect;
 	private String name;
 	
-	public LiquidType(Pair<String, Integer> effect, String name) {
-		this.effect = effect;
+	//If there is just one stat given, assume it is intended to affect an entity on drinking.
+	public LiquidType(String drinkEffect, String name) {
+		this.drinkEffect = drinkEffect;
+		this.name = name;
+	}
+	
+	public LiquidType(String drinkEffect, String touchEffect, String name) {
+		this.drinkEffect = drinkEffect;
+		this.touchEffect = touchEffect;
 		this.name = name;
 	}
 
-	public Pair<String, Integer> getEffect() {
-		return effect;
+	public String getDrinkEffect() {
+		return drinkEffect;
 	}
 
-	public void setEffect(Pair<String, Integer> effect) {
-		this.effect = effect;
+	public void setDrinkEffect(String effect) {
+		this.drinkEffect = effect;
+	}
+	
+	public String getTouchEffect() {
+		return touchEffect;
 	}
 
-	public String getModifiedStat() {
-		return effect.getLeft();
+	public void setTouchEffect(String effect) {
+		this.touchEffect = effect;
 	}
-	
-	public int getAmountModified() {
-		return effect.getRight();
-	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -36,4 +45,7 @@ public class LiquidType {
 		this.name = name;
 	}
 	
+	public String toString() {
+		return name+": drinkEffect = "+drinkEffect+", touchEffect="+touchEffect+" on touch.";
+	}
 }

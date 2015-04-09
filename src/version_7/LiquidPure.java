@@ -4,8 +4,21 @@ public class LiquidPure extends Liquid {
 
 	private LiquidType type;
 	
-	public LiquidPure(int concentration, LiquidType type) {
+	//If not given a concentration, assume 100%
+	public LiquidPure(LiquidType type, int volume) {
+		super(volume);
+		this.type = type;
+	}
+	
+	//If not given a colume, assume 1 litre
+	public LiquidPure(LiquidType type, double concentration) {
 		super(concentration);
+		this.type = type;
+	}
+	
+	//Main constructor
+	public LiquidPure(LiquidType type, double concentration, int volume) {
+		super(concentration, volume);
 		this.type = type;
 	}
 

@@ -11,23 +11,50 @@ public class Liquid extends Item {
 	//Volume of liquid is in millilitres
 	private int volume;
 	
+	//Default constructor - 0 volume, 100% concentration
+	public Liquid() {
+		this.volume = 0;
+		this.concentration = 100;
+	}
+	
 	//Create 1 litre of liquid
 	public Liquid(double concentration) {
-		this.concentration = concentration;
-		this.volume = 1000;
+		if (concentration>100) {
+			System.out.println("Error: liquid concentration cannot be greater then 100%. Defaulting to 100%.");
+			this.concentration = 100.0;
+		} else {
+			this.concentration = concentration;
+			this.volume = 1000;
+		}
 	}
 	
 	public Liquid(double concentration, int volume) {
-		this.concentration = concentration;
+		if (concentration>100) {
+			System.out.println("Error: liquid concentration cannot be greater then 100%. Defaulting to 100%.");
+			this.concentration = 100.0;
+		} else {
+			this.concentration = concentration;
+			this.volume = volume;
+		}
+	}
+	
+	//Create 100% pure liquid of this volume
+	public Liquid(int volume) {
 		this.volume = volume;
+		this.concentration = 100;
 	}
 
 	public double getConcentration() {
 		return concentration;
 	}
 
-	public void setConcentration(double concentration) {
-		this.concentration = concentration;
+	public void setConcentration(double concentration)  {
+		if (concentration>100) {
+			System.out.println("Error: liquid concentration cannot be greater then 100%. Defaulting to 100%.");
+			this.concentration = 100.0;
+		} else {
+			this.concentration = concentration;
+		}
 	}
 	
 	public int getVolume() {
@@ -39,12 +66,16 @@ public class Liquid extends Item {
 	}
 
 	public boolean isWater() {
-		return (concentration==0);
+		return Math.abs(concentration)<0.0000001;
+	}
+	
+	public boolean isPure() {
+		return Math.abs(100-concentration)<0.0000001;
 	}
 	
 	public void mixWith(double concentration, int volume) {
-		//The volumes are simply added to each other, but the concentrations are a bit harder to calculate.
-		//They should be a weighted average of the concentrations, depending on the volumes. So...
+		//The volumes are simply added to each other
+		//The concentrations are averaged, weighted by the volumes
 		int newVolume = this.volume + volume;
 		this.concentration = ((this.volume*this.concentration) + (volume*concentration)) / newVolume;
 		this.volume = newVolume;
