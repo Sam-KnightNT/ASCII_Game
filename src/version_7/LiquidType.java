@@ -46,6 +46,6 @@ public class LiquidType {
 	}
 	
 	public String toString() {
-		return name+": drinkEffect = "+drinkEffect+", touchEffect="+touchEffect+" on touch.";
+		return name+": drinkEffect = "+drinkEffect+", touchEffect = "+touchEffect+".";
 	}
 }

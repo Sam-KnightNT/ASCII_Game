@@ -73,6 +73,10 @@ public class Liquid extends Item {
 		return Math.abs(100-concentration)<0.0000001;
 	}
 	
+	public double getWaterContent() {
+		return volume*(1-(concentration/100));
+	}
+	
 	public void mixWith(double concentration, int volume) {
 		//The volumes are simply added to each other
 		//The concentrations are averaged, weighted by the volumes

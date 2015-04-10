@@ -24,6 +24,36 @@ public class LiquidMixture extends Liquid {
 		super(concentration, types.values().stream().mapToInt(Integer::intValue).sum());
 		this.types = types;
 	}
+	
+	public LiquidMixture(LiquidType[] liquids, int[] volumes, double concentration) {
+		types = new HashMap<LiquidType, Integer>();
+		int noTypes = liquids.length;
+		int noVols = volumes.length;
+		this.setConcentration(concentration);
+		if (noTypes > noVols) {
+			System.out.println("Liquid mixture created has more types than it does volumes for them. Here is a list of each: ");
+			for (int i=0; i<noVols; i++) {
+				System.out.println("Type "+liquids[i]+" has volume "+volumes[i]);
+				this.addConstituent(liquids[i], volumes[i]);
+			}
+			for (int i=noVols; i<noTypes; i++) {
+				System.out.println("Type without volume: "+liquids[i]);
+			}
+		} else if (noVols > noTypes) {
+			System.out.println("Liquid mixture created has less types than it does volumes for them. Here is a list of each: ");
+			for (int i=0; i<noVols; i++) {
+				System.out.println("Type "+liquids[i]+" has volume "+volumes[i]);
+				this.addConstituent(liquids[i], volumes[i]);
+			}
+			for (int i=noVols; i<noTypes; i++) {
+				System.out.println("Volume without type: "+volumes[i]);
+			}
+		} else {
+			for (int i=0; i<noTypes; i++) {
+				this.addConstituent(liquids[i], volumes[i]);
+			}
+		}
+	}
 
 	public HashMap<LiquidType, Integer> getConstituents() {
 		return types;
@@ -56,7 +86,12 @@ public class LiquidMixture extends Liquid {
 	public void mixWith(LiquidMixture mixture) {
 		super.mixWith(mixture);
 		for (Entry<LiquidType, Integer> liquid : mixture.getConstituents().entrySet()) {
-			//You have the volume of each of these
+			//If it exists, add to it. If not, create it.
+			if (types.containsKey(liquid.getKey())) {
+				types.put(liquid.getKey(), liquid.getValue()+types.get(liquid.getKey()));
+			} else {
+				types.put(liquid.getKey(), liquid.getValue());
+			}
 		}
 	}
 	

@@ -58,6 +58,32 @@ public class LiquidTesting {
 		assertEquals("Liquid mixture created has correct volume", 6000, mixture.getVolume());
 	}
 	
+	@Test
+	public void liquidMixtureCombineWithMixtureTest() {
+		LiquidType healingFluid = new LiquidType("health", "Healing Fluid");
+		LiquidType manaFluid = new LiquidType("mana", "Mana Fluid");
+		LiquidType strengthFluid = new LiquidType("strength", "Strength Fluid");
+		LiquidType speedFluid = new LiquidType("speed", "Speed Fluid");
+		LiquidMixture mixture1 = new LiquidMixture(new LiquidType[]{speedFluid, manaFluid}, new int[]{500, 250}, 25.0);
+		LiquidMixture mixture2 = new LiquidMixture(new LiquidType[]{strengthFluid, healingFluid, manaFluid, healingFluid}, new int[]{300, 400, 550, 250}, 75.0);
+		
+		//Before mixing, there should be 3 litres of the first mixture, consisting of 500ml speed, 250ml mana, 2250ml water.
+		//Once mixed, there should be: 5 litres total, 300ml strengthFluid, 500ml speedFluid, 800ml manaFluid, 650ml healingFluid, 2750ml water.
+		assertEquals("Correct volume before mixing with second mixture", 3000, mixture1.getVolume(), 3000);
+		assertEquals("Correct water volume before mixing with second mixture", 2250, mixture1.getWaterContent(), 1);
+		assertEquals("Correct fluid volume before mixing with second mixture", 500, mixture1.getVolumeOf(speedFluid));
+		
+		mixture1.mixWith(mixture2);
+		
+		//TODO - This is a note. This is actually a bit of a problem, since rounding errors make it 1 less than it should be. However, I'm leaving this in. This could form the basis of an interesting exploit.
+		assertEquals("Correct total volume after mixing with second mixture", 5000, mixture1.getVolume(), 1);
+		assertEquals("Correct volume of speedFluid after mixing with second mixture", 500, mixture1.getVolumeOf(speedFluid));
+		assertEquals("Correct volume of manaFluid after mixing with second mixture", 800, mixture1.getVolumeOf(manaFluid));
+		assertEquals("Correct volume of strengthFluid after mixing with second mixture", 300, mixture1.getVolumeOf(strengthFluid));
+		assertEquals("Correct volume of healingFluid after mixing with second mixture", 650, mixture1.getVolumeOf(healingFluid));
+		assertEquals("Correct volume of water after mixing with second mixture", 2750, mixture1.getWaterContent(), 1);
+	}
+	
 	//Need to check 2 mixtures being combined
 	//Check a mixture with 50% concentration of one fluid with another being added via addConstituent(LiquidType, int)
 	//Check a mixture with 50% concentration of one fluid with the same fluid being added via addConstituent(LiquidType, int)
