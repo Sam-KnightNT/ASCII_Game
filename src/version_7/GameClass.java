@@ -173,11 +173,10 @@ public class GameClass {
 		room3.setName("Room 3");
 		room4.setName("Room 4");
 		room5.setName("Room 5");
-		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 		room5.addItem(new ItemTile(new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000)), 4, 5, 0));
-		unfrozenEntities.put(mino, 100);
-		room.addEntity(mino);
+		//unfrozenEntities.put(mino, 100);
 		attachTwoLocations(corridor1, room, entrances.get(0));
 		attachTwoLocations(corridor1, room2, entrances.get(1));
 		attachTwoLocations(corridor2, room3, entrances.get(2));
@@ -632,11 +631,11 @@ public class GameClass {
 					break;
 				case WEST:
 					d = (byte) (cloc.getY()-loc.getY());
-					entity.setCoords((byte) 0, (byte) (y-d), z);
+					entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 					break;
 				case EAST:
 					d = (byte) (cloc.getY()-loc.getY());
-					entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
+					entity.setCoords((byte) 0, (byte) (y-d), z);
 					break;
 				}
 				entity.setNewEntrance(entrance.getLinkedEntrance());
@@ -719,11 +718,11 @@ public class GameClass {
 						break;
 					case WEST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entity.setCoords((byte) 0, (byte) (y-d), z);
+						entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
 						break;
 					case EAST:
 						d = (byte) (cloc.getY()-loc.getY());
-						entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
+						entity.setCoords((byte) 0, (byte) (y-d), z);
 						break;
 					}
 					return true;

@@ -33,6 +33,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z) {
 		this(entity, x, y, z);
 		this.location = loc;
+		loc.addEntity(this);
 		genStats();
 	}
 	
