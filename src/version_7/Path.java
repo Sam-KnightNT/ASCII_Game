@@ -35,4 +35,12 @@ public class Path extends ArrayList<Location> {
 	public Path get() {
 		return this;
 	}
+	
+	public String toString() {
+		String str = this.get(0).getName();
+		for (Location l : this.subList(1, this.size())) {
+			str += ", "+l.getName();
+		}
+		return str;
+	}
 }

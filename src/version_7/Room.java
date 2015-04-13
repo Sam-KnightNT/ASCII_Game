@@ -123,10 +123,10 @@ public class Room extends Location{
 					setTile(s, getH()-1, floorTileType);
 					break;
 				case WEST:
-					setTile(getW()-1, s, floorTileType);
+					setTile(0, s, floorTileType);
 					break;
 				case EAST:
-					setTile(0, s, floorTileType);
+					setTile(getW()-1, s, floorTileType);
 					break;
 				}
 			}

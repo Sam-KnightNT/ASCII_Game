@@ -78,7 +78,7 @@ public class Corridor extends Location {
 					}
 					break;
 				case EAST:
-					byte sidePoint = this.getH();
+					byte sidePoint = this.getW();
 					for (Entrance otherEntrance : entrances) {
 						if (otherEntrance.getDirection() == Direction.SOUTH || otherEntrance.getDirection() == Direction.NORTH) {
 							int loc = otherEntrance.getLocA().getX();
@@ -110,10 +110,10 @@ public class Corridor extends Location {
 							setTile(r, getH()-(l+1), floor);
 							break;
 						case WEST:
-							setTile(getW()-(l+1), r, floor);
+							setTile(l, r, floor);
 							break;
 						case EAST:
-							setTile(l, r, floor);
+							setTile(getW()-(l+1), r, floor);
 							break;
 						}
 					}

@@ -54,4 +54,8 @@ public class Item {
 		}
 		return new Pair<Boolean, ItemTile>(false, null);
 	}
+	
+	public String toString() {
+		return name+": "+description;
+	}
 }

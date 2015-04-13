@@ -14,6 +14,10 @@ public class ItemTile {
 		this.z = z;
 	}
 	
+	public ItemTile(Item item, int x, int y, int z) {
+		this(item, (byte) x, (byte) y, (byte) z);
+	}
+
 	public Item getItem() {
 		return item;
 	}

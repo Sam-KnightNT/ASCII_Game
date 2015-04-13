@@ -84,7 +84,21 @@ public class LiquidTesting {
 		assertEquals("Correct volume of water after mixing with second mixture", 2750, mixture1.getWaterContent(), 1);
 	}
 	
-	//Need to check 2 mixtures being combined
+	@Test
+	public void potionCreationTest() {
+		Liquid liquid = new Liquid(50.0, 500);
+		Bottle bottle = new Bottle(1650);
+		Potion potion = new Potion(liquid, bottle);
+		System.out.println(potion);
+		assertEquals("Correct volume of liquid in potion", 500, potion.getLiquid().getVolume());
+		assertEquals("Volume displays correctly too", 500, potion.getFullness());
+		assertEquals("Correct capacity of bottle", 1650, potion.getCapacity());
+		assertEquals("Correct emptiness calculation", 1150, potion.getEmptiness());
+	}
+	
+	//Need to check a liquid being created with a negative volume
+	//Need to check a liquid being created with a negative concentration
+	//Check 2 mixtures being combined
 	//Check a mixture with 50% concentration of one fluid with another being added via addConstituent(LiquidType, int)
 	//Check a mixture with 50% concentration of one fluid with the same fluid being added via addConstituent(LiquidType, int)
 	//Check a mixture with 50% concentration of one fluid with another being added via addConstituent(LiquidPure)
@@ -96,5 +110,7 @@ public class LiquidTesting {
 	//A new liquid type being added to a Mixture
 	//2 new liquid types being mixed
 	//A new liquid being created
+	//Potion being created with valid amounts
+	//Potion being created with volume>capacity (check volume=capacity afterwards)
 	
 }
