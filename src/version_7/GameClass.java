@@ -202,7 +202,6 @@ public class GameClass {
 		
 		cloc = locations.get("Corridor 1");
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 2, (byte) 0);
-		cloc.addEntity(self);
 		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
 		mainImage.setSize(1040, 730);
 		SwingUtilities.invokeLater(new Runnable() {

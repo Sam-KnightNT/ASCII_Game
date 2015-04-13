@@ -101,7 +101,7 @@ public class GameImage extends JPanel {
 			 */
 
 			public void actionPerformed(ActionEvent e) {
-				GameClass.command("me");
+				GameClass.command("mw");
 			}
 		});
 		
@@ -116,7 +116,7 @@ public class GameImage extends JPanel {
 			 */
 
 			public void actionPerformed(ActionEvent e) {
-				GameClass.command("mw");
+				GameClass.command("me");
 			}
 		});
 		
