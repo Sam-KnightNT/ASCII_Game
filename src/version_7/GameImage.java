@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import javax.swing.*;
@@ -17,6 +18,7 @@ public class GameImage extends JPanel {
 	private static final long serialVersionUID = -2736624963222321827L;
 	private BufferedImage mainPane;
 	private BufferedImage controlPane;
+	private LinkedList<String> lines = null;
 
 	private Graphics2D g;
 	private Graphics2D gSide;
@@ -162,13 +164,40 @@ public class GameImage extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponents(g);
 		g.drawImage(mainPane, 0, 0, null);
+		g.drawImage(controlPane, 1050, 0, null);
 	}
 	
 	public void init() {
 		g = mainPane.createGraphics();
 		gSide = controlPane.createGraphics();
+		lines = new LinkedList<String>();
 		this.setVisible(true);
 		redrawMap();
+	}
+	
+	public void drawInfo(String info) {
+		if (lines.size()>=30) {
+			lines.pop();
+			lines.add(info);
+			gSide.clearRect(0, 15, 300, 500);
+		} else {
+			lines.add(info);
+		}
+		for (int i=0; i<lines.size(); i++) {
+			gSide.drawString(lines.get(i), 0, 30+(15*i));
+		}
+	}
+	
+	public void drawLocation(int x, int y) {
+		gSide.clearRect(100, 0, 45, 15);
+		gSide.drawString("("+x+", "+y+")", 100, 10);
+	}
+	
+	public void drawEquipment(EntityTile player) {
+		int l = 0;
+		for (Item item : player.getInventory()) {
+			gSide.drawString(item.getName(), 15, 30+(l*15));
+		}
 	}
 	
 	public void redrawMap() {
@@ -191,6 +220,11 @@ public class GameImage extends JPanel {
 			for (byte y=0; y<h; y++) {
 				for (byte x=0; x<w; x++) {
 					TileType tile = location.getTile(x, y).getType();
+					int xDraw = (x*xUnit)+offsetX+offsetX2;
+					int yDraw = (y*yUnit)+offsetY+offsetY2;
+					System.out.println(xDraw%20+", "+yDraw%30);
+					//TODO - for tiled images, replace the 1st parameter with
+					//tile.getImage().getSubimage(xDraw%20, yDraw%30, 20, 30)
 					g.drawImage(tile.getImage(), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
 				}
 			}

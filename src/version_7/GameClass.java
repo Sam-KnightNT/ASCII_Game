@@ -60,93 +60,7 @@ public class GameClass {
 	static int dz;
 	
 	public static void main(String[] args) throws Exception {
-		String filename = "..\\ASCII_Game\\mazeInfo.txt";
-		BufferedReader reader = new BufferedReader(new FileReader(filename));
-		String contents = "";
-		String line = reader.readLine();
-		while (line != null) {
-			contents += line.trim()+"\n";
-			line = reader.readLine();
-		}
-		reader.close();
-		//TODO: Add debug option, if first line is "debug", write out everything that goes on - 
-		//E.g. "stats modifier not found, no stat changes will be applied to this item" etc
-		//TODO: 2nd window for stats, attack direction and stuff
-		String[] strs = contents.split("\n");
-		String[] dimensions;
-		String str;
-		for (int i=0; i<strs.length; i++) {
-			str = strs[i];
-			if (str.contains("dimensions:")) {
-				if (!(dx==0))
-					throw new Exception("Dimensions are defined at least twice, remove one of the lines");
-				else {
-					dimensions = str.replace("dimensions: ", "").split(", ");
-					print(dimensions[0]+"+"+dimensions[1]);
-					dx = Integer.parseInt(dimensions[0]);
-					dy = Integer.parseInt(dimensions[1]);
-					dz = Integer.parseInt(dimensions[2]);
-				}
-			}
-			else if (str.trim().equals("player:")) {
-				i++;
-				str = "";
-				print(str);
-				while(!strs[i].trim().equals("end player definition")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generatePlayer(str);
-			}
-			else if (str.trim().equals("begin item definitions")) {
-				i++;
-				while(!strs[i].trim().equals("end item definitions")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generateItems(str);
-			}
-			else if (str.trim().equals("begin entity definitions")) {
-				i++;
-				while(!strs[i].trim().equals("end entity definitions")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generateEntities(str);
-			}
-			else if (str.trim().equals("begin material definitions")) {
-				i++;
-				while(!strs[i].trim().equals("end material definitions")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generateMaterials(str);
-			}
-			/*else if (str.trim().equals("begin tile definitions")) {
-				i++;
-				while(!strs[i].trim().equals("end tile definitions")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generateTiles(str);
-			}*/
-			else if (str.trim().equals("begin spell definitions")) {
-				i++;
-				while(!strs[i].trim().equals("end spell definitions")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generateSpells(str);
-			}/*
-			else if (str.trim().equals("begin map definitions")) {
-				i++;
-				while(!strs[i].trim().equals("end map definitions")) {
-					str += strs[i]+"\n";
-					i++;
-				}
-				generateMaps(str);
-			}*/
-		}
+		readFromFile();
 		
 		BufferedReader readIn = new BufferedReader(new InputStreamReader(System.in));
 		String command = "";
@@ -202,23 +116,8 @@ public class GameClass {
 		
 		cloc = locations.get("Corridor 1");
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 2, (byte) 0);
-		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
-		mainImage.setSize(1040, 730);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(1040,730);
-				frame.setTitle("Game Thing");
-				frame.setVisible(true);
-				frame.add(mainImage);
-				//TODO - Add a more pretty graphical thing to infoPanel, that shows you your attack
-				//Like a swipey thing with the 9 directions, that shows you what your wand is doing, how strong the attack is, etc
-				//This is how it becomes a fusion of old-style graphics and new-style features
-				//infoPanel.setSize(100, mainImage.getHeight());
-				//frame.add(infoPanel);
-				frame.setResizable(false);
-			}
-		});
+
+		initialiseMainImage();
 		
 //		SPOT FURTHER DOWN, BELOW COMMANDS
 
@@ -388,6 +287,116 @@ public class GameClass {
 			
 			//Change this to only repaint the small area being changed
 			//frame.getContentPane().repaint();
+		}
+	}
+	
+	public static void initialiseMainImage() {
+		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
+		mainImage.setSize(1340, 730);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setSize(1340, 730);
+				frame.setTitle("Game Thing");
+				frame.setVisible(true);
+				frame.add(mainImage);
+				//TODO - Add a more pretty graphical thing to infoPanel, that shows you your attack
+				//Like a swipey thing with the 9 directions, that shows you what your wand is doing, how strong the attack is, etc
+				//This is how it becomes a fusion of old-style graphics and new-style features
+				//infoPanel.setSize(100, mainImage.getHeight());
+				//frame.add(infoPanel);
+				frame.setResizable(false);
+			}
+		});
+	}
+	
+	public static void readFromFile() throws Exception {
+		String filename = "..\\ASCII_Game\\mazeInfo.txt";
+		BufferedReader reader = new BufferedReader(new FileReader(filename));
+		String contents = "";
+		String line = reader.readLine();
+		while (line != null) {
+			contents += line.trim()+"\n";
+			line = reader.readLine();
+		}
+		reader.close();
+		//TODO: Add debug option, if first line is "debug", write out everything that goes on - 
+		//E.g. "stats modifier not found, no stat changes will be applied to this item" etc
+		//TODO: 2nd window for stats, attack direction and stuff
+		String[] strs = contents.split("\n");
+		String[] dimensions;
+		String str;
+		for (int i=0; i<strs.length; i++) {
+			str = strs[i];
+			if (str.contains("dimensions:")) {
+				if (!(dx==0))
+					throw new Exception("Dimensions are defined at least twice, remove one of the lines");
+				else {
+					dimensions = str.replace("dimensions: ", "").split(", ");
+					System.out.println(dimensions[0]+"+"+dimensions[1]);
+					dx = Integer.parseInt(dimensions[0]);
+					dy = Integer.parseInt(dimensions[1]);
+					dz = Integer.parseInt(dimensions[2]);
+				}
+			}
+			else if (str.trim().equals("player:")) {
+				i++;
+				str = "";
+				System.out.println(str);
+				while(!strs[i].trim().equals("end player definition")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generatePlayer(str);
+			}
+			else if (str.trim().equals("begin item definitions")) {
+				i++;
+				while(!strs[i].trim().equals("end item definitions")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generateItems(str);
+			}
+			else if (str.trim().equals("begin entity definitions")) {
+				i++;
+				while(!strs[i].trim().equals("end entity definitions")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generateEntities(str);
+			}
+			else if (str.trim().equals("begin material definitions")) {
+				i++;
+				while(!strs[i].trim().equals("end material definitions")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generateMaterials(str);
+			}
+			/*else if (str.trim().equals("begin tile definitions")) {
+				i++;
+				while(!strs[i].trim().equals("end tile definitions")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generateTiles(str);
+			}*/
+			else if (str.trim().equals("begin spell definitions")) {
+				i++;
+				while(!strs[i].trim().equals("end spell definitions")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generateSpells(str);
+			}/*
+			else if (str.trim().equals("begin map definitions")) {
+				i++;
+				while(!strs[i].trim().equals("end map definitions")) {
+					str += strs[i]+"\n";
+					i++;
+				}
+				generateMaps(str);
+			}*/
 		}
 	}
 	
@@ -661,6 +670,7 @@ public class GameClass {
 					entity.setCoords(newxy, z);
 					if (entity==self) {
 						print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
+				 		mainImage.drawLocation(entity.getX(), entity.getY());
 					} else {
 						print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
 					}
@@ -978,14 +988,14 @@ public class GameClass {
 					i++;
 				}
 				else {
-					print(
+					System.out.println(
 							"\"item\" tag not found, please add it before each new item. \n"
 							+strs[i]);
 					i++;
 				}
 			}
 		}
-		print("done.");
+		System.out.println("done.");
 	}
 	
 	public static void generateEntities(String str) {
@@ -1015,7 +1025,7 @@ public class GameClass {
 								}
 								if (statName.equals("mana")) {
 									entity.setStat("max mana", stat);
-									print(entity.getName()+", "+entity.getBaseStat("max mana"));
+									System.out.println(entity.getName()+", "+entity.getBaseStat("max mana"));
 								}
 								i++;
 							}
@@ -1051,7 +1061,7 @@ public class GameClass {
 				}
 			}
 		}
-		print("done.");
+		System.out.println("done.");
 	}
 	
 	public static void generateSpells(String str) {
@@ -1077,7 +1087,7 @@ public class GameClass {
 				i++;
 			}
 		}
-		print("done.");
+		System.out.println("done.");
 	}
 	
 	public static void generateMaterials(String str) {
@@ -1093,7 +1103,7 @@ public class GameClass {
 			pillar = ImageIO.read(new File("images/masks/Pillar.png"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
-			print("One or more masks not present; please check you have \"Up.png\", \"Down.png\", \"Stairs.png\" and \"Pillar.png\" in your images folder");
+			System.out.println("One or more masks not present; please check you have \"Up.png\", \"Down.png\", \"Stairs.png\" and \"Pillar.png\" in your images folder");
 		}
 		Pattern pattern = Pattern.compile("material:\n((?:.+\n)+)end");
 		Matcher matcher = pattern.matcher(str);
@@ -1104,7 +1114,7 @@ public class GameClass {
 			Matcher nMatch = Pattern.compile("name: (.+)").matcher(mat);
 			if (nMatch.find()) {
 				name = nMatch.group(1);
-				print("Name: "+name);
+				System.out.println("Name: "+name);
 				String filepath = "images/materials/"+name+".png";
 				BufferedImage img = null;
 				BufferedImage floorImg = null;
@@ -1135,7 +1145,7 @@ public class GameClass {
 					pillarG.drawImage(pillar, null, 0, 0);
 				} catch (IOException e) {
 					e.printStackTrace();
-					print("Path of invalid material: "+filepath);
+					System.out.println("Path of invalid material: "+filepath);
 				}
 				
 				tiles.put(name+" Wall", new TileType(name+" Wall", img, false, null, null));
@@ -1147,7 +1157,7 @@ public class GameClass {
 				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, true, null, null));
 				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, true, null, null));
 			} else {
-				print("Material name not found, please check syntax");
+				System.out.println("Material name not found, please check syntax");
 			}
 		}
 	}
@@ -1418,15 +1428,17 @@ public class GameClass {
 			print("Player");
 		}
 		entities.put("Player", player);
-		print("done.");
+		System.out.println("done.");
 	}
 	
 	private static void fight(EntityTile ent1, EntityTile ent2) {
 		int str1 = ent1.getStrength()+random.nextInt(20)-10;
 		int str2 = ent2.getStrength()+random.nextInt(20)-10;
 		
-		print(ent1.getName()+" strength: "+str1+"\n"+
-				ent2.getName()+" strength: "+str2);
+		print(ent1.getName()+" strength: "+str1);
+		print(ent2.getName()+" strength: "+str2);
+
+		String printStr = "";
 		if (str1>str2) {
 			boolean kill = dealDamage(ent1, ent2, str1-str2);
 			if (kill) {
@@ -1444,19 +1456,22 @@ public class GameClass {
 			}
 		}
 		else {
-			System.out.print("Nobody takes damage: ");
+			printStr += "Nobody takes damage: ";
 			if (ent1.equals(self)) {
-				System.out.print("You have ");
+				printStr += "You have ";
 			} else {
-				System.out.print("The "+ent1.getName()+" has ");
+				printStr += "The "+ent1.getName()+" has ";
 			}
-			print(ent1.getHealth()+" health left, and ");
+			printStr += ent1.getHealth()+" health left, and ";
+			print(printStr);
+			printStr = "";
 			if (ent2.equals(self)) {
-				System.out.print("you have ");
+				printStr += "you have ";
 			} else {
-				System.out.print("the "+ent2.getName()+" has ");
+				printStr += "the "+ent2.getName()+" has ";
 			}
-			print(ent2.getHealth()+".\n");
+			printStr += ent2.getHealth()+".\n";
+			print(printStr);
 		}
 	}
 	
@@ -1472,39 +1487,47 @@ public class GameClass {
 		
 		defender.setStat("health", hp);
 		
+		String printStr = "";
 		//Damage dealer
 		if (isAtt)
-			System.out.print("You overpower ");
+			printStr += "You overpower ";
 		else
-			System.out.print("The "+nameAtt+" overpowers ");
+			printStr += "The "+nameAtt+" overpowers ";
 		
 		//Damage taker
 		if (isDef)
-			print("you!");
+			printStr += "you!";
 		else
-			print("the "+nameDef+"!");
+			printStr += "the "+nameDef+"!";
+		
+		print(printStr);
+		printStr = "";
 		
 		//Damage dealt
 		if (isAtt)
-			System.out.print("You deal ");
+			printStr += "You deal ";
 		else
-			System.out.print("The "+nameAtt+" deals ");
-		print(diff+" damage!");
+			printStr += "The "+nameAtt+" deals ";
+		
+		printStr += diff+" damage!";
+		print(printStr);
+		printStr = "";
 		
 		//If defender dies
 		if (defender.getHealth()<=0) {
 			if (isDef)
-				System.out.print("You die!\n");
+				print("You die!\n");
 			else
 				print("The "+nameDef+" dies!\n");
 			return true;
 		}
 		else {
 			if (isDef)
-				System.out.print("You now have ");
+				printStr += "You now have ";
 			else
-				System.out.print("The "+nameDef+" now has ");
-			print(defender.getHealth()+" health.\n");
+				printStr += "The "+nameDef+" now has ";
+			printStr += defender.getHealth()+" health.\n";
+			print(printStr);
 		}
 		return false;
 	}
@@ -1606,24 +1629,29 @@ public class GameClass {
 		return self.getZ();
 	}
 	
-	public static void print(String string) {
-		System.out.println(string);
+	public static void print(String s) {
+		System.out.println(s);
+		mainImage.drawInfo(s);
 	}
 	
-	public static void print(Boolean bool) {
-		System.out.println(bool);
+	public static void print(Boolean b) {
+		System.out.println(b);
+		mainImage.drawInfo(b.toString());
 	}
 	
 	public static void print(Exception e) {
 		System.out.println(e);
+		mainImage.drawInfo(e.toString());
 	}
 	
 	public static void print(char c){
 		System.out.println(c);	
+		mainImage.drawInfo(Character.toString(c));
 	}
 	
 	public static void print(Object o) {
 		System.out.println(o);
+		mainImage.drawInfo((String) o);
 	}
 	
 	//TODO - put this and other things in a GameUtilities class
@@ -1766,7 +1794,7 @@ public class GameClass {
 			loc1.addAttachment(loc2, entrance);
 			//Modify the Entrance here to contain the relative location
 			loc2.addAttachment(loc1, entrance2);
-			print("Valid connection between\n"+loc1+"\nand\n"+loc2);
+			System.out.println("Valid connection between\n"+loc1+"\nand\n"+loc2);
 			//TODO next time - figure out why all entrances created are valid, but only the one from one Room to another gets drawn
 		} else {
 			String printStr = "Invalid connection between\n"+loc1+"\nand\n"+loc2+"\nfrom entrance\n"+entrance+"\nbecause: ";
@@ -1786,7 +1814,7 @@ public class GameClass {
 			} else {
 				printStr += "something completely weird went on and I don't know what. The locations are as follows: "+loc1.toString()+", and "+loc2.toString()+". The entrance is "+entrance.toString();
 			}
-			print(printStr);
+			System.out.println(printStr);
 			System.exit(1);
 		}
 	}

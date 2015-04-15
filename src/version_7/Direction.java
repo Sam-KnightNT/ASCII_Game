@@ -3,7 +3,7 @@ package version_7;
 public enum Direction {
 	//location is 2 Bytes or a Short - xxxxxxxx, yyyyyyyy. Each one is 0 to 127 in value, 0 is the corner.
 	//Any locations with more than 128 x or y values should overflow, so it's quite likely this is the thing that'll result in Shenanigans.
-	//North should increment x by 1. South should decrement x by 1. East should increment the total thing by 0x100. West should decrement the thing by 0x100.
+	//North should decrement y by 1. South should increment y by 1. East should increment x by 1. West should decrement x by 1.
 	NORTH((short) -256), SOUTH((short) 256), EAST((short) 1), WEST((short) -1);
 	
 	private Direction opposite;
