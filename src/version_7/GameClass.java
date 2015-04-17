@@ -333,7 +333,6 @@ public class GameClass {
 					throw new Exception("Dimensions are defined at least twice, remove one of the lines");
 				else {
 					dimensions = str.replace("dimensions: ", "").split(", ");
-					System.out.println(dimensions[0]+"+"+dimensions[1]);
 					dx = Integer.parseInt(dimensions[0]);
 					dy = Integer.parseInt(dimensions[1]);
 					dz = Integer.parseInt(dimensions[2]);
@@ -342,7 +341,6 @@ public class GameClass {
 			else if (str.trim().equals("player:")) {
 				i++;
 				str = "";
-				System.out.println(str);
 				while(!strs[i].trim().equals("end player definition")) {
 					str += strs[i]+"\n";
 					i++;
@@ -402,6 +400,18 @@ public class GameClass {
 	
 	public static void command(String command) {
 		//Move
+		//TODO - add that new combat system.
+		//TODO later on: Make a "hardcore"-type system, which is far more complex.
+		//It takes into account your facing direction, and you can use both hands in various situations.
+		//First - make both hands do things. For example, hammers must be 2-handed, and it doesn't matter. But you can wield 2 swords, and hit Ctrl+Stuff to use the right hand.
+		//Or, wield a shield and hit Ctrl+Dir to block in that direction for a bit.
+		//Next, add a system that depends on your facing direction.
+		//You can change direction with... something. It takes time, and if you're swinging in another direction it takes more time than if you're already facing there.
+		//Then, add bonuses to different attacks depending on your direction. For example, a left-swipe deals more damage if you are facing in the start direction (i.e. QE gives you a bonus if you're facing Q)
+		//Then make them shift which direction you're facing.
+		//Then make following attacks do better depending on previous attacks. E.g. CA works best with left-handed, then WZ makes you backslash, which is faster than CA -> QE.
+		//EQ with left-hand sword into W with right-hand shield is also much faster, and a good, strong attack.
+		//My main thought is having things like Keening and Sunder. That would be AWESOME. (and by that I mean dual swords, apparently Sunder is a hammer. Sod that. Keening deals large unarmoured damage, Sunder breaks armour))
 		if (command.matches("m([swen])$")) {
 			switch (command.charAt(1)) {
 			case 's':
@@ -544,12 +554,12 @@ public class GameClass {
 		
 		//Print out all the locatios and their entities
 		//TODO - delete this
-		/*for (Location loc : locations.values()) {
+		for (Location loc : locations.values()) {
 			System.out.println(loc.getName());
 			for (EntityTile ent : loc.getEntities()) {
 				System.out.println("\t"+ent.getName());
 			}
-		}*/
+		}
 		
 		//Move the player
 		boolean leftRoom = move(dir, self, cloc);

@@ -222,7 +222,7 @@ public class GameImage extends JPanel {
 					TileType tile = location.getTile(x, y).getType();
 					int xDraw = (x*xUnit)+offsetX+offsetX2;
 					int yDraw = (y*yUnit)+offsetY+offsetY2;
-					System.out.println(xDraw%20+", "+yDraw%30);
+					//System.out.println(xDraw%20+", "+yDraw%30);
 					//TODO - for tiled images, replace the 1st parameter with
 					//tile.getImage().getSubimage(xDraw%20, yDraw%30, 20, 30)
 					g.drawImage(tile.getImage(), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
@@ -278,6 +278,8 @@ public class GameImage extends JPanel {
 	}*/
 	
 	public void setInfo(String info) {
+		//TODO - add to the control pane, a double- or triple-size display which is either the 3x3 or 5x5 around the player.
+		//This should display stuff like the direction you are facing, any swipes that take place and things that are closely relevant to melee combat.
 		gSide.drawString(info, 20, 20);
 	}
 }

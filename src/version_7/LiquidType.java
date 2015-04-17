@@ -9,6 +9,11 @@ public class LiquidType {
 	private String touchEffect;
 	private String name;
 	
+	//If there are no stats given, only show the name, with no effects.
+	public LiquidType(String name) {
+		this.name = name;
+	}
+	
 	//If there is just one stat given, assume it is intended to affect an entity on drinking.
 	public LiquidType(String drinkEffect, String name) {
 		this.drinkEffect = drinkEffect;

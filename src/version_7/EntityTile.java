@@ -180,7 +180,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	
 	public void pickupItem(Item item) {
-		System.out.println("Picked up item that may or may not be equippable");
+		System.out.println("Picked up unequippable item");
 		this.addToInventory(item);
 		System.out.println(entity.getName()+" picked up "+item.getName());
 	}
