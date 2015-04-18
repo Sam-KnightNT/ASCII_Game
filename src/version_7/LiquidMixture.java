@@ -15,13 +15,13 @@ public class LiquidMixture extends Liquid {
 	
 	//Constructor with only concentration - assumed that the types will be added later. Give no volume, as this will be added with each liquid
 	public LiquidMixture(double concentration) {
-		super(concentration, 0);
+		super(concentration);
 		types = new HashMap<LiquidType, Integer>();
 	}
 	
 	public LiquidMixture(HashMap<LiquidType, Integer> types, double concentration) {
 		//Run the superconstructor on the concentration, and the sum of all volumes
-		super(concentration, types.values().stream().mapToInt(Integer::intValue).sum());
+		super(concentration, types.values().stream().mapToInt(Integer::intValue).sum(), types.keySet().toArray(new LiquidType[types.size()]));
 		this.types = types;
 	}
 	

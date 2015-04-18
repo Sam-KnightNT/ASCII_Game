@@ -89,7 +89,11 @@ public class GameClass {
 		room5.setName("Room 5");
 		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
-		room5.addItem(new ItemTile(new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000)), 4, 5, 0));
+
+		BufferedImage healthPotImage = ImageIO.read(new File("images/items/Health Potion.png"));
+		Potion healthPot = new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000));
+		healthPot.setImage(healthPotImage);
+		room5.addItem(new ItemTile(healthPot, 4, 5, 0));
 		//unfrozenEntities.put(mino, 100);
 		attachTwoLocations(corridor1, room, entrances.get(0));
 		attachTwoLocations(corridor1, room2, entrances.get(1));
