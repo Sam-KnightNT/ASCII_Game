@@ -54,6 +54,7 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "right");
 		this.getInputMap().put(KeyStroke.getKeyStroke('c'), "change");
 		this.getInputMap().put(KeyStroke.getKeyStroke('z'), "prime");
+		this.getInputMap().put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "exit");
 
 		this.getActionMap().put("pick up", new AbstractAction() {
 			/**
@@ -130,6 +131,17 @@ public class GameImage extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("cb Marble Wall "+(GameClass.getPX()+1)+" "+GameClass.getPY()+" "+GameClass.getPZ());
+			}
+		});
+		
+		this.getActionMap().put("exit", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -2549505830577275314L;
+
+			public void actionPerformed(ActionEvent e) {
+				System.exit(1);
 			}
 		});
 		/*
