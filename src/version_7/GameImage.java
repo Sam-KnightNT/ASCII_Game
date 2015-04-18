@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
 import javax.swing.*;
 
@@ -54,6 +55,8 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "right");
 		this.getInputMap().put(KeyStroke.getKeyStroke('c'), "change");
 		this.getInputMap().put(KeyStroke.getKeyStroke('z'), "prime");
+		this.getInputMap().put(KeyStroke.getKeyStroke('i'), "inventory");
+		this.getInputMap().put(KeyStroke.getKeyStroke('g'), "getInv");
 		this.getInputMap().put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "exit");
 
 		this.getActionMap().put("pick up", new AbstractAction() {
@@ -133,7 +136,7 @@ public class GameImage extends JPanel {
 				GameClass.command("cb Marble Wall "+(GameClass.getPX()+1)+" "+GameClass.getPY()+" "+GameClass.getPZ());
 			}
 		});
-		
+
 		this.getActionMap().put("exit", new AbstractAction() {
 			/**
 			 * 
@@ -142,6 +145,32 @@ public class GameImage extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				System.exit(1);
+			}
+		});
+
+		this.getActionMap().put("getInv", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -2549505830577275314L;
+
+			public void actionPerformed(ActionEvent e) {
+				/*TODO - have a temporary KeyboardListener here.
+				frame.addKeyListener(new KeyListener() {
+					public void keyTyped(KeyEvent e) {
+						if (!firstSwing) {
+							switch (e.getKeyChar()) {*/
+			}
+		});
+		
+		this.getActionMap().put("inventory", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -2549505830577275314L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("inventory");
 			}
 		});
 		/*
@@ -293,5 +322,12 @@ public class GameImage extends JPanel {
 		//TODO - add to the control pane, a double- or triple-size display which is either the 3x3 or 5x5 around the player.
 		//This should display stuff like the direction you are facing, any swipes that take place and things that are closely relevant to melee combat.
 		gSide.drawString(info, 20, 20);
+	}
+	
+	public void setInventoryInfo(ArrayList<Item> inventory) {
+		gSide.clearRect(20, 300, 100, inventory.size()*15);
+		for (int i=0; i<inventory.size(); i++) {
+			gSide.drawString(inventory.get(i).getName(), 20, 300+(i*15));
+		}
 	}
 }

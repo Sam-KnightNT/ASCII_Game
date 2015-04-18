@@ -449,6 +449,7 @@ public class GameClass {
 					self.pickupItem(item);
 					mainImage.setCurrentLocation(cloc);
 					mainImage.redrawMap();
+					mainImage.setInventoryInfo(self.getInventory());
 				}
 				else {
 					//Add new exception (ItemNotFound exception?) like ConcurrentModification
