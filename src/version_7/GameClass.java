@@ -66,7 +66,7 @@ public class GameClass {
 		String command = "";
 		
 		//Construct 2 rooms and a corridor to connect them
-		Room room = new Room(9, 6, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
+		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
 		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
 		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
@@ -74,7 +74,7 @@ public class GameClass {
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
 		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 3), new Coord2D(7, 3)));
-		entrances.add(new Entrance(Direction.WEST, new Coord2D(8, 1), new Coord2D(8, 3)));
+		entrances.add(new Entrance(Direction.WEST, new Coord2D(0, 1), new Coord2D(0, 3)));
 		entrances.add(new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(4, 0)));
 		entrances.add(new Entrance(Direction.EAST, new Coord2D(8, 2), new Coord2D(8, 3)));
 
@@ -87,14 +87,17 @@ public class GameClass {
 		room3.setName("Room 3");
 		room4.setName("Room 4");
 		room5.setName("Room 5");
-		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		
+		//Add Minotaur
+		EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
+		unfrozenEntities.put(mino, 100);
+		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 
 		BufferedImage healthPotImage = ImageIO.read(new File("images/items/Health Potion.png"));
 		Potion healthPot = new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000));
 		healthPot.setImage(healthPotImage);
 		room5.addItem(new ItemTile(healthPot, 4, 5, 0));
-		//unfrozenEntities.put(mino, 100);
 		attachTwoLocations(corridor1, room, entrances.get(0));
 		attachTwoLocations(corridor1, room2, entrances.get(1));
 		attachTwoLocations(corridor2, room3, entrances.get(2));
@@ -104,12 +107,18 @@ public class GameClass {
 		
 		corridor1.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		corridor2.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
-		room.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
-		room2.carveEntrancesWithCurrentAttachments(tiles.get("Marble Floor"));
-		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze Floor"));
-		room4.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
+		room.carveEntrancesWithCurrentAttachments(tiles.get("Gold 6 Floor"));
+		room2.carveEntrancesWithCurrentAttachments(tiles.get("Tin 6 Floor"));
+		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze 6 Floor"));
+		room4.carveEntrancesWithCurrentAttachments(tiles.get("Iron 6 Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
-		room.pillarCorners(tiles.get("Marble Pillar"));
+		room.setTile(2, 2, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(2, 8, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(6, 2, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(6, 8, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(1, 3, tiles.get("Gold 6 Downward Stairway"));
+		room.setTile(1, 5, tiles.get("Gold 6 Upward Stairway"));
+		room.setTile(1, 7, tiles.get("Gold 6 Up/Down Stairway"));
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Room 3", room3);
@@ -118,8 +127,8 @@ public class GameClass {
 		locations.put("Corridor 1", corridor1);
 		locations.put("Corridor 2", corridor2);
 		
-		cloc = locations.get("Corridor 1");
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 2, (byte) 0);
+		cloc = locations.get("Room 1");
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);
 
 		initialiseMainImage();
 		
@@ -296,11 +305,12 @@ public class GameClass {
 	
 	public static void initialiseMainImage() {
 		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
-		mainImage.setSize(1340, 730);
+		mainImage.setSize(1800, 730);
+		mainImage.setPlayer(self);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(1340, 730);
+				frame.setSize(1650, 730);
 				frame.setTitle("Game Thing");
 				frame.setVisible(true);
 				frame.add(mainImage);
@@ -449,7 +459,7 @@ public class GameClass {
 					self.pickupItem(item);
 					mainImage.setCurrentLocation(cloc);
 					mainImage.redrawMap();
-					mainImage.setInventoryInfo(self.getInventory());
+					mainImage.dispInventory();
 				}
 				else {
 					//Add new exception (ItemNotFound exception?) like ConcurrentModification
@@ -574,6 +584,7 @@ public class GameClass {
 			for (EntityTile entity : unfrozenEntities.keySet()) {
 				//alterPath pseudocode: if passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
 				entity.alterPathEnd(self.getLocation());
+				print("Path: "+entity.getPath().toString());
 			}
 		}
 		
@@ -620,6 +631,10 @@ public class GameClass {
 	public static boolean move(Direction dir, EntityTile entity, Location loc) {
 		//TODO - replace the location parameter, replace it with this line
 		//Location loc = entity.getLocation();
+		
+		//TODO - this is an absolute mess, clean it up! (Put most things into separate functions)
+		
+		//TODO - have 2 return statements - one true iff move was successful, one true iff new room was entered
 		byte x = (byte) entity.getX();
 		byte y = (byte) entity.getY();
 		short xy = (short) (x + (y << 8));
@@ -630,52 +645,73 @@ public class GameClass {
 			Entrance entrance = entity.getEntrance();
 			if (entrance.getDirection()==dir) {
 				//If they are equal, move through the entrance.
+				Entrance newEnt = entrance.getLinkedEntrance();
+				Location newLoc = newEnt.getLocation();
 				if (entity.getName()=="Player") {
+					//If the entity is the player, change cloc
 					cloc.removeEntity(entity);
-					cloc = entrance.getLinkedEntrance().getLocation();
+					print("You moved to a new location! From "+cloc.getName()+" to "+newLoc.getName());
+					cloc = newLoc;
 					cloc.addEntity(entity);
 					mainImage.setCurrentLocation(cloc);
+				} else {
+					//Otherwise remove the entity from its current location and move it to the new location
+					print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+newLoc.getName());
+					loc.removeEntity(entity);
+					newLoc.addEntity(entity);
+					if (entity.getPath().get(0)==newLoc) {
+						entity.updatePath();
+					}
 				}
-				loc.removeEntity(entity);
-				loc = entrance.getLinkedEntrance().getLocation();
-				loc.addEntity(entity);
-				print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
-				entity.setLocation(cloc);
-				byte d;
-				switch (entrance.getDirection()) {
-				case NORTH:
-					//Work out the difference in x positions
-					d = (byte) (cloc.getX()-loc.getX());
-					entity.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
-					break;
-				case SOUTH:
-					d = (byte) (cloc.getX()-loc.getX());
-					entity.setCoords((byte) (x-d), (byte) 0, z);
-					break;
-				case WEST:
-					d = (byte) (cloc.getY()-loc.getY());
-					entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
-					break;
-				case EAST:
-					d = (byte) (cloc.getY()-loc.getY());
-					entity.setCoords((byte) 0, (byte) (y-d), z);
-					break;
-				}
+				entity.setNewEntrance(newEnt);
+				entity.setCoords((byte) (newEnt.getLocA().getX()+dx), (byte) (newEnt.getLocA().getY()+dy), z);
 				entity.setNewEntrance(entrance.getLinkedEntrance());
 				return true;
-			} else if (entrance.getDirection().getOppositeDirection()==dir) {
-				//If they are opposite, remove this entrance and carry on.
-				entity.setNewEntrance(null);
+			} else {
+				//If the entity does not go through the door, just perform the movement.
+				if (entrance.getDirection().getOppositeDirection()==dir) {
+					//If the direction is opposite, it is no longer in the entrance, so un-set that.
+					entity.setNewEntrance(null);
+				}
+				short newxy = (short) (xy+dir.getNumVal());
+				Tile newTile = null;
+				try {
+					newTile = loc.getTile(newxy);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					e.printStackTrace();
+					print("Error: Attempting to get tile at "+(newxy >> 8)+", "+(newxy % 8));
+				}
+				if (!newTile.getType().isWalkable()) {
+					print(entity.getName()+": Cannot move there.");
+				} else {
+					Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
+					if (otherEntTile.getLeft()) {
+						print("The "+entity.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
+						fight(entity, otherEntTile.getRight());
+					} else {
+						entity.setCoords(newxy, z);
+						if (entity==self) {
+							print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
+						} else {
+							print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
+						}
+					}
+				}
+				//drawMap(cmap);
+				return false;
 			}
 		}
-		if (x>0 && x<loc.getW()-1 && y>0 && y<loc.getH()-1) {
+		
+		//If it does not currently have an entrance listed, check if it is on the border of one. This bit gives no chance of being at one.
+		else if (x>0 && x<loc.getW()-1 && y>0 && y<loc.getH()-1) {
 			//If all of these are true, there is no way moving will lead to a separate location, so move there.
 			
 			//The direction values are selected so that adding them will change xy to the appropriate value
 			short newxy = (short) (xy+dir.getNumVal());
 			Tile newTile = loc.getTile(newxy);
 			if (!newTile.getType().isWalkable()) {
-				print("Cannot move there.");
+				print(entity.getName()+": Cannot move there.");
+				return false;
 			} else {
 				Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
 				if (otherEntTile.getLeft()) {
@@ -699,6 +735,8 @@ public class GameClass {
 			HashMap<Location, Entrance> attachments = loc.getAttached();
 			boolean found = false;
 			Entrance foundEntrance = null;
+			int dx = 0;
+			int dy = 0;
 			search:
 			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
 				Entrance entrance = entry.getValue();
@@ -707,6 +745,8 @@ public class GameClass {
 						&& entrance.getLocA().getX()<=x && entrance.getLocB().getX()>=x) {
 					found = true;
 					foundEntrance = entrance;
+					dx = x-entrance.getLocA().getX();
+					dy = y-entrance.getLocA().getY();
 					break search;
 				}
 			}
@@ -715,40 +755,25 @@ public class GameClass {
 				//If the direction happens to be the same, move to the new location immediately.
 				if (foundEntrance.getDirection()==dir) {
 					//If the entity moving is the player, change cloc
+					Entrance newEnt = foundEntrance.getLinkedEntrance();
+					Location newLoc = newEnt.getLocation();
 					if (entity.getName()=="Player") {
 						cloc.removeEntity(entity);
-						cloc = foundEntrance.getLinkedEntrance().getLocation();
+						print("You moved to a new location! From "+cloc.getName()+" to "+newLoc.getName());
+						cloc = newLoc;
 						cloc.addEntity(entity);
 						mainImage.setCurrentLocation(cloc);
 					} else {
 						//Otherwise remove the entity from its current location and move it to the new location
-						Location newLoc = foundEntrance.getLinkedEntrance().getLocation();
-						entity.getLocation().removeEntity(entity);
+						print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+newLoc.getName());
+						loc.removeEntity(entity);
 						newLoc.addEntity(entity);
 						if (entity.getPath().get(0)==newLoc) {
 							entity.updatePath();
 						}
 					}
-					print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+cloc.getName());
-					byte d;
-					switch (foundEntrance.getDirection()) {
-					case NORTH:
-						d = (byte) (cloc.getX()-loc.getX());
-						entity.setCoords((byte) (x-d), (byte) (cloc.getH()-1), z);
-						break;
-					case SOUTH:
-						d = (byte) (cloc.getX()-loc.getX());
-						entity.setCoords((byte) (x-d), (byte) 0, z);
-						break;
-					case WEST:
-						d = (byte) (cloc.getY()-loc.getY());
-						entity.setCoords((byte) (cloc.getW()-1), (byte) (y-d), z);
-						break;
-					case EAST:
-						d = (byte) (cloc.getY()-loc.getY());
-						entity.setCoords((byte) 0, (byte) (y-d), z);
-						break;
-					}
+					entity.setNewEntrance(newEnt);
+					entity.setCoords((byte) (newEnt.getLocA().getX()+dx), (byte) (newEnt.getLocA().getY()+dy), z);
 					return true;
 				} else {
 					//If the entity does not go through the door, just perform the movement.
@@ -760,7 +785,7 @@ public class GameClass {
 					short newxy = (short) (xy+dir.getNumVal());
 					Tile newTile = loc.getTile(newxy);
 					if (!newTile.getType().isWalkable()) {
-						print("Cannot move there.");
+						print(entity.getName()+": Cannot move there.");
 					} else {
 						Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
 						if (otherEntTile.getLeft()) {
@@ -784,6 +809,8 @@ public class GameClass {
 		}
 		//I don't think it should ever get to this point - this could be a link to Betweenford if someone manages to get here. For now, return false.
 		//TODO - add Betweenford entrance here
+		//print ("Shouldn't have got here (it's at the end of \"move\")");
+		//return false;
 	}
 
 	public static void moveToEntrance(EntityTile entity, Entrance entrance) {
@@ -837,19 +864,55 @@ public class GameClass {
 		
 		if (Math.abs(x)>=Math.abs(y)) {
 			if (x<0) {
-				move(Direction.WEST, entity, entity.getLocation());
+				if (canMove(Direction.EAST, entity)) {
+					move(Direction.EAST, entity, entity.getLocation());
+				} else {
+					if (y<0) {
+						move(Direction.SOUTH, entity, entity.getLocation());
+					} else {
+						move(Direction.NORTH, entity, entity.getLocation());
+					}
+				}
 			} else {
-				move(Direction.EAST, entity, entity.getLocation());
+				if (canMove(Direction.WEST, entity)) {
+					move(Direction.WEST, entity, entity.getLocation());
+				} else {
+					if (y<0) {
+						move(Direction.SOUTH, entity, entity.getLocation());
+					} else {
+						move(Direction.NORTH, entity, entity.getLocation());
+					}
+				}
 			}
 		} else {
 			if (y<0) {
-				move(Direction.SOUTH, entity, entity.getLocation());
+				if (canMove(Direction.SOUTH, entity)) {
+					move(Direction.SOUTH, entity, entity.getLocation());
+				} else {
+					if (x<0) {
+						move(Direction.EAST, entity, entity.getLocation());
+					} else {
+						move(Direction.WEST, entity, entity.getLocation());
+					}
+				}
 			} else {
-				move(Direction.NORTH, entity, entity.getLocation());
+				if (canMove(Direction.NORTH, entity)) {
+					move(Direction.NORTH, entity, entity.getLocation());
+				} else {
+					if (x<0) {
+						move(Direction.EAST, entity, entity.getLocation());
+					} else {
+						move(Direction.WEST, entity, entity.getLocation());
+					}
+				}
 			}
 		}	
 	}
 	
+	private static boolean canMove(Direction direction, EntityTile entity) {
+		return entity.getLocation().getTile((short) (entity.getXY()+direction.getNumVal())).isWalkable();
+	}
+
 	public static boolean pathfindToPlayer(EntityTile entity) {
 		//If the entity is in the same room as the player, try to move towards the player.
 		if (entity.getLocation() == self.getLocation()) {
@@ -911,7 +974,7 @@ public class GameClass {
 			} else {
 				print("This should never be reached - here's a dump of all the relevant information.\nEntity:\n"+entity+"\nLocation:\n"+entity.getLocation()+"\nEntrance list:");
 				for (Entrance entranceP : entity.getLocation().getAttached().values()) {
-					print(entranceP);
+					print(entranceP.toString());
 				}
 				print("\nLocation it is aiming for:\n"+aimingFor);
 			}
@@ -1179,23 +1242,6 @@ public class GameClass {
 	
 	/*public static void generateMaps(String str) {
 		System.out.print("Generating maps... ");
-		//TODO - make something like the TARDIS, specifically, the star in the middle.
-		//Make it gigantic, but able to be walked around in an average room
-		//Something like
-		/* |||||||||||||||||||||
-		 * |                   |
-		 * |                   |
-		 * |     |||-|||       |
-		 * |     |     |       |
-		 * |     -     -       |
-		 * |     |     |       |
-		 * |     |||-|||       |
-		 * |                   |
-		 * |||||||||||||||||||||
-		 * Where each - is a door, and the four doors lead to different areas in a vast expanse
-		 */
-		//
-		/*
 		String[] strs = str.split("\n");
 		for (int i=0; i<strs.length; i++) {
 			strs[i] = strs[i].trim();
@@ -1326,8 +1372,6 @@ public class GameClass {
 							//exit.getDestinationMap();
 							//print(exit.toString());
 							i++;
-							//TODO Each map should have a list of other maps that it links to. It already has a list of Links I think? So just go through these Links once all Maps are generated,
-							//and check if the destination Map is valid. If it is, stick it on a list inside the Map for faster access when it comes to going through the Link.
 						}
 					}
 					i++;
@@ -1365,48 +1409,6 @@ public class GameClass {
 			}
 		}
 		print("done.");
-	}*/
-	
-	/*public static void drawMap(Map map) {
-		int xDim = map.getDimX();
-		int yDim = map.getDimY();
-		//TODO generalise
-		int zDim = map.getDimZ();
-		int z = zDim;
-		
-		
-		char[][][] charmap = new char[xDim][yDim][zDim];
-		for (int y=0; y<yDim; y++) { 
-			for (int x=0; x<xDim; x++) {
-				charmap[x][y][z] = map.getTile(x, y, z).getMarker();
-			}
-		}
-
-		for (ItemTile item:map.getItems()) {
-			charmap[item.getX()][item.getY()][item.getZ()] = item.getItem().getMarker();
-		}
-		
-		for (EntityTile entity:map.getEntities()) {
-			charmap[entity.getX()][entity.getY()][entity.getZ()] = entity.getEntity().getMarker();
-		}
-		
-		if (map.getCount("Player")>0) {
-			ArrayList<EntityTile> entities = map.getEntities();
-			for (EntityTile entity:entities) {
-				if (entity.getEntity().getName()=="Player") {
-					charmap[entity.getX()][entity.getY()][entity.getZ()] = entity.getEntity().getMarker();			
-				}
-			}	
-		}
-		
-		for (int y=0; y<yDim; y++) {
-			for (int x=0; x<xDim; x++) { 
-				System.out.print(charmap[x][y]);
-			}
-			print();
-		}
-		
-//		g.update(map);
 	}*/
 	
 	private static void generatePlayer(String str) {
@@ -1771,6 +1773,7 @@ public class GameClass {
 		boolean cond4 = dir.verticality() ?
 				(loc1.getW() >= entrance.getWidth() && loc2.getW() >= entrance.getWidth()):
 				(loc1.getH() >= entrance.getWidth() && loc2.getH() >= entrance.getWidth());
+		
 		Coord2D entrA;
 		Coord2D entrB;
 		Entrance entrance2 = new Entrance();
@@ -1787,13 +1790,13 @@ public class GameClass {
 			break;
 		case EAST:
 			cond1 = (relX==loc1.getW());
-			entrA = new Coord2D(loc2.getW()-1, entrance.getLocA().getY()-relY);
-			entrB = new Coord2D(loc2.getW()-1, entrance.getLocB().getY()-relY);
+			entrA = new Coord2D(0, entrance.getLocA().getY()-relY);
+			entrB = new Coord2D(0, entrance.getLocB().getY()-relY);
 			break;
 		case WEST:
 			cond1 = (-relX==loc2.getW());
-			entrA = new Coord2D(0, entrance.getLocA().getY()-relY);
-			entrB = new Coord2D(0, entrance.getLocB().getY()-relY);
+			entrA = new Coord2D(loc2.getW()-1, entrance.getLocA().getY()-relY);
+			entrB = new Coord2D(loc2.getW()-1, entrance.getLocB().getY()-relY);
 			break;
 		default:
 			cond1 = false;

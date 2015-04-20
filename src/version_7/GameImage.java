@@ -3,12 +3,15 @@ package version_7;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GameImage extends JPanel {
@@ -30,6 +33,7 @@ public class GameImage extends JPanel {
 	//On drawing, each of these Locations are drawn, relative to the centralLocation.
 	private ArrayList<Location> locations;
 	private Location cloc;
+	private EntityTile player;
 	//Rename these?
 	
 	public GameImage() {
@@ -41,7 +45,7 @@ public class GameImage extends JPanel {
 		this.cloc = location;
 		xDim = xUnit*xArray;
 		yDim = yUnit*yArray;
-		setSize(1040, 730);
+		setSize(xDim, yDim);
 		
 		//boolean pressed = false;
 		
@@ -155,6 +159,7 @@ public class GameImage extends JPanel {
 			private static final long serialVersionUID = -2549505830577275314L;
 
 			public void actionPerformed(ActionEvent e) {
+				dispInventory();
 				/*TODO - have a temporary KeyboardListener here.
 				frame.addKeyListener(new KeyListener() {
 					public void keyTyped(KeyEvent e) {
@@ -164,15 +169,18 @@ public class GameImage extends JPanel {
 		});
 		
 		this.getActionMap().put("inventory", new AbstractAction() {
+
 			/**
 			 * 
 			 */
-			private static final long serialVersionUID = -2549505830577275314L;
+			private static final long serialVersionUID = 6230524046884637525L;
 
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("inventory");
+				dispInventory();
 			}
 		});
+		
 		/*
 		this.getActionMap().put("change", new AbstractAction() {
 
@@ -198,29 +206,39 @@ public class GameImage extends JPanel {
 		});
 		
 		mainPane = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);
-		controlPane = new BufferedImage(xDim/2, yDim, BufferedImage.TYPE_INT_RGB);
+		controlPane = new BufferedImage(500, yDim, BufferedImage.TYPE_INT_RGB);
 		init();
+	}
+	
+	public void setPlayer(EntityTile player) {
+		this.player = player;
 	}
 	
 	public void paintComponent(Graphics g) {
 		super.paintComponents(g);
 		g.drawImage(mainPane, 0, 0, null);
-		g.drawImage(controlPane, 1050, 0, null);
+		g.drawImage(controlPane, 1022, 0, null);
 	}
 	
 	public void init() {
 		g = mainPane.createGraphics();
 		gSide = controlPane.createGraphics();
 		lines = new LinkedList<String>();
+		/*try {
+			//gSide.drawImage(ImageIO.read(new File("images/Menu Background.png")), 0, 0, null);
+		} catch (IOException e) {
+			gSide.drawString("Warning: Menu background not found.", 0, 0);
+		}*/
 		this.setVisible(true);
 		redrawMap();
 	}
 	
 	public void drawInfo(String info) {
+		gSide.setColor(Color.WHITE);
 		if (lines.size()>=30) {
 			lines.pop();
 			lines.add(info);
-			gSide.clearRect(0, 15, 300, 500);
+			gSide.clearRect(0, 15, 500, 455);
 		} else {
 			lines.add(info);
 		}
@@ -230,6 +248,7 @@ public class GameImage extends JPanel {
 	}
 	
 	public void drawLocation(int x, int y) {
+		gSide.setColor(new Color(150, 150, 255));
 		gSide.clearRect(100, 0, 45, 15);
 		gSide.drawString("("+x+", "+y+")", 100, 10);
 	}
@@ -243,15 +262,15 @@ public class GameImage extends JPanel {
 	
 	public void redrawMap() {
 		g.setColor(Color.BLACK);
-		g.fillRect(0, 0, 1400, 1400);
+		g.clearRect(0, 0, 1020, 690);
 		
 		//If the current location is a Room, have it centre on the centre of the room. If it's a Corridor, have it centre on the player.
-		int offsetX = (int) ((getWidth()/2.0f)-(cloc.getX()+(cloc.getW()/2.0f)*xUnit));
-		int offsetY = (int) ((getHeight()/2.0f)-(cloc.getY()+(cloc.getH()/2.0f)*yUnit));
+		int offsetX = (int) ((mainPane.getWidth()/2.0f)-(cloc.getX()+(cloc.getW()/2.0f)*xUnit));
+		int offsetY = (int) ((mainPane.getHeight()/2.0f)-(cloc.getY()+(cloc.getH()/2.0f)*yUnit));
 		
 		//if (cloc instanceof version_7.Corridor) {
-			offsetX = (int) ((getWidth()/2.0f)-(cloc.getEntityByName("Player").get(0).getX()*xUnit));
-			offsetY = (int) ((getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
+			offsetX = (int) ((mainPane.getWidth()/2.0f)-(cloc.getEntityByName("Player").get(0).getX()*xUnit));
+			offsetY = (int) ((mainPane.getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
 		//}
 		for (Location location : locations) {
 			int offsetX2 = (location.getX()-cloc.getX())*xUnit;
@@ -319,15 +338,18 @@ public class GameImage extends JPanel {
 	}*/
 	
 	public void setInfo(String info) {
+		gSide.setColor(Color.WHITE);
 		//TODO - add to the control pane, a double- or triple-size display which is either the 3x3 or 5x5 around the player.
 		//This should display stuff like the direction you are facing, any swipes that take place and things that are closely relevant to melee combat.
 		gSide.drawString(info, 20, 20);
 	}
 	
-	public void setInventoryInfo(ArrayList<Item> inventory) {
-		gSide.clearRect(20, 300, 100, inventory.size()*15);
-		for (int i=0; i<inventory.size(); i++) {
-			gSide.drawString(inventory.get(i).getName(), 20, 300+(i*15));
+	public void dispInventory() {
+		gSide.setColor(new Color(230, 160, 180));
+		ArrayList<Item> inv = player.getInventory();
+		gSide.clearRect(0, 490, 500, inv.size()*15);
+		for (int i=0; i<inv.size(); i++) {
+			gSide.drawString(inv.get(i).getName(), 0, 490+(i*15));
 		}
 	}
 }

@@ -78,15 +78,24 @@ public abstract class Location {
 		corner = new Coord2D(x, y);
 	}
 	public void setTile(byte x, byte y, TileType tile) {
-		tiles[x][y] = new Tile(tile);
-	}
-	public void setTile(int x, int y, TileType tile) {
 		try {
 			tiles[x][y] = new Tile(tile);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
+			System.out.println("Error: Tile at "+x+", "+y+" in location "+this.getName()+" cannot be found.");
 			//System.exit(1);
 		}
+	}
+	public void setTile(int x, int y, TileType tile) {
+		this.setTile((byte) x, (byte) y, tile);
+	}
+	public void setTile(byte x, byte y, TileType tile, boolean isWalkable) {
+		this.setTile(x, y, tile);
+		tiles[x][y].setWalkable(isWalkable);
+	}
+	public void setTile(int x, int y, TileType tile, boolean isWalkable) {
+		this.setTile(x, y, tile);
+		tiles[x][y].setWalkable(isWalkable);
 	}
 	public void setTiles(Tile[][] tiles) {
 		this.tiles = tiles;

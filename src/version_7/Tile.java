@@ -46,6 +46,9 @@ public class Tile {
 	public boolean isWalkable() {
 		return tile.isWalkable();
 	}
+	public void setWalkable(boolean walkable) {
+		tile.setWalkable(walkable);
+	}
 	
 	public String toString() {
 		return tile.getName();

@@ -27,6 +27,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.y = y;
 		this.z = z;
 		this.coords = new Coord3D(x, y, z);
+		this.path = new Path();
 		genStats();
 	}
 	
@@ -53,6 +54,10 @@ public class EntityTile implements Comparable<EntityTile> {
 	
 	public byte getY() {
 		return y;
+	}
+
+	public byte getXY() {
+		return (byte) (x + (y << 8));
 	}
 	
 	public byte getZ() {
@@ -164,8 +169,13 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	
 	public void printInventory() {
-		for (Item item : inventory) {
-			System.out.println(item.getName()+". "+item.getDescription());
+		if (this.getInventory().size()>0) {
+			GameClass.print("Your inventory contains:");
+			for (Item item : inventory) {
+				GameClass.print("\t"+item.getName()+": "+item.getDescription());
+			}
+		} else {
+			GameClass.print("Your inventory is empty.");
 		}
 	}
 	
@@ -291,5 +301,9 @@ public class EntityTile implements Comparable<EntityTile> {
 	
 	public String toString() {
 		return (getName()+" in "+location.getName()+" at coordinates "+coords.toString());
+	}
+
+	public void setCoords(int x, int y, int z) {
+		setCoords((byte) x, (byte) y, (byte) z);
 	}
 }

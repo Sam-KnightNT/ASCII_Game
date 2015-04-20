@@ -67,11 +67,11 @@ public class LiquidMixture extends Liquid {
 		this.types = types;
 	}
 
-	public void addConstituent(LiquidType liquid, int volume) {
-		if (types.containsKey(liquid)) {
-			types.put(liquid, volume+types.get(liquid));
+	public void addConstituent(LiquidType constituent, int volume) {
+		if (types.containsKey(constituent)) {
+			types.put(constituent, volume+types.get(constituent));
 		} else {
-			types.put(liquid, volume);
+			types.put(constituent, volume);
 		}
 		//With this method, it is assumed that the constituent should have 100% concentration.
 		//Change the volume of the liquid as a whole so it reflects what has been added.
@@ -79,8 +79,9 @@ public class LiquidMixture extends Liquid {
 		this.setVolume((int) (this.getVolume()+(volume*(100.0/this.getConcentration()))));
 	}
 	
-	public void addConstituent(LiquidPure liquid) {
-		//Add this to the mixture
+	//Add all of a pure liquid to this one
+	public void addConstituent(LiquidPure constituent) {
+		this.addConstituent(constituent.getType(), constituent.getVolume());
 	}
 	
 	public void mixWith(LiquidMixture mixture) {

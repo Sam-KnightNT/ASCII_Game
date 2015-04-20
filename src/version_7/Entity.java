@@ -66,4 +66,8 @@ public class Entity {
 			return false;
 		}
 	}
+	
+	public String toString() {
+		return "Entity "+name;
+	}
 }

@@ -16,6 +16,9 @@ public class Path extends ArrayList<Location> {
 		this.addAll(path);
 	}
 	
+	public Path() {
+	}
+
 	public Location pop() {
 		return this.remove(0);
 	}

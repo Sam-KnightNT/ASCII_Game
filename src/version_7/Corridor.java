@@ -123,7 +123,7 @@ public class Corridor extends Location {
 	}
 
 	public String toString() {
-		return "Corridor named "+getName()+", which is of size ("+getW()+", "+getH()+"), at location ("+getX()+", "+getY()+")";
+		return "Corridor: "+getName()+", size ("+getW()+", "+getH()+"), location ("+getX()+", "+getY()+")";
 	}
 	
 	public String stringEntrances() {
