@@ -154,6 +154,10 @@ material:
 	name: Grass 2
 end
 
+material:
+	name: Wood
+end
+
 end material definitions
 
 begin entity definitions
