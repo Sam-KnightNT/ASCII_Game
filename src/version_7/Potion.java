@@ -22,18 +22,18 @@ public class Potion extends Item {
 		//The logic of the last string of the description is:
 		//"Is the liquid volume 0? If so, display 'is empty'. If not, check the volume vs the capacity. If they are equal, return 'is full', otherwise display the volume and space remaining."
 		super(liquid.getVolume()==0 ? "Bottle" : "Potion of "+liquid.getName(), null, 
-				String.format("A bottle used for storing liquids. Has a capacity of %.4f litres%s.", bottle.getCapacity()/1000.0, 
-						liquid.getVolume()==0 	? ""
-												: " and "+ (liquid.getVolume()==bottle.getCapacity()
+				String.format("A %.4f litre bottle used for storing liquids. It %s.", bottle.getCapacity()/1000.0, 
+						liquid.getVolume()==0 	? "is empty"
+												: (liquid.getVolume()==bottle.getCapacity()
 													? "is full"
-													: String.format("contains %.4fl of liquid, leaving %.4fl free.",
+													: String.format("contains %.4fl of liquid, leaving %.4fl free",
 																								liquid.getVolume()/1000.0, (bottle.getCapacity()-liquid.getVolume())/1000.0))));
 		if (liquid.getVolume()<=bottle.getCapacity()) {
 			this.liquid = liquid;
 			this.bottle = bottle;
 			fullness = liquid.getVolume();
 		} else {
-			GameClass.print("Invalid potion - liquid volume is greater than bottle capacity. Reducing liquid volume to compensate.");
+			System.out.println("Invalid potion - liquid volume is greater than bottle capacity. Reducing liquid volume to compensate.");
 			//TODO - change this to spill some of the liquid out into the world, after issuing a warning to the player.
 			this.liquid = liquid;
 			this.liquid.setVolume(bottle.getCapacity());
@@ -121,13 +121,13 @@ public class Potion extends Item {
 	}
 	
 	public String getDescString() {
-		String descStr = String.format("A bottle used for storing liquids. Has a capacity of %.4f litres", bottle.getCapacity()/1000.0);
+		String descStr = String.format("A %.4f litre bottle used for storing liquids. It ", bottle.getCapacity()/1000.0);
 		if (fullness==bottle.getCapacity()) {
-			descStr += " and is full.";
+			descStr += "is full.";
 		} else if (fullness==0) {
-			descStr += ".";
+			descStr += "is empty.";
 		} else {
-			descStr += String.format(" and contains %.4fl of liquid, leaving %.4fl free.", fullness/1000.0, (bottle.getCapacity()-fullness)/1000.0);
+			descStr += String.format("contains %.4fl of liquid, leaving %.4fl free.", fullness/1000.0, (bottle.getCapacity()-fullness)/1000.0);
 		}
 		return descStr;
 	}

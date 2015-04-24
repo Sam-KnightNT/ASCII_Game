@@ -13,9 +13,9 @@ public class LiquidMixture extends Liquid {
 		types = new HashMap<LiquidType, Integer>();
 	}
 	
-	//Constructor with only concentration - assumed that the types will be added later. Give no volume, as this will be added with each liquid
+	//Constructor with only concentration - assumed that the types will be added later. Give a volume of 0, as this will be added with each liquid
 	public LiquidMixture(double concentration) {
-		super(concentration);
+		super(concentration, 0);
 		types = new HashMap<LiquidType, Integer>();
 	}
 	
@@ -26,6 +26,7 @@ public class LiquidMixture extends Liquid {
 	}
 	
 	public LiquidMixture(LiquidType[] liquids, int[] volumes, double concentration) {
+		super(concentration, 0);
 		types = new HashMap<LiquidType, Integer>();
 		int noTypes = liquids.length;
 		int noVols = volumes.length;
