@@ -1173,6 +1173,7 @@ public class GameClass {
 		BufferedImage upStairs = null;
 		BufferedImage downStairs = null;
 		BufferedImage upDownStairs = null;
+		//TODO - make pillars destructible, and possibly load-bearing
 		BufferedImage pillar = null;
 		try {
 			upStairs = ImageIO.read(new File("images/masks/Up.png"));
@@ -1648,27 +1649,28 @@ public class GameClass {
 	
 	public static void print(String s) {
 		System.out.println(s);
-		mainImage.drawInfo(s);
+		//Try to draw to the main image. If it doesn't exist (such as, for testing purposes), print to the console.
+		try {
+			mainImage.drawInfo(s);
+		} catch (NullPointerException e) {
+			System.out.println("Screen has not yet been created. This may be intentional.");
+		}
 	}
 	
 	public static void print(Boolean b) {
-		System.out.println(b);
-		mainImage.drawInfo(b.toString());
+		print(b.toString());
 	}
 	
 	public static void print(Exception e) {
-		System.out.println(e);
-		mainImage.drawInfo(e.toString());
+		print(e.toString());
 	}
 	
 	public static void print(char c){
-		System.out.println(c);	
-		mainImage.drawInfo(Character.toString(c));
+		print(Character.toString(c));
 	}
 	
 	public static void print(Object o) {
-		System.out.println(o);
-		mainImage.drawInfo((String) o);
+		print((String) o);
 	}
 	
 	//TODO - put this and other things in a GameUtilities class

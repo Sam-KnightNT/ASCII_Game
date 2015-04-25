@@ -77,4 +77,15 @@ public class Coord3D {
 	public String toString() {
 		return ("("+x+", "+y+", "+z+")");
 	}
+	
+	public boolean equals(Object obj) {
+		if (obj==null) {
+			return false;
+		} else if (!(obj instanceof Coord3D)) {
+			return false;
+		} else {
+			Coord3D coords = (Coord3D) obj;
+			return (x==coords.x && y==coords.y && z==coords.z);
+		}
+	}
 }

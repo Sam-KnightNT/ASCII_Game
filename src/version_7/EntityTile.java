@@ -137,21 +137,22 @@ public class EntityTile implements Comparable<EntityTile> {
 		stats.put(stat, amount);
 	}
 	public void genStats() {
-		for (Entry<String, Integer> entry : entity.getBaseStats().entrySet()) {
-			String statName = entry.getKey();
-			int statNum = entry.getValue();
-			if (randomness>0) {
-				statNum+=ran.nextInt(randomness)-(randomness/2);
+		if (entity.getBaseStats()!=null) {
+			for (Entry<String, Integer> entry : entity.getBaseStats().entrySet()) {
+				String statName = entry.getKey();
+				int statNum = entry.getValue();
+				if (randomness>0) {
+					statNum+=ran.nextInt(randomness)-(randomness/2);
+				}
+				this.setStat(statName, statNum);
 			}
-			this.setStat(statName, statNum);
-		}
-		if (!this.hasStat("speed")) {
-			System.out.println("Something went very wrong here, the entity "+entity.getName()+" does not have a speed value.\n" +
-					"Even if one isn't defined, it should default to 100. Send me a bug report and your file\n" +
-					"and I'll see what I can do. Also, prepare for crashing soon.");
-		} else {
-			
-			ticksLeft = (int) (100*(100/(float) this.getStat("speed")));
+			if (!this.hasStat("speed")) {
+				System.out.println("Something went very wrong here, the entity "+entity.getName()+" does not have a speed value.\n" +
+						"Even if one isn't defined, it should default to 100. Send me a bug report and your file\n" +
+						"and I'll see what I can do. Also, prepare for crashing soon.");
+			} else {
+				ticksLeft = (int) (100*(100/(float) this.getStat("speed")));
+			}
 		}
 	}
 	public void printStats() {

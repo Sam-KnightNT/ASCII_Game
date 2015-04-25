@@ -1,7 +1,11 @@
 package version_7;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.imageio.ImageIO;
 
 public class Room extends Location{
 
@@ -44,15 +48,17 @@ public class Room extends Location{
 	 * -------o--------------o---------
 	 */
 	
-	public Room(byte w, byte h, byte x, byte y) {
+	public Room(byte w, byte h, byte x, byte y) throws IOException {
+		//Create dummy tile types, that are just the default ones.
+		this(w, h, x, y, new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), true, null, null),
+				new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), false, null, null));
+	}
+	
+	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType) {
 		this.setW(w);
 		this.setH(h);
 		this.setCorner(x, y);
 		setTiles(new Tile[w][h]);
-	}
-	
-	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType) {
-		this(w, h, x, y);
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {
 				setTile(xI, yI, floorTileType);
@@ -73,17 +79,17 @@ public class Room extends Location{
 		setAttachments(attachments);
 	}
 	
-	public Room(byte w, byte h, byte x, byte y, String name) {
+	public Room(byte w, byte h, byte x, byte y, String name) throws IOException {
 		this(w, h, x, y);
 		this.setName(name);
 	}
 
 	//Casting ints as bytes (using bytes saves a lot of space, as there will be a LOT of these coordinates flying around. It'll save 75% of the coordinate memory)
-	public Room(int w, int h, int x, int y) {
+	public Room(int w, int h, int x, int y) throws IOException {
 		this((byte) w, (byte) h, (byte) x, (byte) y);
 	}
 	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType) {
-		this(w, h, x, y);
+		this((byte) w, (byte) h, (byte) x, (byte) y, floorTileType, wallTileType);
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {
 				setTile(xI, yI, floorTileType);
@@ -104,7 +110,7 @@ public class Room extends Location{
 	}
 	
 	
-	public Room(int w, int h, int x, int y, String name) {
+	public Room(int w, int h, int x, int y, String name) throws IOException {
 		this(w, h, x, y);
 		this.setName(name);
 	}
@@ -134,6 +140,7 @@ public class Room extends Location{
 	}
 	
 	public void pillarCorners(TileType type) {
+		//TODO - once this gets large, see what happens if you use bitmath, i.e. getH() & 0x1. Use two's complement.
 		byte h = (byte) (getH()-1);
 		byte w = (byte) (getW()-1);
 		setTile(0, 0, type);
