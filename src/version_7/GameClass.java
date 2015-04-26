@@ -66,7 +66,7 @@ public class GameClass {
 		String command = "";
 		
 		//Construct 2 rooms and a corridor to connect them
-		Room room = new Room(9, 11, 11, 29, tiles.get("Wood Floor"), tiles.get("Wood Wall"));
+		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
 		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
 		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
@@ -107,18 +107,18 @@ public class GameClass {
 		
 		corridor1.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		corridor2.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
-		room.carveEntrancesWithCurrentAttachments(tiles.get("Wood Floor"));
+		room.carveEntrancesWithCurrentAttachments(tiles.get("Gold 6 Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Tin 6 Floor"));
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze 6 Floor"));
 		room4.carveEntrancesWithCurrentAttachments(tiles.get("Iron 6 Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
-		room.setTile(2, 2, tiles.get("Wood Pillar"), false);
-		room.setTile(2, 8, tiles.get("Wood Pillar"), false);
-		room.setTile(6, 2, tiles.get("Wood Pillar"), false);
-		room.setTile(6, 8, tiles.get("Wood Pillar"), false);
-		room.setTile(1, 3, tiles.get("Wood Downward Stairway"));
-		room.setTile(1, 5, tiles.get("Wood Upward Stairway"));
-		room.setTile(1, 7, tiles.get("Wood Up/Down Stairway"));
+		room.setTile(2, 2, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(2, 8, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(6, 2, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(6, 8, tiles.get("Gold 6 Pillar"), false);
+		room.setTile(1, 3, tiles.get("Gold 6 Downward Stairway"));
+		room.setTile(1, 5, tiles.get("Gold 6 Upward Stairway"));
+		room.setTile(1, 7, tiles.get("Gold 6 Up/Down Stairway"));
 		locations.put("Room 1", room);
 		locations.put("Room 2", room2);
 		locations.put("Room 3", room3);

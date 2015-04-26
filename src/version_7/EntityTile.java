@@ -190,12 +190,6 @@ public class EntityTile implements Comparable<EntityTile> {
 		ticksLeft = (int) (100*(100/(float) this.getStat("speed")));
 	}
 	
-	public void pickupItem(Item item) {
-		System.out.println("Picked up unequippable item");
-		this.addToInventory(item);
-		System.out.println(entity.getName()+" picked up "+item.getName());
-	}
-	
 	public void pickupItem(ItemEquippable item) {
 		System.out.println("Picked up equippable item");
 		this.addToInventory(item);
@@ -216,7 +210,25 @@ public class EntityTile implements Comparable<EntityTile> {
 			}
 		}
 	}
+	
+	public void pickupItem(Potion item) {
+		System.out.println("Picked up potion");
+		this.addToInventory(item);
+		System.out.println(entity.getName()+" picked up "+item.getName());
+	}
 
+	public void pickupItem(Item item) {
+		if (item instanceof Potion) {
+			pickupItem((Potion) item);
+		} else if (item instanceof ItemEquippable) {
+			pickupItem((ItemEquippable) item);
+		} else {
+			System.out.println("Picked up unequippable item");
+			this.addToInventory(item);
+			System.out.println(entity.getName()+" picked up "+item.getName());
+		}
+	}
+	
 	public int getID() {
 		return id;
 	}
