@@ -280,12 +280,20 @@ public class GameImage extends JPanel {
 			for (byte y=0; y<h; y++) {
 				for (byte x=0; x<w; x++) {
 					TileType tile = location.getTile(x, y).getType();
-					int xDraw = (x*xUnit)+offsetX+offsetX2;
-					int yDraw = (y*yUnit)+offsetY+offsetY2;
-					//System.out.println(xDraw%20+", "+yDraw%30);
+					
+					//TODO - check which is more efficient. This current method, or
+					//BufferedImage img = tile.getImage();
+					//g.drawImage(img.getSubimage(20*x % img.getWidth(), 30*y % img.getHeight(), 20, 30), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
+
+					int wImg = tile.getImage().getWidth();
+					int hImg = tile.getImage().getHeight();
 					//TODO - for tiled images, replace the 1st parameter with
 					//tile.getImage().getSubimage(xDraw%20, yDraw%30, 20, 30)
-					g.drawImage(tile.getImage(), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
+					//Need to get the size of the image, and draw the part of it relative to the absolute location of the room.
+					//So, if the image is 20x30, any position will start at 0, 0.
+					//If the image is 200x300, and it's being drawn at 1, 3, it should draw starting at 20, 60. x, y -> 20x, 20y. 
+					//But, 10, 10 -> 0, 0. x, y -> 20x%xsize, 30y%ysize.
+					g.drawImage(tile.getImage().getSubimage(20*x % wImg, 30*y % hImg, 20, 30), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
 				}
 			}
 			for (ItemTile itemT : location.getItems()) {
@@ -298,7 +306,13 @@ public class GameImage extends JPanel {
 			}
 		}
 		
-		
+		//This is useful for reference.
+		/*try {
+			g.drawImage(ImageIO.read(new File("images/masks/bigmask.png")), 400, 300, null);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		this.paintComponent(g);
 	}
 	//TODO add dynamic textures, or large textures that take up (20n, 30n) and are wrappable

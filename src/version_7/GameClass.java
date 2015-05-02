@@ -67,6 +67,7 @@ public class GameClass {
 		
 		//Construct 2 rooms and a corridor to connect them
 		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
+		Room bgroom = new Room(50, 20, 0, 40, tiles.get("biggold Floor"), tiles.get("biggold Wall"));
 		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
 		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
@@ -77,6 +78,7 @@ public class GameClass {
 		entrances.add(new Entrance(Direction.WEST, new Coord2D(0, 1), new Coord2D(0, 3)));
 		entrances.add(new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(4, 0)));
 		entrances.add(new Entrance(Direction.EAST, new Coord2D(8, 2), new Coord2D(8, 3)));
+		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(3, 10), new Coord2D(8, 10)));
 
 		Corridor corridor1 = new Corridor(9, 4, 8, 25, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		Corridor corridor2 = new Corridor(9, 5, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
@@ -87,6 +89,7 @@ public class GameClass {
 		room3.setName("Room 3");
 		room4.setName("Room 4");
 		room5.setName("Room 5");
+		bgroom.setName("Big Gold Room");
 		
 		//Add Minotaur
 		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
@@ -104,14 +107,16 @@ public class GameClass {
 		attachTwoLocations(corridor2, room4, entrances.get(3));
 		attachTwoLocations(corridor1, corridor2, new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(4, 0)));
 		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4, room3));
+		attachTwoLocations(room, bgroom, entrances.get(4));
 		
 		corridor1.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		corridor2.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
-		room.carveEntrancesWithCurrentAttachments(tiles.get("Gold 6 Floor"));
+		room.carveEntrancesWithCurrentAttachments(tiles.get("biggold Floor"));
 		room2.carveEntrancesWithCurrentAttachments(tiles.get("Tin 6 Floor"));
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze 6 Floor"));
 		room4.carveEntrancesWithCurrentAttachments(tiles.get("Iron 6 Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
+		bgroom.carveEntrancesWithCurrentAttachments(tiles.get("biggold Floor"));
 		room.setTile(2, 2, tiles.get("Gold 6 Pillar"), false);
 		room.setTile(2, 8, tiles.get("Gold 6 Pillar"), false);
 		room.setTile(6, 2, tiles.get("Gold 6 Pillar"), false);
@@ -126,6 +131,7 @@ public class GameClass {
 		locations.put("Room 5", room5);
 		locations.put("Corridor 1", corridor1);
 		locations.put("Corridor 2", corridor2);
+		locations.put("Big Gold Room", bgroom);
 		
 		cloc = locations.get("Room 1");
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);

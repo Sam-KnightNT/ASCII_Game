@@ -158,6 +158,10 @@ material:
 	name: Wood
 end
 
+material:
+	name: biggold
+end
+
 end material definitions
 
 begin entity definitions
