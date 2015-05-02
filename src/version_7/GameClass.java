@@ -67,11 +67,11 @@ public class GameClass {
 		
 		//Construct 2 rooms and a corridor to connect them
 		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
-		Room bgroom = new Room(50, 20, 0, 40, tiles.get("biggold Floor"), tiles.get("biggold Wall"));
+		Room bgroom = new Room(50, 20, 0, 40, tiles.get("hugegold Floor"), tiles.get("biggold Wall"));
 		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
 		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
-		Room room5 = new Room(24, 12, 0, 0, tiles.get("Grass 2 Floor"), tiles.get("Grass 2 Wall"));
+		Room room5 = new Room(24, 12, 0, 0, tiles.get("biggrass Floor"), tiles.get("biggrass Wall"));
 		
 		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
 		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 3), new Coord2D(7, 3)));
