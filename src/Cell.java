@@ -50,12 +50,12 @@ public class Cell implements Comparable<Cell> {
 		this.centre = centre;
 	}
 	
-	public void setX_size(int x_size) {
-		this.width = x_size;
+	public void setW(int w) {
+		this.width = w;
 	}
 
-	public void setY_size(int y_size) {
-		this.height = y_size;
+	public void setH(int h) {
+		this.height = h;
 	}
 	
 	public String toString() {

@@ -1,8 +1,5 @@
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.util.*;
-import java.util.Map.Entry;
-
 import javax.swing.JFrame;
 
 
@@ -72,26 +69,11 @@ public class Generator {
 	static HashMap<Coord2D, Pair<Cell>> corridors = new HashMap<Coord2D, Pair<Cell>>();
 	static ArrayList<Connection> connections = new ArrayList<Connection>();
 	
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		//Generate cells
-		for (int i = 0; i<NUM_CELLS; i++) {
-			
-			int size = getRoomParameters();
-			int x = random.nextInt(RADIUS_LIMIT_X*2) - RADIUS_LIMIT_X;
-			int y = random.nextInt(RADIUS_LIMIT_Y*2) - RADIUS_LIMIT_Y;
-			
-			//int size = random.nextInt(MAX_SIZE-MIN_SIZE) + MIN_SIZE;
-			int x_size = random.nextInt(2)*2 - 2 + size;
-			int y_size = random.nextInt(2)*2 - 2 + size;
-			Cell cell = new Cell(new Coord2D(x, y), x_size, y_size);
-			cells.add(cell);	
-		}
-		
-		/*cells.clear();
-		cells.add(new Cell(new Coord2D(-15, -12), 10, 10));
-		cells.add(new Cell(new Coord2D(15, -12), 10, 10));
-		cells.add(new Cell(new Coord2D(-15, 12), 10, 10));
-		cells.add(new Cell(new Coord2D(15, 12), 10, 10));*/
+
+		//Create window
+		System.out.println("Initialising...");
 		
 		window = new GameWindow();
 		JFrame frame = new JFrame();
@@ -99,18 +81,43 @@ public class Generator {
 		frame.setSize(CENTREX*2, CENTREY*2);
 		frame.setVisible(true);
 		window.setGraphics();
-		//printGraphicalOutput(minX, maxX, minY, maxY);
 		
-		HashMap<Coord2D, Double> tests = new HashMap<Coord2D, Double>();
-		for (int i=3; i<6; i++) {
-			for (int j=3; j<6; j++) {
-				tests.put(new Coord2D(i, j), 0.0);
+		//Generate cells
+		System.out.print("Generating cells... ");
+		
+		for (int i = 0; i<NUM_CELLS; i++) {			
+			int size = getRoomParameters();
+			int x = random.nextInt(RADIUS_LIMIT_X*2) - RADIUS_LIMIT_X;
+			int y = random.nextInt(RADIUS_LIMIT_Y*2) - RADIUS_LIMIT_Y;
+			
+			int x_size = random.nextInt(2)*2 - 2 + size;
+			int y_size = random.nextInt(2)*2 - 2 + size;
+			
+			Cell cell = new Cell(new Coord2D(x, y), x_size, y_size);
+			cells.add(cell);
+			window.repaintCell(cell);
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-		System.out.println(tests.get(new Coord2D(3, 5))+", "+new Coord2D(3, 5).equals(new Coord2D(3, 5)));
+		
+		System.out.println("Done.");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		
+		//TODO - this:
 		//Sort the cells by x-value. Check each pair in turn. If they overlap, move the furthest one from the origin 1 square outwards.
 		//Sort the cells by y-value. Check each pair in turn. If they overlap, move the furthest one from the origin 1 square outwards.
 		//Repeat until there are no overlaps.
+		
+		
+		//Separation steering
+		System.out.print("Applying separation steering... ");
 		boolean overlaps = true;
 		while (overlaps) {
 			
@@ -134,28 +141,46 @@ public class Generator {
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
-		System.out.println("Success!");
+		System.out.println("Done.");
 		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		
+		System.out.print("Removing blue cells... ");
 		//Delete any blue cells, i.e. ones which are less than 20 cells in size.
-		ArrayList<Integer> cellsToDelete = new ArrayList<Integer>();
+		ArrayList<Cell> newCells = new ArrayList<Cell>();
 		for (int i=0; i<cells.size(); i++) {
 			Cell cell = cells.get(i);
-			if (cell.getH()*cell.getW()<=20) {
-				cellsToDelete.add(i);
+			if (cell.getH()*cell.getW()>20) {
+				newCells.add(cell);
+			} else {
+				window.clearCell(cell);
+			}
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 		
-		for (int i=cellsToDelete.size()-1; i>=0; i--) {
-			System.out.println("i: "+i);
-			window.clearCell(cells.get(cellsToDelete.get(i)));
-			System.out.println(cellsToDelete.get(i)+", "+cells.get(cellsToDelete.get(i)).toStringShort());
-			cells.remove((int) cellsToDelete.get(i));
+		cells = newCells;
+		
+		System.out.println("Done.");
+		
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
 		}
+		
+		System.out.print("Recentring cells... ");
 		//After all this is done, the cells will be massively skewed towards the negative - re-orient them so that the mean is 0 again
 		int totalX = 0;
 		int totalY = 0;
@@ -173,6 +198,7 @@ public class Generator {
 		
 		window.slowTranspose(cells, averagePosition);
 		
+		System.out.println("Done.");
 		//Now, construct a Delaunay Path and a Minimum Spanning Tree, to get the corridors which should be drawn.
 		//Delaunay Triangulation - http://en.wikipedia.org/wiki/Delaunay_triangulation
 		//Euclidean MST - http://en.wikipedia.org/wiki/Euclidean_minimum_spanning_tree
@@ -183,23 +209,21 @@ public class Generator {
 		
 		
 		//For now, draw a line from each cell to its nearest neighbour.
-		window.getGraphics().setColor(Color.GREEN);
 		
 		//Create a series of lines between the points, that cover each and every point. Go recursively - check each point.
 		//If it doesn't have 2 points from it, find the closest point to it that doesn't have a line to it. Draw a line to that point, and pause for a bit.
-		System.out.println("Cells separated: Generating connections.");
+		System.out.print("Generating connections... ");
 		boolean finished = false;
 		while (!finished) {
 			//return true if all points have been iterated through and none without triangles are found.
 			try {
 				Thread.sleep(25);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			finished = triangulate(); 
 		}
-		System.out.println("Done!");
+		System.out.println("Done.");
 		
 		//Now check for disconnected loops - generate a list, A, of all cells. While this list is populated, pick the first cell on the list.
 		//Generate a list of connected cells, B. Go through this in turn - draw a green line when a connection has been checked.
@@ -209,12 +233,10 @@ public class Generator {
 		//Pick the next cell on list A and repeat. If this one empties without returning to the start, it is done.
 
 		finished = false;
-		@SuppressWarnings("unchecked")
 		ArrayList<Cell> cellGen = (ArrayList<Cell>) cells.clone();
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		//While cellGen still has cells in it...
@@ -236,13 +258,12 @@ public class Generator {
 					if (cellGen.contains(ccCell)) {
 						//Remove it.
 						cellGen.remove(ccCell);
-						//Draw a green square, to indicate the cell has been reached.
+						//Draw a small green square, to indicate the cell has been reached.
 						window.drawCellPart(Color.GREEN, ccCell, 3);
 						connectedCells.add(ccCell);
 						try {
-							Thread.sleep(25);
+							Thread.sleep(50);
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -252,23 +273,14 @@ public class Generator {
 				window.repaintCell(cellP);
 			}
 			if (!cellGen.isEmpty()) {
-				//Then there is a loop not connected, so check which is the smaller loop, go through each cell and find the closest one.
+				//Then there is a loop not connected, so go through both loops and find the pair with the smallest distance to each other.
 				Cell closestCellA = null;
 				Cell closestCellB = null;
 				double closestDist = 100;
 				Collections.sort(cells);
 				Collections.sort(cellGen);
-				boolean changed = cells.removeAll(cellGen);
-				System.out.println(changed);
-				System.out.print("1st group");
-				for (Cell cell1 : cells) {
-					System.out.print(": "+cell1.toStringShort());
-				}
-				System.out.print("\n2nd group");
-				for (Cell cell1 : cellGen) {
-					System.out.print(": "+cell1.toStringShort());
-				}
-				System.out.println();
+				cells.removeAll(cellGen);
+				
 				for (Cell loopCell : cells) {
 					for (Cell otherCell : cellGen) {
 						if (loopCell.getDistanceTo(otherCell)<closestDist) {
@@ -284,11 +296,6 @@ public class Generator {
 				closestCellB.addConnection(closestCellA);
 				connections.add(new Connection(closestCellA, closestCellB));
 				
-				for (Cell cell1 : cells) {
-					for (Cell cell2 : cell1.getConnections()) {
-						System.out.println("Connection between "+cell1.toStringShort()+" and "+cell2.toStringShort());
-					}
-				}
 				//And draw the line.
 				System.out.println("Connecting closest cells in disjoint loops. Cells are "+closestCellA.getCentre()+" and "+closestCellB.getCentre());
 				window.getGraphics().setColor(Color.WHITE);
@@ -354,9 +361,6 @@ public class Generator {
 				start.moveY((int) -Math.signum(start.getY()));
 			}
 			
-			//Now draw the point.
-			window.repaintPoint(Coord2D.sum(A.getCentre(), start), new Color(85, 85, 220));
-			
 			//Now do the same for the end.
 			angle = B.angleWith(A);
 			m = Math.tan(angle);
@@ -391,18 +395,15 @@ public class Generator {
 				//Intersects right line. x = w.
 				end = new Coord2D((wEven ? w-1 : w), m*w);
 			}
-
-			System.out.println(Coord2D.difference(B.getCentre(), B.getCorner()));
-			System.out.println(Coord2D.sum(end, Coord2D.difference(B.getCentre(), B.getCorner())));
+			
 			if (B.isCorner(Coord2D.sum(end, Coord2D.difference(B.getCentre(), B.getCorner())))) {
 				end.moveY((int) -Math.signum(end.getY()));
 			}
-			
-			window.repaintPoint(Coord2D.sum(B.getCentre(), end), new Color(85, 85, 220));
-			
-			System.out.println();
 
 			ArrayList<Coord2D> path = A_Star(Coord2D.sum(A.getCentre(), start), Coord2D.sum(B.getCentre(), end), B);
+			
+			//The last element is within cell B, so remove that
+			path.remove(path.size()-1);
 			
 			//Once this has done, create a new Corridor that gets the path carved.
 			//Need to have more of a check for Corridors - if the Corridor hit is heading to the same Cell the path is going to, connect to it.
@@ -414,33 +415,8 @@ public class Generator {
 				window.repaintPoint(coord, new Color(25, 180, 55));
 			}
 			
-			//Naively generate the corridors. Take the first point in the corridor. Now, while the next points are connected, go through them.
-			//Check if the next point would expand the square surrounding them. If so, check if the expanded square would collide (strictly) with a Cell.
-			//If so, create a new Corridor and continue. If not, expand the width or height if they move out 1 and continue.
-			//If the next point wouldn't expand the square just carve it out.
-		}
-	}
-	
-	public static void printGraphicalOutput(int minX, int maxX, int minY, int maxY) {
-		boolean[][] cellsPrint = new boolean[maxX-minX][maxY-minY];
-		for (Cell cell : cells) {
-			Coord2D cor = cell.getCorner();
-			for (int y=cor.getY(); y<cor.getY()+cell.getH(); y++) {
-				for (int x=cor.getX(); x<cor.getX()+cell.getW(); x++) {
-					cellsPrint[x-minX][y-minY] = true;
-				}
-			}
-		}
-		
-		for (int y=0; y<maxY-minY; y++) {
-			for (int x=0; x<maxX-minX; x++) {
-				if (cellsPrint[x][y]) {
-					System.out.print(' ');
-				} else {
-					System.out.print('X');
-				}
-			}
-			System.out.println();
+			//Finally, generate the corridor associated with this path.
+			generateCorridor(path);
 		}
 	}
 	
@@ -483,9 +459,8 @@ public class Generator {
 	private static ArrayList<Coord2D> A_Star(Coord2D start, Coord2D end, Cell endCell) {
 		
 		try {
-			Thread.sleep(500);
+			Thread.sleep(50);
 		} catch (InterruptedException e2) {
-			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
 		ArrayList<Coord2D> closedSet = new ArrayList<Coord2D>();
@@ -553,6 +528,48 @@ public class Generator {
 		return totalPath;
 	}
 	
+	private static void generateCorridor(ArrayList<Coord2D> path) {
+
+		//Naively generate the corridors. Iterate through the path
+		//Check if the next point would expand the square surrounding them. If so, check if the expanded square would collide (strictly) with a Cell.
+		//If so, create a new Corridor and continue. If not, expand the width or height if they move out 1 and continue.
+		//If the next point wouldn't expand the square just carve it out.
+		Cell corridor = new Cell(path.get(0), 1, 1);
+		path.remove(0);
+		for (Coord2D point : path) {
+			
+			//Check if this would expand it in x and y. If so, check if the new size would strictly overlap anything.
+			if (corridor.getX()+corridor.getW() < point.getX()) {
+				int prevW = corridor.getW();
+				corridor.setW(point.getX() - corridor.getX());
+				for (Cell cell : cells) {
+					//If it strictly overlaps anything, we need to end the current Corridor and generate a new one.
+					if (cell.strictlyOverlaps(corridor)) {
+						//Contract the corridor again.
+						corridor.setW(prevW);
+						cells.add(corridor);
+						corridor = new Cell(point, 1, 1);
+						break;
+					}
+				}
+			}
+			if (corridor.getY()+corridor.getH() < point.getY()) {
+				int prevH = corridor.getH();
+				corridor.setW(point.getY() - corridor.getY());
+				for (Cell cell : cells) {
+					//If it strictly overlaps anything, we need to end the current Corridor and generate a new one.
+					if (cell.strictlyOverlaps(corridor)) {
+						//Contract the corridor again.
+						corridor.setH(prevH);
+						cells.add(corridor);
+						corridor = new Cell(point, 1, 1);
+						break;
+					}
+				}
+			}
+		}
+		
+	}
 	private static boolean corridorHeadingTo(Coord2D point, Cell headingTo) {
 		return (corridors.containsKey(point) && corridors.get(point).contains(headingTo));
 	}
@@ -573,6 +590,7 @@ public class Generator {
 		return selected;
 	}
 	
+	@SuppressWarnings("unused")
 	private static ArrayList<Cell> copyCells(ArrayList<Cell> cells) {
 		ArrayList<Cell> newCells = new ArrayList<Cell>();
 		for (Cell cell : cells) {
