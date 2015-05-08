@@ -67,7 +67,7 @@ public class GameClass {
 		
 		//Construct 2 rooms and a corridor to connect them
 		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
-		Room bgroom = new Room(50, 20, 0, 40, tiles.get("biggold Floor"), tiles.get("biggold Wall"));
+		Room bgroom = new Room(54, 29, 0, 40, tiles.get("Phijkchu Floor"), tiles.get("Phijkchu Wall"));
 		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
 		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
@@ -89,7 +89,7 @@ public class GameClass {
 		room3.setName("Room 3");
 		room4.setName("Room 4");
 		room5.setName("Room 5");
-		bgroom.setName("Big Gold Room");
+		bgroom.setName("PHIJKCHU");
 		
 		//Add Minotaur
 		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
@@ -116,7 +116,7 @@ public class GameClass {
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze 6 Floor"));
 		room4.carveEntrancesWithCurrentAttachments(tiles.get("Iron 6 Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
-		bgroom.carveEntrancesWithCurrentAttachments(tiles.get("biggold Floor"));
+		bgroom.carveEntrancesWithCurrentAttachments(tiles.get("Phijkchu Floor"));
 		room.setTile(2, 2, tiles.get("Gold 6 Pillar"), false);
 		room.setTile(2, 8, tiles.get("Gold 6 Pillar"), false);
 		room.setTile(6, 2, tiles.get("Gold 6 Pillar"), false);
@@ -310,14 +310,14 @@ public class GameClass {
 	}
 	
 	public static void initialiseMainImage() {
-		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, PT_SIZE, dx, dy);
+		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, dx, dy);
 		mainImage.setSize(1800, 730);
 		mainImage.setPlayer(self);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(1650, 730);
-				frame.setTitle("Game Thing");
+				frame.setSize(Math.min(dx*mainImage.xUnit+505, 1900), Math.min(dy*mainImage.yUnit, 1020));
+				frame.setTitle("Dungeon Game What Has No Name");
 				frame.setVisible(true);
 				frame.add(mainImage);
 				//TODO - Add a more pretty graphical thing to infoPanel, that shows you your attack

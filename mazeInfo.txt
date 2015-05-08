@@ -1,4 +1,4 @@
-dimensions: 51, 23, 1
+dimensions: 57, 31, 1
 
 player:
 	name: Lib
@@ -168,6 +168,10 @@ end
 
 material:
 	name: biggrass
+end
+
+material:
+	name: Phijkchu
 end
 
 end material definitions

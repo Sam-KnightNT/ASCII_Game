@@ -3,15 +3,11 @@ package version_7;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-import java.util.Scanner;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GameImage extends JPanel {
@@ -26,9 +22,9 @@ public class GameImage extends JPanel {
 
 	private Graphics2D g;
 	private Graphics2D gSide;
-	private int xDim, yDim;			//Overall size of the image
-	private int xUnit = 20, yUnit = 30;		//Size of a single character
-	//private int z;					//Current slice of the map
+	private int xDim, yDim;					//Overall size of the image
+	protected int xUnit = 20, yUnit = 30;	//Size of a single character
+	//private int z;						//Current slice of the map
 	//Instead of a Map, have a list of Locations, one of these being the centralLocation.
 	//On drawing, each of these Locations are drawn, relative to the centralLocation.
 	private ArrayList<Location> locations;
@@ -40,7 +36,7 @@ public class GameImage extends JPanel {
 		init();
 	}
 	
-	public GameImage(ArrayList<Location> locations, Location location, int ptSize, int xArray, int yArray) {
+	public GameImage(ArrayList<Location> locations, Location location, int xArray, int yArray) {
 		this.locations = locations;
 		this.cloc = location;
 		xDim = xUnit*xArray;
@@ -217,7 +213,7 @@ public class GameImage extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponents(g);
 		g.drawImage(mainPane, 0, 0, null);
-		g.drawImage(controlPane, 1022, 0, null);
+		g.drawImage(controlPane, mainPane.getWidth()+2, 0, null);
 	}
 	
 	public void init() {
@@ -262,7 +258,7 @@ public class GameImage extends JPanel {
 	
 	public void redrawMap() {
 		g.setColor(Color.BLACK);
-		g.clearRect(0, 0, 1020, 690);
+		g.clearRect(0, 0, mainPane.getWidth(), mainPane.getHeight());
 		
 		//If the current location is a Room, have it centre on the centre of the room. If it's a Corridor, have it centre on the player.
 		int offsetX = (int) ((mainPane.getWidth()/2.0f)-(cloc.getX()+(cloc.getW()/2.0f)*xUnit));

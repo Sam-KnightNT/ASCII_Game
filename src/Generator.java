@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.util.*;
+
 import javax.swing.JFrame;
 
 
@@ -70,7 +71,7 @@ public class Generator {
 	static ArrayList<Connection> connections = new ArrayList<Connection>();
 	
 	@SuppressWarnings("unchecked")
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		//Create window
 		System.out.println("Initialising...");
@@ -104,11 +105,8 @@ public class Generator {
 		}
 		
 		System.out.println("Done.");
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
+		
+		Thread.sleep(1000);
 		
 		//TODO - this:
 		//Sort the cells by x-value. Check each pair in turn. If they overlap, move the furthest one from the origin 1 square outwards.
@@ -147,11 +145,7 @@ public class Generator {
 		}
 		System.out.println("Done.");
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
+		Thread.sleep(1000);
 		
 		System.out.print("Removing blue cells... ");
 		//Delete any blue cells, i.e. ones which are less than 20 cells in size.
@@ -199,6 +193,8 @@ public class Generator {
 		window.slowTranspose(cells, averagePosition);
 		
 		System.out.println("Done.");
+		
+		Thread.sleep(1000);
 		//Now, construct a Delaunay Path and a Minimum Spanning Tree, to get the corridors which should be drawn.
 		//Delaunay Triangulation - http://en.wikipedia.org/wiki/Delaunay_triangulation
 		//Euclidean MST - http://en.wikipedia.org/wiki/Euclidean_minimum_spanning_tree
@@ -234,11 +230,7 @@ public class Generator {
 
 		finished = false;
 		ArrayList<Cell> cellGen = (ArrayList<Cell>) cells.clone();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		//While cellGen still has cells in it...
 		while (!cellGen.isEmpty()) {
 			//Take the first one
@@ -251,7 +243,7 @@ public class Generator {
 			while (!connectedCells.isEmpty()) {
 				//Take the first one in the list.
 				Cell cCell = connectedCells.remove(0);
-				window.drawCellPart(Color.GREEN, cCell, 5);
+				window.drawCellPart(Color.GREEN, cCell, 7);
 				//For each of its connections...
 				for (Cell ccCell : cCell.getConnections()) {
 					//If the full list contains the connected cell...
@@ -261,11 +253,7 @@ public class Generator {
 						//Draw a small green square, to indicate the cell has been reached.
 						window.drawCellPart(Color.GREEN, ccCell, 3);
 						connectedCells.add(ccCell);
-						try {
-							Thread.sleep(50);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+						Thread.sleep(50);
 					}
 				}
 			}
@@ -297,7 +285,6 @@ public class Generator {
 				connections.add(new Connection(closestCellA, closestCellB));
 				
 				//And draw the line.
-				System.out.println("Connecting closest cells in disjoint loops. Cells are "+closestCellA.getCentre()+" and "+closestCellB.getCentre());
 				window.getGraphics().setColor(Color.WHITE);
 				window.getGraphics().drawLine(CENTREX+(closestCellA.getCentre().getX()*SIZE_MULT), CENTREY+(closestCellA.getCentre().getY()*SIZE_MULT),
 						CENTREX+(closestCellB.getCentre().getX()*SIZE_MULT), CENTREY+(closestCellB.getCentre().getY()*SIZE_MULT));
@@ -306,6 +293,10 @@ public class Generator {
 				cellGen = (ArrayList<Cell>) cells.clone();
 			}
 		}
+		System.out.println("Done.");
+		
+		Thread.sleep(500);
+		
 		//Draw corridors using the A* algorithm.
 		//Work out the start point by finding which point intersects the line drawn. Do the same with the end point.
 		//Then, perform A* to connect the 2.
@@ -456,13 +447,9 @@ public class Generator {
 		return true;
 	}
 	
-	private static ArrayList<Coord2D> A_Star(Coord2D start, Coord2D end, Cell endCell) {
+	private static ArrayList<Coord2D> A_Star(Coord2D start, Coord2D end, Cell endCell) throws InterruptedException {
 		
-		try {
-			Thread.sleep(50);
-		} catch (InterruptedException e2) {
-			e2.printStackTrace();
-		}
+		Thread.sleep(50);
 		ArrayList<Coord2D> closedSet = new ArrayList<Coord2D>();
 		ArrayList<Coord2D> openSet = new ArrayList<Coord2D>();
 		openSet.add(start);
@@ -514,7 +501,7 @@ public class Generator {
 			}
 		}
 		//If it gets here, it has failed.
-		System.out.println("Failure.");
+		System.out.println("A* failed. Bug the developer to put in more debugging features if you see this.");
 		System.exit(2);
 		return null;
 	}
