@@ -1,7 +1,9 @@
 package version_7;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.awt.image.RescaleOp;
 import java.io.*;
 import java.util.*;
@@ -98,9 +100,16 @@ public class GameClass {
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 
 		BufferedImage healthPotImage = ImageIO.read(new File("images/items/Health Potion.png"));
+		BufferedImage liquid = ImageIO.read(new File("images/items/Potion Liquid.png"));
+		BufferedImage mPot = new BufferedImage(20, 30, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage mLiq = colorImage(liquid, new Color(10, 210, 20));
+		mPot.getGraphics().drawImage(mLiq, 0, 0, 20, 30, null);
+		mPot.getGraphics().drawImage(ImageIO.read(new File("images/items/Potion Bottle.png")), 0, 0, 20, 30, null);
+		mPot.getGraphics().drawImage(ImageIO.read(new File("images/items/Potion Shine.png")), 0, 0, 20, 30, null);
+		
 		Potion healthPot = new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000));
-		healthPot.setImage(healthPotImage);
-		room5.addItem(new ItemTile(healthPot, 4, 5, 0));
+		healthPot.setImage(mPot);
+		room.addItem(new ItemTile(healthPot, 4, 5, 0));
 		attachTwoLocations(corridor1, room, entrances.get(0));
 		attachTwoLocations(corridor1, room2, entrances.get(1));
 		attachTwoLocations(corridor2, room3, entrances.get(2));
@@ -137,7 +146,7 @@ public class GameClass {
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);
 
 		initialiseMainImage();
-		
+		mainImage.debugDraw(mPot);
 //		SPOT FURTHER DOWN, BELOW COMMANDS
 
 		//TODO - modify speed counter to account for things like
@@ -1843,5 +1852,31 @@ public class GameClass {
 			System.out.println(printStr);
 			System.exit(1);
 		}
+	}
+	
+	public static BufferedImage colorImage(BufferedImage loadImg, Color colour) {
+	    BufferedImage img = new BufferedImage(loadImg.getWidth(), loadImg.getHeight(),
+	            BufferedImage.TRANSLUCENT);
+	    final float tintOpacity = 0.45f;
+	    Graphics2D g2d = img.createGraphics(); 
+
+	    //Draw the base image
+	    g2d.drawImage(loadImg, null, 0, 0);
+	    //Set the color to a transparent version of the input color
+	    g2d.setColor(new Color(colour.getRed() / 255f, colour.getGreen() / 255f, 
+	        colour.getBlue() / 255f, tintOpacity));
+
+	    //Iterate over every pixel, if it isn't transparent paint over it
+	    Raster data = loadImg.getData();
+	    for(int x = data.getMinX(); x < data.getWidth(); x++){
+	        for(int y = data.getMinY(); y < data.getHeight(); y++){
+	            int[] pixel = data.getPixel(x, y, new int[4]);
+	            if(pixel[3] > 0){ //If pixel isn't full alpha. Could also be pixel[3]==255
+	                g2d.fillRect(x, y, 1, 1);
+	            }
+	        }
+	    }
+	    g2d.dispose();
+	    return img;
 	}
 }

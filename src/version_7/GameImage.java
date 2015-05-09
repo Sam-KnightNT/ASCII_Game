@@ -2,6 +2,7 @@ package version_7;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -355,11 +356,39 @@ public class GameImage extends JPanel {
 	}
 	
 	public void dispInventory() {
-		gSide.setColor(new Color(230, 160, 180));
+		gSide.setColor(new Color(250, 120, 150));
 		ArrayList<Item> inv = player.getInventory();
 		gSide.clearRect(0, 490, 500, inv.size()*15);
 		for (int i=0; i<inv.size(); i++) {
 			gSide.drawString(inv.get(i).getName(), 0, 490+(i*15));
 		}
+	}
+
+	public void debugDraw(BufferedImage img) {
+		//Make the image 10 times the size
+		AffineTransform t = AffineTransform.getScaleInstance(10, 10);
+		BufferedImage i = new BufferedImage(200, 300, BufferedImage.TYPE_INT_ARGB);
+		i.createGraphics().drawRenderedImage(img, t);
+		
+		//Put the 6 backgrounds in - white, blue, black, green, red, yellow
+		gSide.setColor(Color.WHITE);
+		gSide.fillRect(0, 0, 200, 300);
+		gSide.setColor(Color.BLUE);
+		gSide.fillRect(200, 0, 200, 300);
+		gSide.setColor(Color.BLACK);
+		gSide.fillRect(0, 300, 200, 300);
+		gSide.setColor(new Color(10, 150, 10));
+		gSide.fillRect(200, 300, 200, 300);
+		gSide.setColor(new Color(160, 10, 10));
+		gSide.fillRect(0, 600, 200, 300);
+		gSide.setColor(new Color(150, 150, 10));
+		gSide.fillRect(200, 600, 200, 300);
+		
+		gSide.drawImage(i, 0, 0, null);
+		gSide.drawImage(i, 200, 0, null);
+		gSide.drawImage(i, 0, 300, null);
+		gSide.drawImage(i, 200, 300, null);
+		gSide.drawImage(i, 0, 600, null);
+		gSide.drawImage(i, 200, 600, null);
 	}
 }
