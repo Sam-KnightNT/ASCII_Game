@@ -50,6 +50,9 @@ public class GameClass {
 	private static Location cloc;
 	private static boolean AIon = false;
 	private static TreeMap<EntityTile, Integer> unfrozenEntities = new TreeMap<EntityTile, Integer>();
+	private static BufferedImage bottle;
+	private static BufferedImage liquid;
+	private static BufferedImage shine;
 	
 	//Where the player is initially
 	static int px = 1;
@@ -69,7 +72,6 @@ public class GameClass {
 		
 		//Construct 2 rooms and a corridor to connect them
 		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
-		Room bgroom = new Room(54, 29, 0, 40, tiles.get("Phijkchu Floor"), tiles.get("Phijkchu Wall"));
 		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
 		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
 		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
@@ -91,32 +93,33 @@ public class GameClass {
 		room3.setName("Room 3");
 		room4.setName("Room 4");
 		room5.setName("Room 5");
-		bgroom.setName("PHIJKCHU");
-		
+
 		//Add Minotaur
 		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
 		//unfrozenEntities.put(mino, 100);
 		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 
-		BufferedImage healthPotImage = ImageIO.read(new File("images/items/Health Potion.png"));
-		BufferedImage liquid = ImageIO.read(new File("images/items/Potion Liquid.png"));
-		BufferedImage mPot = new BufferedImage(20, 30, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage mLiq = colorImage(liquid, new Color(10, 210, 20));
-		mPot.getGraphics().drawImage(mLiq, 0, 0, 20, 30, null);
-		mPot.getGraphics().drawImage(ImageIO.read(new File("images/items/Potion Bottle.png")), 0, 0, 20, 30, null);
-		mPot.getGraphics().drawImage(ImageIO.read(new File("images/items/Potion Shine.png")), 0, 0, 20, 30, null);
+		bottle = ImageIO.read(new File("images/items/Potion Bottle.png"));
+		liquid = ImageIO.read(new File("images/items/Potion Liquid.png"));
+		shine = ImageIO.read(new File("images/items/Potion Shine.png"));
 		
+		BufferedImage mPot = createPotionGraphics(new Color(10, 120, 255));
+		
+		BufferedImage hPot = createPotionGraphics(new Color(255, 15, 20));
+
 		Potion healthPot = new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000));
-		healthPot.setImage(mPot);
+		healthPot.setImage(hPot);
+		Potion manaPot = new Potion(new LiquidPure(new LiquidType("mana", "Mana Fluid"), 35.0, 500), new Bottle(1000));
+		manaPot.setImage(mPot);
 		room.addItem(new ItemTile(healthPot, 4, 5, 0));
+		room.addItem(new ItemTile(manaPot, 6, 5, 0));
 		attachTwoLocations(corridor1, room, entrances.get(0));
 		attachTwoLocations(corridor1, room2, entrances.get(1));
 		attachTwoLocations(corridor2, room3, entrances.get(2));
 		attachTwoLocations(corridor2, room4, entrances.get(3));
 		attachTwoLocations(corridor1, corridor2, new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(4, 0)));
 		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4, room3));
-		attachTwoLocations(room, bgroom, entrances.get(4));
 		
 		corridor1.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
 		corridor2.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
@@ -125,7 +128,6 @@ public class GameClass {
 		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze 6 Floor"));
 		room4.carveEntrancesWithCurrentAttachments(tiles.get("Iron 6 Floor"));
 		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
-		bgroom.carveEntrancesWithCurrentAttachments(tiles.get("Phijkchu Floor"));
 		room.setTile(2, 2, tiles.get("Gold 6 Pillar"), false);
 		room.setTile(2, 8, tiles.get("Gold 6 Pillar"), false);
 		room.setTile(6, 2, tiles.get("Gold 6 Pillar"), false);
@@ -140,13 +142,11 @@ public class GameClass {
 		locations.put("Room 5", room5);
 		locations.put("Corridor 1", corridor1);
 		locations.put("Corridor 2", corridor2);
-		locations.put("Big Gold Room", bgroom);
 		
 		cloc = locations.get("Room 1");
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);
 
 		initialiseMainImage();
-		mainImage.debugDraw(mPot);
 //		SPOT FURTHER DOWN, BELOW COMMANDS
 
 		//TODO - modify speed counter to account for things like
@@ -1855,8 +1855,7 @@ public class GameClass {
 	}
 	
 	public static BufferedImage colorImage(BufferedImage loadImg, Color colour) {
-	    BufferedImage img = new BufferedImage(loadImg.getWidth(), loadImg.getHeight(),
-	            BufferedImage.TRANSLUCENT);
+	    BufferedImage img = new BufferedImage(loadImg.getWidth(), loadImg.getHeight(), BufferedImage.TRANSLUCENT);
 	    final float tintOpacity = 0.45f;
 	    Graphics2D g2d = img.createGraphics(); 
 
@@ -1879,4 +1878,17 @@ public class GameClass {
 	    g2d.dispose();
 	    return img;
 	}
+
+	private static BufferedImage createPotionGraphics(Color colour) {
+		BufferedImage pot = new BufferedImage(20, 30, BufferedImage.TYPE_INT_ARGB);
+		
+		BufferedImage liquid = colorImage(GameClass.liquid, colour);
+		
+		pot.getGraphics().drawImage(liquid, 0, 0, 20, 30, null);
+		pot.getGraphics().drawImage(bottle, 0, 0, 20, 30, null);
+		pot.getGraphics().drawImage(shine, 0, 0, 20, 30, null);
+		
+		return pot;
+	}
+
 }
