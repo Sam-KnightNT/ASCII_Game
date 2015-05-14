@@ -1,7 +1,6 @@
 package version_7;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.RescaleOp;
@@ -44,7 +43,6 @@ public class GameClass {
 	private static GameImage mainImage;
 	//private static InfoPanel infoPanel;
 	private final static JFrame frame = new JFrame();
-	private static final int PT_SIZE = 40;
 	static int playerIndex;
 	public static EntityTile self;
 	private static Location cloc;
@@ -563,6 +561,28 @@ public class GameClass {
 			}
 			//TODO next time: Test this and damage systems
 		}
+		else if (command.contentEquals("mix")) {
+			Potion A = null;
+			Potion B = null;
+			Potion p = null;
+			for (Item item : self.getInventory()) {
+				if (item.getClass().equals(Potion.class)) {
+					if (A != null) {
+						B = (Potion) item;
+						p = Potion.mix(A, B, new Bottle(5000));
+						break;
+					} else {
+						A = (Potion) item;
+					}
+				}
+			}
+			if (p != null) {
+				self.addToInventory(p);
+				print("Mixed!");
+			} else {
+				print("Mixing failed, less than 2 Potions in inventory");
+			}
+		}
 		//TODO - deprecate this, it shouldn't need to have to update it in the image all the time
 		mainImage.setCurrentLocation(cloc);
 		//Change this to only repaint the small area being changed
@@ -1043,7 +1063,7 @@ public class GameClass {
 						strs[i] = strs[i].trim();
 						if (strs[i].contains("name:")) {
 							strs[i] = strs[i].replace("name: ", "");
-							item.addName(strs[i]);
+							item.setName(strs[i]);
 						}
 						else if (strs[i].trim().contains("description:")) {
 							strs[i] = strs[i].replace("description: ", "");

@@ -58,6 +58,7 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke('z'), "prime");
 		this.getInputMap().put(KeyStroke.getKeyStroke('i'), "inventory");
 		this.getInputMap().put(KeyStroke.getKeyStroke('g'), "getInv");
+		this.getInputMap().put(KeyStroke.getKeyStroke('m'), "mix");
 		this.getInputMap().put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "exit");
 
 		this.getActionMap().put("pick up", new AbstractAction() {
@@ -65,7 +66,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -7471445489039297912L;
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("p");
 			}
@@ -76,7 +77,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -7471445489039297912L;
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("mn");
 			}
@@ -87,11 +88,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -7850831045227052125L;
-
-			/**
-			 * 
-			 */
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("ms");
 			}
@@ -102,11 +99,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -7391545913153485894L;
-
-			/**
-			 * 
-			 */
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("mw");
 			}
@@ -117,11 +110,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -3837103569154536260L;
-
-			/**
-			 * 
-			 */
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("me");
 			}
@@ -132,7 +121,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -2549505830577275314L;
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("cb Marble Wall "+(GameClass.getPX()+1)+" "+GameClass.getPY()+" "+GameClass.getPZ());
 			}
@@ -143,7 +132,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -2549505830577275314L;
-
+			
 			public void actionPerformed(ActionEvent e) {
 				System.exit(1);
 			}
@@ -154,7 +143,7 @@ public class GameImage extends JPanel {
 			 * 
 			 */
 			private static final long serialVersionUID = -2549505830577275314L;
-
+			
 			public void actionPerformed(ActionEvent e) {
 				dispInventory();
 				/*TODO - have a temporary KeyboardListener here.
@@ -164,17 +153,27 @@ public class GameImage extends JPanel {
 							switch (e.getKeyChar()) {*/
 			}
 		});
-		
-		this.getActionMap().put("inventory", new AbstractAction() {
 
+		this.getActionMap().put("inventory", new AbstractAction() {
 			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 6230524046884637525L;
-
+			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("inventory");
 				dispInventory();
+			}
+		});
+
+		this.getActionMap().put("mix", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -4038166830328845870L;
+			
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("mix");
 			}
 		});
 		
