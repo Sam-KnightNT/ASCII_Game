@@ -22,7 +22,7 @@ public class Potion extends Item {
 		//The logic of the last string of the description is:
 		//"Is the liquid volume 0? If so, display 'is empty'. If not, check the volume vs the capacity. If they are equal, return 'is full', otherwise display the volume and space remaining."
 		super(liquid.getVolume()==0 ? "Bottle" : "Potion of "+liquid.getName(), null, 
-				String.format("A %.4f litre bottle used for storing liquids. It %s.", bottle.getCapacity()/1000.0, 
+				String.format("A %.4f litre bottle used for storing liquids.\nIt %s.", bottle.getCapacity()/1000.0, 
 						liquid.getVolume()==0 	? "is empty"
 												: (liquid.getVolume()==bottle.getCapacity()
 													? "is full"
@@ -73,6 +73,13 @@ public class Potion extends Item {
 		if (volume+fullness>bottle.getCapacity()) {
 			System.out.println("Insufficient space in bottle left");
 			return false;
+		} else if (fullness == 0) {
+			//Don't bother mixing, just set the liquid to this one
+
+			fullness += volume;
+			GameClass.print(liquid);
+			this.setLiquid(liquid);
+			return true;
 		} else {
 			fullness += volume;
 			//Mix current liquid with new one
@@ -91,6 +98,7 @@ public class Potion extends Item {
 	 * @return true iff this action is successful (i.e. other potion has sufficient space left)
 	 */
 	public boolean pourInto(Potion potion, int volume) {
+		//TODO - check if pouring out causes problems when it fails
 		boolean success = potion.getEmptiness()>=volume && this.pourOut(volume);
 		if (success) {
 			potion.fillWith(this.getLiquid(), volume); 

@@ -680,8 +680,10 @@ public class GameClass {
 			Entrance entrance = entity.getEntrance();
 			if (entrance.getDirection()==dir) {
 				//If they are equal, move through the entrance.
-				Entrance newEnt = entrance.getLinkedEntrance();
-				Location newLoc = newEnt.getLocation();
+				Entrance newEntrance = entrance.getLinkedEntrance();
+				Location newLoc = newEntrance.getLocation();
+				byte dx = (byte) (x-entrance.getLocA().getX());
+				byte dy = (byte) (y-entrance.getLocA().getY());
 				if (entity.getName()=="Player") {
 					//If the entity is the player, change cloc
 					cloc.removeEntity(entity);
@@ -698,8 +700,8 @@ public class GameClass {
 						entity.updatePath();
 					}
 				}
-				entity.setNewEntrance(newEnt);
-				entity.setCoords((byte) (newEnt.getLocA().getX()+dx), (byte) (newEnt.getLocA().getY()+dy), z);
+				entity.setNewEntrance(newEntrance);
+				entity.setCoords((byte) (newEntrance.getLocA().getX()+dx), (byte) (newEntrance.getLocA().getY()+dy), z);
 				entity.setNewEntrance(entrance.getLinkedEntrance());
 				return true;
 			} else {
@@ -1705,7 +1707,7 @@ public class GameClass {
 	}
 	
 	public static void print(Object o) {
-		print((String) o);
+		print(o.toString());
 	}
 	
 	//TODO - put this and other things in a GameUtilities class
