@@ -29,5 +29,9 @@ public class LiquidPure extends Liquid {
 	public void setType(LiquidType type) {
 		this.type = type;
 	}
+	
+	public String toString() {
+		return String.format("%.4f litres of pure %s, concentration %.0f%%", this.getVolume()/1000.0, type.getName(), this.getConcentration());
+	}
 
 }

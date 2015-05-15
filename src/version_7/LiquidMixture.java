@@ -115,13 +115,20 @@ public class LiquidMixture extends Liquid {
 		if (A.getClass() == LiquidPure.class) {
 			l.addConstituent((LiquidPure) A);
 		} else if (A.getClass() == LiquidMixture.class) {
-			
+			//TODO - Add all constituents (this and below)
 		} else {
-			GameClass.print("DSFAS");
+			//Iunno
+			GameClass.print("Tried to mix with what my game thinks is a non-liquid.");
 		}
-		//l.addConstituent(A);
-		//l.addConstituent(B);
-		return null;
+		if (B.getClass() == LiquidPure.class) {
+			l.addConstituent((LiquidPure) B);
+		} else if (B.getClass() == LiquidMixture.class) {
+			//Add all constituents
+		} else {
+			//Iunno
+			GameClass.print("Tried to mix with what my game thinks is a non-liquid.");
+		}
+		return l;
 	}
 	
 	
