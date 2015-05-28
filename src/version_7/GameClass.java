@@ -62,6 +62,28 @@ public class GameClass {
 	static int dy;
 	static int dz;
 	
+	/*
+	 * This series of comments marks what should be done in v.03.07. 
+	 * Currently, Potions seem to be working fine, at least, single ones do. I'm sick of them though, so I'm going to leave multi-fluid Potions until later.
+	 * I've decided to reimplement Maps as a 256x256 chunk of Tiles, which contain the list of Rooms that are currently the entire world. More details are in the Map class.
+	 * v.03.06 is done - the numbers are a bit arbitrary, but I know this is the third major revision, and there have been about 6 minor ones in this.
+	 * Once v.03.07 is done, v.03.08 should begin - all this will do is allow Maps to be side-by-side and make multi-fluid Potions work. Then, that should be it for v.03, it should then be v.04.
+	 * 
+	 * The end of this version should contain:
+	 * 	A Dungeon prototype, which contains at least 2 fully-working Maps.
+	 * 	These Maps should have been generated with Dungen Alpha, should be fully traversible and should be connected by some arbitrary Room, with up/down stairs.
+	 * 
+	 * v.04 should work towards:
+	 * 	Populating these Maps with Entities and Items
+	 * 	Adding menus and stats
+	 * 	Possible adding saving/loading
+	 * 	Basically, actually building a game round all this stuff.
+	 * 
+	 * v.05 should work on combat and abilities, so the game is more interesting and properly playable. 
+	 * 
+	 * After v.05 is done, there might be a public release. Either v.04 or v.05 should deal with making the Dungen make a proper dungeon-like thing and adding a story and such.
+	 * v.06 or v.07 onwards should probably be bugfix and balance tweaking. The main game should be done by then. After that, I can release Dungeon of the Three, Version 1 - AKA Tales of Three I: Dot3. After that (or after some more content updates, depending on how much I get done), begin work on Tales of Three II: Godfall or whatever it'll be called.
+	 */
 	public static void main(String[] args) throws Exception {
 		readFromFile();
 		
