@@ -84,6 +84,7 @@ public class GameClass {
 		entrances.add(new Entrance(Direction.EAST, new Coord2D(8, 2), new Coord2D(8, 3)));
 		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(3, 10), new Coord2D(8, 10)));
 
+		//TODO - bonus area where the temperature is really warm. Warm enough that you need some kind of magic to survive long periods of time, and you can't prevent potions from slowly purifying.
 		Corridor corridor1 = new Corridor(9, 4, 8, 25, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		Corridor corridor2 = new Corridor(9, 5, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
 		corridor1.setName("Corridor 1");
@@ -100,6 +101,7 @@ public class GameClass {
 		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 
+		room.addItem(new ItemTile(items.get("Boots of Want to Get Over There Right Now"), 4, 5, 0));
 		bottle = ImageIO.read(new File("images/items/Potion Bottle.png"));
 		liquid = ImageIO.read(new File("images/items/Potion Liquid.png"));
 		shine = ImageIO.read(new File("images/items/Potion Shine.png"));
@@ -340,6 +342,7 @@ public class GameClass {
 	}
 	
 	public static void readFromFile() throws Exception {
+		//TODO - make loading screen a spirograph
 		String filename = "..\\ASCII_Game\\mazeInfo.txt";
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String contents = "";
