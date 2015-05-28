@@ -21,7 +21,12 @@ public class LiquidMixture extends Liquid {
 	
 	public LiquidMixture(HashMap<LiquidType, Integer> types, double concentration) {
 		//Run the superconstructor on the concentration, and the sum of all volumes
-		super(concentration, types.values().stream().mapToInt(Integer::intValue).sum(), types.keySet().toArray(new LiquidType[types.size()]));
+		super(concentration, 0, types.keySet().toArray(new LiquidType[types.size()]));
+		int totalVol = 0;
+		for (Integer vol : types.values()) {
+			totalVol += vol;
+		}
+		this.setVolume(totalVol);
 		this.types = types;
 	}
 	
@@ -103,6 +108,27 @@ public class LiquidMixture extends Liquid {
 			rtnStr += String.format("/n/t%d4 litres of "+liquid.getKey().getName(), liquid.getValue()/1000f);
 		}
 		return rtnStr;
+	}
+
+	public static LiquidMixture mix(Liquid A, Liquid B) {
+		LiquidMixture l = new LiquidMixture();
+		if (A.getClass() == LiquidPure.class) {
+			l.addConstituent((LiquidPure) A);
+		} else if (A.getClass() == LiquidMixture.class) {
+			//TODO - Add all constituents (this and below)
+		} else {
+			//Iunno
+			GameClass.print("Tried to mix with what my game thinks is a non-liquid.");
+		}
+		if (B.getClass() == LiquidPure.class) {
+			l.addConstituent((LiquidPure) B);
+		} else if (B.getClass() == LiquidMixture.class) {
+			//Add all constituents
+		} else {
+			//Iunno
+			GameClass.print("Tried to mix with what my game thinks is a non-liquid.");
+		}
+		return l;
 	}
 	
 	

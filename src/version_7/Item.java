@@ -18,7 +18,7 @@ public class Item {
 	}
 	
 	//Setter and getter for the name
-	public void addName(String name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 	
