@@ -38,4 +38,7 @@ public class ItemTile {
 		return item.getName();
 	}
 
+	public String toString() {
+		return "Item "+item+" at ("+x+", "+y+", "+z+")";
+	}
 }

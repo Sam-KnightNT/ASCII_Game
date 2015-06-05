@@ -121,7 +121,7 @@ public class GameClass {
 		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
 
-		room.addItem(new ItemTile(items.get("Boots of Want to Get Over There Right Now"), 4, 5, 0));
+		//room.addItem(new ItemTile(items.get("Boots of Want to Get Over There Right Now"), 4, 5, 0));
 		bottle = ImageIO.read(new File("images/items/Potion Bottle.png"));
 		liquid = ImageIO.read(new File("images/items/Potion Liquid.png"));
 		shine = ImageIO.read(new File("images/items/Potion Shine.png"));

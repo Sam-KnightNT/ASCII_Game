@@ -4,7 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Map {
+public class Map extends Location {
 
 	/*
 	 * Rewrite this to be a single floor of a dungeon. A Dungeon is a series of Maps, stitched together - it has Shorts telling each Map where it is in xyz coord space.
@@ -26,41 +26,48 @@ public class Map {
 	 * These will be defined later.
 	 */
 	
-	private Tile[][][] tiles;
+	private Tile[][] tiles;
 	private ArrayList<Room> rooms = new ArrayList<Room>();
 	private HashMap<Link, Point2D> exits = new HashMap<Link, Point2D>();
 	private ArrayList<EntityTile> entities = new ArrayList<EntityTile>();
 	private ArrayList<ItemTile> items = new ArrayList<ItemTile>();
 	private String name;
 	
-	public Map(int x, int y, int z) {
-		tiles = new Tile[x][y][z];
+	public Map(int x, int y) {
+		this((byte) x, (byte) y);
 	}
 
-	public Map(int x, int y, int z, TileType tileType) {
-		tiles = new Tile[x][y][z];
-		for (int zI = 0; zI < z; zI++) {
-			for (int yI = 0; yI < y; yI++) {
-				for (int xI = 0; xI < x; xI++) {
-					tiles[xI][yI][zI] = new Tile(tileType);
-				}
+	public Map(int x, int y, TileType tileType) {
+		this((byte) x, (byte) y);
+	}
+	
+	public Map(byte x, byte y) {
+		tiles = new Tile[x][y];
+	}
+
+	public Map(byte x, byte y, TileType tileType) {
+		tiles = new Tile[x][y];
+		for (int yI = 0; yI < y; yI++) {
+			for (int xI = 0; xI < x; xI++) {
+				tiles[xI][yI] = new Tile(tileType);
 			}
 		}
 	}
 	
-	public Map(Tile[][][] tiles, ArrayList<EntityTile> entities, ArrayList<ItemTile> items, String name) {
+	
+	public Map(Tile[][] tiles, ArrayList<EntityTile> entities, ArrayList<ItemTile> items, String name) {
 		this.tiles = tiles;
 		this.entities = entities;
 		this.items = items;
 		this.name = name;
 	}
 	
-	public void setTile(int x, int y, int z, TileType newTile) {
-		tiles[x][y][z] = new Tile(newTile);
+	public void setTile(int x, int y, TileType newTile) {
+		tiles[x][y] = new Tile(newTile);
 	}
 	
-	public Map changeTile(int x, int y, int z, TileType newTile) {
-		tiles[x][y][z] = new Tile(newTile);
+	public Map changeTile(int x, int y, TileType newTile) {
+		tiles[x][y] = new Tile(newTile);
 		return new Map(tiles, entities, items, name);
 	}
 	
@@ -72,12 +79,8 @@ public class Map {
 		return tiles[0].length;
 	}
 	
-	public int getDimZ() {
-		return tiles[0][0].length;
-	}
-	
-	public Tile getTile(int x, int y, int z) {
-		return tiles[x][y][z];
+	public Tile getTile(int x, int y) {
+		return tiles[x][y];
 	}
 	
 	public String getName() {
@@ -87,18 +90,18 @@ public class Map {
 		this.name = name;
 	}
 	
-	public Pair<Boolean, Entity> entityAt(int x, int y, int z) {
+	public Pair<Boolean, Entity> entityAt(int x, int y) {
 		for (EntityTile entity:entities) {
-			if (entity.getX()==x && entity.getY()==y && entity.getZ()==z) {
+			if (entity.getX()==x && entity.getY()==y) {
 				return new Pair<Boolean, Entity>(true, entity.getEntity());
 			}
 		}
 		return new Pair<Boolean, Entity>(false, null);
 	}
 	
-	public Pair<Boolean, Item> itemAt(int x, int y, int z) {
+	public Pair<Boolean, Item> itemAt(int x, int y) {
 		for (ItemTile item:items) {
-			if (item.getX()==x && item.getY()==y && item.getZ()==z) {
+			if (item.getX()==x && item.getY()==y) {
 				return new Pair<Boolean, Item>(true, item.getItem());
 			}
 		}
@@ -208,5 +211,11 @@ public class Map {
 	}
 	public HashMap<Link, Point2D> getExits() {
 		return exits;
+	}
+
+	@Override
+	public void moveCamera() {
+		// TODO Auto-generated method stub
+		
 	}
 }
