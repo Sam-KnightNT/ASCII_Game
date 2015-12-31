@@ -1,9 +1,7 @@
 package version_7;
 
-public class Coord3D {
-
-	private byte x;
-	private byte y;
+public class Coord3D extends Coord {
+	
 	private byte z;
 	
 	public Coord3D(byte x, byte y, byte z) {
@@ -15,63 +13,38 @@ public class Coord3D {
 	public Coord3D(int x, int y, int z) {
 		this((byte) x, (byte) y, (byte) z);
 	}
-
-	public double distance(Coord3D crd) {
-		return Math.sqrt(distanceSq(crd));
+	
+	public Coord3D(Coord2D c, int z) {
+		this(c.getX(), c.getY(), (byte) z);
 	}
 	
-	public double distance(byte px, byte py, byte pz) {
-		return Math.sqrt(distanceSq(px, py, pz));
-	}
-	
-	public double distanceSq(Coord3D crd) {
-		byte dx = (byte) (crd.getX()-x);
-		byte dy = (byte) (crd.getY()-y);
-		byte dz = (byte) (crd.getZ()-z);
-		return (dx*dx)+(dy*dy)+(dz*dz);
-	}
-	
-	public double distanceSq(byte px, byte py, byte pz) {
-		byte dx = (byte) (px-x);
-		byte dy = (byte) (py-y);
-		byte dz = (byte) (pz-z);
-		return (dx*dx)+(dy*dy)+(dz*dz);
-	}
-	
-	public byte getX() {
-		return x;
-	}
-	
-	public byte getY() {
-		return y;
+	public Coord3D(Coord3D c) {
+		this(c.getX(), c.getY(), c.getZ());
 	}
 	
 	public byte getZ() {
 		return z;
 	}
 	
-	public void setX(byte x) {
-		this.x = x;
-	}
-
-	public void setY(byte y) {
-		this.y = y;
-	}
-
 	public void setZ(byte z) {
 		this.z = z;
 	}
-
+	
+	public byte getV() {
+		//This has no planar value, so return 0
+		return 0;
+	}
+	
 	public void setLocation(Coord3D crd) {
 		x = crd.getX();
 		y = crd.getY();
 		z = crd.getZ();
 	}
 	
-	public void setLocation(byte x, byte y, byte z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public void setLocation(int x, int y, int z) {
+		this.x = (byte) x;
+		this.y = (byte) y;
+		this.z = (byte) z;
 	}
 	
 	public String toString() {
@@ -87,5 +60,53 @@ public class Coord3D {
 			Coord3D coords = (Coord3D) obj;
 			return (x==coords.x && y==coords.y && z==coords.z);
 		}
+	}
+
+	private Coord3D add(Coord3D c) {
+		x += c.x;
+		y += c.y;
+		z += c.z;
+		return this;
+	}
+	
+	public Coord3D add(Coord2D c) {
+		return add(new Coord3D(c, 0));
+	}
+	
+	public Coord3D add(Coord c) {
+		if (c instanceof Coord2D) {
+			return add((Coord2D) c);
+		} else if (c instanceof Coord3D) {
+			return add((Coord3D) c);
+		} else {
+			System.out.println("No add defined for "+c.getClass());
+			return null;
+		}
+	}
+	
+	public double distance(Coord2D c) {
+		return distance(new Coord3D(c, 0));
+	}
+	
+	public double distance(Coord3D c) {
+		int dx = c.x-x;
+		int dy = c.y-y;
+		int dz = c.z-z;
+		return Math.sqrt(dx*dx + dy*dy + dz*dz);
+	}
+	
+	@Override
+	public double distance(Coord c) {
+		// TODO Auto-generated method stub
+		return c.distance(this);
+	}
+
+	@Override
+	public int toSingleVal() {
+		return x + (y << 8) + (z << 16);
+	}
+	
+	public static Coord3D c3sum(Coord3D c1, Coord3D c2) {
+		return new Coord3D(c1.x+c2.x, c1.y+c2.y, c1.z+c2.z);
 	}
 }

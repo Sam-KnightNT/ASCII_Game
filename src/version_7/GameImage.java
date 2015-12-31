@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,25 +25,83 @@ public class GameImage extends JPanel {
 	private Graphics2D g;
 	private Graphics2D gSide;
 	private int xDim, yDim;					//Overall size of the image
-	protected int xUnit = 20, yUnit = 30;	//Size of a single character
+	protected final int X_UNIT = 20, Y_UNIT = 30;	//Size of a single character
+	private int xView, yView;
 	//private int z;						//Current slice of the map
-	//Instead of a Map, have a list of Locations, one of these being the centralLocation.
-	//On drawing, each of these Locations are drawn, relative to the centralLocation.
-	private ArrayList<Location> locations;
-	private Location cloc;
+	private Dungeon dungeon;
 	private EntityTile player;
 	//Rename these?
+	
+	private ArrayList<BufferedImage> dungeonSlices = new ArrayList<BufferedImage>();
+	protected final int infoWidth = 300;
 	
 	public GameImage() {
 		init();
 	}
 	
-	public GameImage(ArrayList<Location> locations, Location location, int xArray, int yArray) {
-		this.locations = locations;
-		this.cloc = location;
-		xDim = xUnit*xArray;
-		yDim = yUnit*yArray;
+	public GameImage(Dungeon dungeon, int xArray, int yArray) {
+		this.dungeon = dungeon;
+		
+		xDim = X_UNIT*xArray;
+		yDim = Y_UNIT*yArray;
 		setSize(xDim, yDim);
+		xView = xArray;
+		yView = yArray;
+		
+		mainPane = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);
+		controlPane = new BufferedImage(infoWidth, yDim, BufferedImage.TYPE_INT_RGB);
+		
+		int maxDepth = 0;
+		for (Map map : dungeon.getMaps().keySet()) {
+			if (map.getZ() > maxDepth) {
+				maxDepth = map.getZ();
+			}
+		}
+		//Create n dungeonSlices, where n is the lowest z-level in the dungeon.
+		for (int i = 0; i <= maxDepth; i++) {
+			dungeonSlices.add(new BufferedImage(10000, 10000, BufferedImage.TYPE_INT_RGB));
+		}
+		
+		for (Map map : dungeon.getMaps().keySet()) {
+			Graphics2D g = dungeonSlices.get(map.getZ()).createGraphics();
+			for (int y=0; y<map.getH(); y++) {
+				for (int x=0; x<map.getW(); x++) {
+					TileType tile = map.getTile(x, y).getType();
+					
+					int y2 = y+map.getY();
+					int x2 = x+map.getX();
+					//TODO - check which is more efficient. This current method, or
+					//BufferedImage img = tile.getImage();
+					//g.drawImage(img.getSubimage(20*x % img.getWidth(), 30*y % img.getHeight(), 20, 30), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
+					
+					int wImg = tile.getImage().getWidth();
+					int hImg = tile.getImage().getHeight();
+					//For the maps, draw a small portion of the thing in each map. So, take the map's position, take it away from the player map's position. Then take the player's position off THAT.
+					//Then draw whatever stays in the frame - based on the resolution.
+					
+					//If the textures are not a multiple of 20x30, complain about them.
+					//TODO - allow repeated textures that aren't a multiple of 20x30? Dunno if I want that to be allowed, since it'll look weird if it's a regular pattern.
+					try {
+					BufferedImage img = tile.getImage().getSubimage(20*x2 % wImg, 30*y2 % hImg, 20, 30);
+					g.drawImage(img, x2*X_UNIT, y2*Y_UNIT, null);
+					} catch (RasterFormatException e) {
+						System.err.print("Tile "+tile.getName()+" is not in the required format; ");
+						if (wImg % 20 != 0) {
+							System.err.print("the width needs to be a multiple of 20 (currently "+wImg+")");
+							if (hImg % 30 != 0) {
+								System.err.print(" and ");
+							}
+						}
+						if (hImg % 30 != 0) {
+							System.err.print("the height needs to be a multiple of 30 (currently "+hImg+")");
+						}
+						System.err.println(".");
+						System.exit(1);
+					}
+				}
+			}
+		}
+		
 		
 		//boolean pressed = false;
 		
@@ -61,6 +120,23 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke('m'), "mix");
 		this.getInputMap().put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "exit");
 
+		this.addKeyListener(new KeyListener() {
+			public void keyTyped(KeyEvent e) {
+				
+			}
+
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		this.getActionMap().put("pick up", new AbstractAction() {
 			/**
 			 * 
@@ -192,6 +268,10 @@ public class GameImage extends JPanel {
 		addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				System.out.println("Click at "+e.getPoint().toString());
+				int x = Math.floorDiv(e.getPoint().x, X_UNIT);
+				int y = Math.floorDiv(e.getPoint().y, Y_UNIT);
+				int val = x + (y >> 8);
+				System.out.println("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val));
 			}
 		});
 		
@@ -201,9 +281,11 @@ public class GameImage extends JPanel {
 			}
 		});
 		
-		mainPane = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);
-		controlPane = new BufferedImage(500, yDim, BufferedImage.TYPE_INT_RGB);
 		init();
+	}
+	
+	public void setDungeon(Dungeon dungeon) {
+		this.dungeon = dungeon;
 	}
 	
 	public void setPlayer(EntityTile player) {
@@ -219,6 +301,7 @@ public class GameImage extends JPanel {
 	public void init() {
 		g = mainPane.createGraphics();
 		gSide = controlPane.createGraphics();
+		setPlayer(GameClass.self);
 		lines = new LinkedList<String>();
 		/*try {
 			//gSide.drawImage(ImageIO.read(new File("images/Menu Background.png")), 0, 0, null);
@@ -230,11 +313,12 @@ public class GameImage extends JPanel {
 	}
 	
 	public void drawInfo(String info) {
+		//Draw up to 30 lines of information in the status log.
 		gSide.setColor(Color.WHITE);
 		if (lines.size()>=30) {
 			lines.pop();
 			lines.add(info);
-			gSide.clearRect(0, 15, 500, 455);
+			gSide.clearRect(0, 15, infoWidth, 455);
 		} else {
 			lines.add(info);
 		}
@@ -244,12 +328,14 @@ public class GameImage extends JPanel {
 	}
 	
 	public void drawLocation(int x, int y) {
+		//Draws the specified location to the top of the screen.
 		gSide.setColor(new Color(150, 150, 255));
-		gSide.clearRect(100, 0, 45, 15);
-		gSide.drawString("("+x+", "+y+")", 100, 10);
+		gSide.clearRect((int) (infoWidth*.4), 0, 100, 15);
+		gSide.drawString("("+x+", "+y+")", (int) (infoWidth*0.4), 10);
 	}
 	
 	public void drawEquipment(EntityTile player) {
+		//Draws the player's equipment below the status info.
 		int l = 0;
 		for (Item item : player.getInventory()) {
 			gSide.drawString(item.getName(), 15, 30+(l*15));
@@ -260,45 +346,52 @@ public class GameImage extends JPanel {
 		g.setColor(Color.BLACK);
 		g.clearRect(0, 0, mainPane.getWidth(), mainPane.getHeight());
 		
-		//If the current location is a Room, have it centre on the centre of the room. If it's a Corridor, have it centre on the player.
-		int offsetX = (int) ((mainPane.getWidth()/2.0f)-(cloc.getX()+(cloc.getW()/2.0f)*xUnit));
-		int offsetY = (int) ((mainPane.getHeight()/2.0f)-(cloc.getY()+(cloc.getH()/2.0f)*yUnit));
+		int offsetX = (int) ((mainPane.getWidth()/2.0f)-player.getX()*X_UNIT);
+		int offsetY = (int) ((mainPane.getHeight()/2.0f)-player.getY()*Y_UNIT);
 		
-		//if (cloc instanceof version_7.Corridor) {
-			offsetX = (int) ((mainPane.getWidth()/2.0f)-(cloc.getEntityByName("Player").get(0).getX()*xUnit));
-			offsetY = (int) ((mainPane.getHeight()/2.0f)-(cloc.getEntityByName("Player").get(0).getY()*yUnit));
-		//}
-		for (Location location : locations) {
-			int offsetX2 = (location.getX()-cloc.getX())*xUnit;
-			int offsetY2 = (location.getY()-cloc.getY())*yUnit;
-			byte h = location.getH();
-			byte w = location.getW();
-			for (byte y=0; y<h; y++) {
-				for (byte x=0; x<w; x++) {
-					TileType tile = location.getTile(x, y).getType();
-					
-					//TODO - check which is more efficient. This current method, or
-					//BufferedImage img = tile.getImage();
-					//g.drawImage(img.getSubimage(20*x % img.getWidth(), 30*y % img.getHeight(), 20, 30), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
-
-					int wImg = tile.getImage().getWidth();
-					int hImg = tile.getImage().getHeight();
-					//TODO - for tiled images, replace the 1st parameter with
-					//tile.getImage().getSubimage(xDraw%20, yDraw%30, 20, 30)
-					//Need to get the size of the image, and draw the part of it relative to the absolute location of the room.
-					//So, if the image is 20x30, any position will start at 0, 0.
-					//If the image is 200x300, and it's being drawn at 1, 3, it should draw starting at 20, 60. x, y -> 20x, 20y. 
-					//But, 10, 10 -> 0, 0. x, y -> 20x%xsize, 30y%ysize.
-					g.drawImage(tile.getImage().getSubimage(20*x % wImg, 30*y % hImg, 20, 30), (x*xUnit)+offsetX+offsetX2, (y*yUnit)+offsetY+offsetY2, null);
-				}
-			}
+		//Draw dungeon slice first, draw entities and items on top
+		byte h = (byte) Math.min(dungeon.getH(), player.getY()+(yView/2)+2);
+		byte w = (byte) Math.min(dungeon.getW(), player.getX()+(xView/2)+2);
+		
+		System.out.println("Drawing map: "+(20*(player.getX()+player.getLocation().getX()-(xView/2)-2))+", "+(30*(player.getY()+player.getLocation().getY()-(yView/2)-2)));
+		System.out.println(dungeonSlices.get(0).getHeight());
+		
+		//Is this thing greater than 0? If so, set it equal. Otherwise, set it equal to 0.
+		//"This thing" is the location of the player in the map, plus the location of the map in the dungeon, multipled by the number of pixels each unit takes up,
+		//then shifted as if that point described is in the centre of the screen - i.e. moving half a screen left/up.
+		int x = X_UNIT*(player.getX()+player.getLocation().getX()-(xView/2)-2);
+		int y = Y_UNIT*(player.getY()+player.getLocation().getY()-(yView/2)-2);
+		int xDraw = (x > 0 ? x : 0);
+		int yDraw = (y > 0 ? y : 0);
+		
+		g.drawImage(dungeonSlices.get(0).getSubimage(xDraw, yDraw, mainPane.getWidth(), mainPane.getHeight()), (x < 0 ? -x : 0), (y < 0 ? -y : 0), null);
+		//TODO - replace all this with a static image that is pre-calculated - i.e. the entire Dungeon. Each slice is stored as a big BufferedImage, 
+		//OR, as a series of pixels, each one representing a different Tile, which is then expanded when the slice is loaded, if that takes too much memory.
+		//This is stored in memory, and the appropriate part is drawn on screen in one big chunk, followed by entities/items.
+		//Every time the player modifies the dungeon, the small part of the image is recalculated.
+		
+		//Alternatively, TODO - once it's all drawn, store it in g, then only delete part of it, shift it in a direction and draw the new column or row that's revealed.
+		
+		for (ItemTile itemT : dungeon.getItems()) {
+			Item item = itemT.getItem();
+			g.drawImage(item.getImage(), (itemT.getX()*X_UNIT)+offsetX, (itemT.getY()*Y_UNIT)+offsetY, null);
+		}
+		for (EntityTile entityT : dungeon.getEntities()) {
+			Entity entity = entityT.getEntity();
+			g.drawImage(entity.getImage(), (entityT.getX()*X_UNIT)+offsetX, (entityT.getY()*Y_UNIT)+offsetY, null);
+		}
+		for (Location location : dungeon.getMaps().keySet()) {
+			int offsetX2 = 30;
+			int offsetY2 = 45;
+			h = (byte) Math.min(location.getH(), player.getY()+(yView/2)+2);
+			w = (byte) Math.min(location.getW(), player.getX()+(xView/2)+2);
 			for (ItemTile itemT : location.getItems()) {
 				Item item = itemT.getItem();
-				g.drawImage(item.getImage(), (itemT.getX()*xUnit)+offsetX+offsetX2, (itemT.getY()*yUnit)+offsetY+offsetY2, null);
+				g.drawImage(item.getImage(), (itemT.getX()*X_UNIT)+offsetX+offsetX2, (itemT.getY()*Y_UNIT)+offsetY+offsetY2, null);
 			}
 			for (EntityTile entityT : location.getEntities()) {
 				Entity entity = entityT.getEntity();
-				g.drawImage(entity.getImage(), (entityT.getX()*xUnit)+offsetX+offsetX2, (entityT.getY()*yUnit)+offsetY+offsetY2, null);
+				g.drawImage(entity.getImage(), (entityT.getX()*X_UNIT)+offsetX+offsetX2, (entityT.getY()*Y_UNIT)+offsetY+offsetY2, null);
 			}
 		}
 		
@@ -309,9 +402,10 @@ public class GameImage extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}*/
+		drawLocation(player.getX(), player.getY());
 		this.paintComponent(g);
 	}
-	//TODO add dynamic textures, or large textures that take up (20n, 30n) and are wrappable
+	//TODO add dynamic textures
 	//2 coordinates - old pair, EntityTile
 	public void redrawMap(HashMap<Triplet<Integer, Tile, Integer>, EntityTile> changes) {
 		for (Entry<Triplet<Integer, Tile, Integer>, EntityTile> entry : changes.entrySet()) {
@@ -323,24 +417,12 @@ public class GameImage extends JPanel {
 			
 			//Draw the map's tile thingy in the old location
 			g.drawImage(coords.getMiddle().getImage(), null, coords.getLeft(), coords.getRight());
-			g.drawImage(entity.getImage(), null, x*xUnit, y*yUnit);
+			g.drawImage(entity.getImage(), null, x*X_UNIT, y*Y_UNIT);
 		}
-	}
-	
-	public void setCurrentLocation(Location location) {
-		this.cloc = location;
 	}
 	
 	public Image getImage() {
 		return mainPane;
-	}
-	
-	public IntPair getUnits() {
-		return new IntPair(xUnit, yUnit);
-	}
-	
-	public IntPair getDims() {
-		return new IntPair(xDim, yDim);
 	}
 	
 /*	public void zLevel(int z) {
@@ -357,7 +439,7 @@ public class GameImage extends JPanel {
 	public void dispInventory() {
 		gSide.setColor(new Color(250, 120, 150));
 		ArrayList<Item> inv = player.getInventory();
-		gSide.clearRect(0, 490, 500, inv.size()*15);
+		gSide.clearRect(0, 490, infoWidth, inv.size()*15);
 		for (int i=0; i<inv.size(); i++) {
 			gSide.drawString(inv.get(i).getName(), 0, 490+(i*15));
 		}
@@ -368,6 +450,8 @@ public class GameImage extends JPanel {
 		AffineTransform t = AffineTransform.getScaleInstance(10, 10);
 		BufferedImage i = new BufferedImage(200, 300, BufferedImage.TYPE_INT_ARGB);
 		i.createGraphics().drawRenderedImage(img, t);
+		
+		//TODO once it changes to a 60FPS clock - make the background constantly change, with options to set it at any RGB value
 		
 		//Put the 6 backgrounds in - white, blue, black, green, red, yellow
 		gSide.setColor(Color.WHITE);

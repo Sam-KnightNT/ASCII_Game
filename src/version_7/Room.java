@@ -3,11 +3,11 @@ package version_7;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-public class Room extends Location{
+public class Room extends Location2D {
 
 	//Has width, height and location (lower-left point)
 
@@ -47,36 +47,39 @@ public class Room extends Location{
 	 * -                              -
 	 * -------o--------------o---------
 	 */
+		
+	private Coord2D position;
+	private byte x;
+	private byte y;
 	
-	public Room(byte w, byte h, byte x, byte y) throws IOException {
+	public Room(byte w, byte b, byte x, byte y) throws IOException {
 		//Create dummy tile types, that are just the default ones.
-		this(w, h, x, y, new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), true, null, null),
-				new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), false, null, null));
+		this(w, b, x, y, new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), new ArrayList<String>(Arrays.asList("All")), null),
+				new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), new ArrayList<String>(), null));
 	}
 	
 	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType) {
 		this.setW(w);
 		this.setH(h);
-		this.setCorner(x, y);
-		setTiles(new Tile[w][h]);
+		this.setX(x);
+		this.setY(y);
+		this.setPosition(x, y);
+		TileSpace2D tilespace = new TileSpace2D();
+		tilespace.setTiles(new Tile[w][h]);
 		for (int yI = 1; yI < h-1; yI++) {
 			for (int xI = 1; xI < w-1; xI++) {
-				setTile(xI, yI, floorTileType);
+				tilespace.setTile(xI, yI, floorTileType);
 			}
 		}
 		for (int xI = 0; xI < w; xI++) {
-			setTile(xI, 0, wallTileType);
-			setTile(xI, h-1, wallTileType);
+			tilespace.setTile(xI, 0, wallTileType);
+			tilespace.setTile(xI, h-1, wallTileType);
 		}
 		for (int yI = 0; yI < h; yI++) {
-			setTile(0, yI, wallTileType);
-			setTile(w-1, yI, wallTileType);
+			tilespace.setTile(0, yI, wallTileType);
+			tilespace.setTile(w-1, yI, wallTileType);
 		}
-	}
-
-	public Room(byte w, byte h, byte x, byte y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
-		this(w, h, x, y, floorTileType, wallTileType);
-		setAttachments(attachments);
+		this.setTiles(tilespace);
 	}
 	
 	public Room(byte w, byte h, byte x, byte y, String name) throws IOException {
@@ -90,76 +93,59 @@ public class Room extends Location{
 	}
 	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType) {
 		this((byte) w, (byte) h, (byte) x, (byte) y, floorTileType, wallTileType);
-		for (int yI = 1; yI < h-1; yI++) {
-			for (int xI = 1; xI < w-1; xI++) {
-				setTile(xI, yI, floorTileType);
-			}
-		}
-		for (int xI = 0; xI < w; xI++) {
-			setTile(xI, 0, wallTileType);
-			setTile(xI, h-1, wallTileType);
-		}
-		for (int yI = 0; yI < h; yI++) {
-			setTile(0, yI, wallTileType);
-			setTile(w-1, yI, wallTileType);
-		}
 	}
-	public Room(int w, int h, int x, int y, TileType floorTileType, TileType wallTileType, HashMap<Location, Entrance> attachments) {
-		this(w, h, x, y, floorTileType, wallTileType);
-		this.setAttachments(attachments);
-	}
-	
 	
 	public Room(int w, int h, int x, int y, String name) throws IOException {
 		this(w, h, x, y);
 		this.setName(name);
 	}
-
-	public void carveEntrancesWithCurrentAttachments(TileType floor) {
-		carveEntrances(new ArrayList<Entrance>(getAttached().values()), floor);
+	
+	public byte getX() {
+		return x;
 	}
-	public void carveEntrances(ArrayList<Entrance> entrances, TileType floorTileType) {
-		for (Entrance entrance : entrances) {
-			for (int s=entrance.getNearSide(); s<entrance.getFarSide(); s++) {
-				switch (entrance.getDirection()) {
-				case NORTH:
-					setTile(s, 0, floorTileType);
-					break;
-				case SOUTH:
-					setTile(s, getH()-1, floorTileType);
-					break;
-				case WEST:
-					setTile(0, s, floorTileType);
-					break;
-				case EAST:
-					setTile(getW()-1, s, floorTileType);
-					break;
-				}
-			}
-		}
+	public void setX(byte x) {
+		this.x = x;
 	}
 	
-	public void pillarCorners(TileType type) {
-		//TODO - once this gets large, see what happens if you use bitmath, i.e. getH() & 0x1. Use two's complement.
-		byte h = (byte) (getH()-1);
-		byte w = (byte) (getW()-1);
-		setTile(0, 0, type);
-		setTile(0, h, type);
-		setTile(w, 0, type);
-		setTile(w, h, type);
+	public byte getY() {
+		return y;
+	}
+	public void setY(byte y) {
+		this.y = y;
 	}
 
-	@Override
-	public void moveCamera() {
-		// TODO Auto-generated method stub
-		
+	public byte getZ() {
+		return 0;
+	}
+	
+	public byte getV() {
+		return 0;
 	}
 	
 	public String toString() {
 		return "Room: "+getName()+", size ("+getW()+", "+getH()+"), location ("+getX()+", "+getY()+")";
 	}
 	
-	public void setCorner(int x, int y) {
-		setCorner((byte) x, (byte) y);
+	public void setPosition(byte x, byte y) {
+		this.setX(x);
+		this.setY(y);
+		this.position = new Coord2D(x, y);
+	}
+	
+	public void setPosition(int x, int y) {
+		setPosition((byte) x, (byte) y);
+	}
+	
+	public Coord2D getPosition() {
+		return position;
+	}
+	
+	public Coord2D getSize() {
+		return new Coord2D(getW(), getH());
+	}
+	
+	public void setCorner(Coord2D c) {
+		this.setX(c.getX());
+		this.setY(c.getY());
 	}
 }

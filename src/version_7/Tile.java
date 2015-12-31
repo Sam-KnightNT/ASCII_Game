@@ -1,6 +1,7 @@
 package version_7;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 
 public class Tile {
@@ -43,11 +44,11 @@ public class Tile {
 		System.out.println(action+" was performed on "+tile.getName());
 	}
 	
-	public boolean isWalkable() {
-		return tile.isWalkable();
+	public boolean isWalkable(EntityTile entity) {
+		return tile.isTraversable(entity);
 	}
-	public void setWalkable(boolean walkable) {
-		tile.setWalkable(walkable);
+	public void setRestrictedEntities(ArrayList<String> restrictedEntities) {
+		tile.setRestrictedEntities(restrictedEntities);
 	}
 	
 	public String toString() {

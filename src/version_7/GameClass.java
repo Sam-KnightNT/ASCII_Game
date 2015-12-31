@@ -6,7 +6,6 @@ import java.awt.image.Raster;
 import java.awt.image.RescaleOp;
 import java.io.*;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +35,9 @@ public class GameClass {
 	 */
 	static HashMap<String, Item> items = new HashMap<String, Item>();
 	static HashMap<String, Entity> entities = new HashMap<String, Entity>();
-	static HashMap<String, Location> locations = new HashMap<String, Location>();
+	static Dungeon dungeon;
+	static HashMap<String, Map> maps = new HashMap<String, Map>();
+	//static HashMap<String, Location> rooms = new HashMap<String, Location>();
 	static HashMap<String, TileType> tiles = new HashMap<String, TileType>();
 	static Random random = new Random();
 	//TODO - Remove all static modifiers, since they should be unique to each GameClass
@@ -47,10 +48,12 @@ public class GameClass {
 	public static EntityTile self;
 	private static Location cloc;
 	private static boolean AIon = false;
-	private static TreeMap<EntityTile, Integer> unfrozenEntities = new TreeMap<EntityTile, Integer>();
+	protected static TreeMap<EntityTile, Integer> unfrozenEntities = new TreeMap<EntityTile, Integer>();
 	private static BufferedImage bottle;
 	private static BufferedImage liquid;
 	private static BufferedImage shine;
+	
+	private static boolean debug = true;
 	
 	//Where the player is initially
 	static int px = 1;
@@ -62,6 +65,8 @@ public class GameClass {
 	static int dy;
 	static int dz;
 	
+	//Have you lost your way?
+	static boolean between = false;
 	/*
 	 * This series of comments marks what should be done in v.03.07. 
 	 * Currently, Potions seem to be working fine, at least, single ones do. I'm sick of them though, so I'm going to leave multi-fluid Potions until later.
@@ -83,6 +88,9 @@ public class GameClass {
 	 * 
 	 * After v.05 is done, there might be a public release. Either v.04 or v.05 should deal with making the Dungen make a proper dungeon-like thing and adding a story and such.
 	 * v.06 or v.07 onwards should probably be bugfix and balance tweaking. The main game should be done by then. After that, I can release Dungeon of the Three, Version 1 - AKA Tales of Three I: Dot3. After that (or after some more content updates, depending on how much I get done), begin work on Tales of Three II: Godfall or whatever it'll be called.
+	 * 
+	 * 
+	 * TODO - redo this. Probably v0.something should have a test map, v0.s+1 implements the combat system, s+2 adds enemies, items and a progression, s+3 is the full map with events, s+4 has points and a menu, and s+5 is the full game (with different weapon progressions).
 	 */
 	public static void main(String[] args) throws Exception {
 		readFromFile();
@@ -90,38 +98,31 @@ public class GameClass {
 		BufferedReader readIn = new BufferedReader(new InputStreamReader(System.in));
 		String command = "";
 		
-		//Construct 2 rooms and a corridor to connect them
-		Room room = new Room(9, 11, 11, 29, tiles.get("Gold 6 Floor"), tiles.get("Gold 6 Wall"));
-		Room room2 = new Room(7, 8, 1, 21, tiles.get("Tin 6 Floor"), tiles.get("Tin 6 Wall"));
-		Room room3 = new Room(12, 8, 7, 12, tiles.get("Bronze 6 Floor"), tiles.get("Bronze 6 Wall"));
-		Room room4 = new Room(7, 8, 17, 20, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
-		Room room5 = new Room(24, 12, 0, 0, tiles.get("biggrass Floor"), tiles.get("biggrass Wall"));
+		createBetweenFord();
 		
-		ArrayList<Entrance> entrances = new ArrayList<Entrance>();
-		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(4, 3), new Coord2D(7, 3)));
-		entrances.add(new Entrance(Direction.WEST, new Coord2D(0, 1), new Coord2D(0, 3)));
-		entrances.add(new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(4, 0)));
-		entrances.add(new Entrance(Direction.EAST, new Coord2D(8, 2), new Coord2D(8, 3)));
-		entrances.add(new Entrance(Direction.SOUTH, new Coord2D(3, 10), new Coord2D(8, 10)));
-
-		//TODO - bonus area where the temperature is really warm. Warm enough that you need some kind of magic to survive long periods of time, and you can't prevent potions from slowly purifying.
-		Corridor corridor1 = new Corridor(9, 4, 8, 25, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
-		Corridor corridor2 = new Corridor(9, 5, 8, 20, tiles.get("Marble Floor"), tiles.get("Marble Wall"));
-		corridor1.setName("Corridor 1");
-		corridor2.setName("Corridor 2");
-		room.setName("Room 1");
+		Map map1 = new Map(54, 54, 0, 0, 0, tiles.get("Sandstone Brick 2 Floor"));
+		Map map2 = new Map(100, 100, 43, -50, 0, tiles.get("Marble Floor"));
+		
+		//Construct 2 rooms and a corridor to connect them
+		Room room1 = new Room(9, 11, 11, 20, tiles.get("biggold Floor"), tiles.get("biggold Wall"));
+		Room room2 = new Room(7, 8, 1, 21, tiles.get("biggold Floor"), tiles.get("biggold Wall"));
+		Room room3 = new Room(12, 8, 9, 14, tiles.get("biggold Floor"), tiles.get("biggold Wall"));
+		Room room4 = new Room(7, 8, 20, 22, tiles.get("Iron 6 Floor"), tiles.get("Iron 6 Wall"));
+		Room room5 = new Room(24, 12, 2, 2, tiles.get("biggrass Floor"), tiles.get("biggrass Wall"));
+		
+		room1.setName("Room 1");
 		room2.setName("Room 2");
 		room3.setName("Room 3");
 		room4.setName("Room 4");
 		room5.setName("Room 5");
-
+		
 		//Add Minotaur
-		//EntityTile mino = new EntityTile(entities.get("Minotaur"), room, (byte) 1, (byte) 1, (byte) 0);
-		//unfrozenEntities.put(mino, 100);
+		createEntity("Minotaur", map1, 1, 1, 0, 100);
+		
 		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
-
-		room.addItem(new ItemTile(items.get("Boots of Want to Get Over There Right Now"), 4, 5, 0));
+		
+		//room.addItem(new ItemTile(items.get("Boots of Want to Get Over There Right Now"), 4, 5, 0));
 		bottle = ImageIO.read(new File("images/items/Potion Bottle.png"));
 		liquid = ImageIO.read(new File("images/items/Potion Liquid.png"));
 		shine = ImageIO.read(new File("images/items/Potion Shine.png"));
@@ -129,48 +130,72 @@ public class GameClass {
 		BufferedImage mPot = createPotionGraphics(new Color(10, 120, 255));
 		
 		BufferedImage hPot = createPotionGraphics(new Color(255, 15, 20));
-
+		
 		Potion healthPot = new Potion(new LiquidPure(new LiquidType("health", "Health Fluid"), 35.0, 500), new Bottle(1000));
 		healthPot.setImage(hPot);
 		Potion manaPot = new Potion(new LiquidPure(new LiquidType("mana", "Mana Fluid"), 35.0, 500), new Bottle(1000));
 		manaPot.setImage(mPot);
-		room.addItem(new ItemTile(healthPot, 4, 5, 0));
-		room.addItem(new ItemTile(manaPot, 6, 5, 0));
-		attachTwoLocations(corridor1, room, entrances.get(0));
-		attachTwoLocations(corridor1, room2, entrances.get(1));
-		attachTwoLocations(corridor2, room3, entrances.get(2));
-		attachTwoLocations(corridor2, room4, entrances.get(3));
-		attachTwoLocations(corridor1, corridor2, new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(4, 0)));
-		attachTwoLocations(room3, room5, new Entrance(Direction.NORTH, 2, 4, room3));
+		room1.addItem(new ItemTile(healthPot, 4, 5, 0));
+		room1.addItem(new ItemTile(manaPot, 6, 5, 0));
 		
-		corridor1.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
-		corridor2.extrudeWithCurrentAttachments(tiles.get("Marble Floor"));
-		room.carveEntrancesWithCurrentAttachments(tiles.get("biggold Floor"));
-		room2.carveEntrancesWithCurrentAttachments(tiles.get("Tin 6 Floor"));
-		room3.carveEntrancesWithCurrentAttachments(tiles.get("Bronze 6 Floor"));
-		room4.carveEntrancesWithCurrentAttachments(tiles.get("Iron 6 Floor"));
-		room5.carveEntrancesWithCurrentAttachments(tiles.get("Grass Floor"));
-		room.setTile(2, 2, tiles.get("Gold 6 Pillar"), false);
-		room.setTile(2, 8, tiles.get("Gold 6 Pillar"), false);
-		room.setTile(6, 2, tiles.get("Gold 6 Pillar"), false);
-		room.setTile(6, 8, tiles.get("Gold 6 Pillar"), false);
-		room.setTile(1, 3, tiles.get("Gold 6 Downward Stairway"));
-		room.setTile(1, 5, tiles.get("Gold 6 Upward Stairway"));
-		room.setTile(1, 7, tiles.get("Gold 6 Up/Down Stairway"));
-		locations.put("Room 1", room);
-		locations.put("Room 2", room2);
-		locations.put("Room 3", room3);
-		locations.put("Room 4", room4);
-		locations.put("Room 5", room5);
-		locations.put("Corridor 1", corridor1);
-		locations.put("Corridor 2", corridor2);
+		room5.addItem(new ItemTile(healthPot, 3, 3, 0));
 		
-		cloc = locations.get("Room 1");
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);
+		room3.fill(2, 0, 4, 0, tiles.get("biggold Floor"));
+		room3.fill(11, 3, 11, 5, tiles.get("biggold Floor"));
+		room3.fill(4, 7, 5, 7, tiles.get("biggold Floor"));
+		room5.fill(9, 11, 11, 11, tiles.get("biggrass Floor"));
+		room5.fill(23, 5, 23, 8, tiles.get("biggrass Floor"));
+		room5.fill(4, 0, 7, 0, tiles.get("biggrass Floor"));
+		room5.fill(0, 4, 0, 6, tiles.get("biggrass Floor"));
+		room4.fill(1, 0, 4, 0, tiles.get("Iron 6 Floor"));
+		room4.fill(0, 4, 0, 6, tiles.get("Iron 6 Floor"));
+		room2.fill(6, 3, 6, 4, tiles.get("biggold Floor"));
+		room1.fill(0, 4, 0, 5, tiles.get("biggold Floor"));
+		room1.fill(8, 6, 8, 8, tiles.get("Iron 6 Floor"));
+		
 
+		map1.draw(7, 23, 10, 26, tiles.get("biggold Wall"));
+		map1.fill(7, 24, 10, 25, tiles.get("biggold Floor"));
+		
+		room1.setTile(2, 2, tiles.get("biggold Pillar"), false);
+		room1.setTile(2, 8, tiles.get("biggold Pillar"), false);
+		room1.setTile(6, 2, tiles.get("biggold Pillar"), false);
+		room1.setTile(6, 8, tiles.get("biggold Pillar"), false);
+		room1.setTile(1, 3, tiles.get("biggold Downward Stairway"));
+		room1.setTile(1, 5, tiles.get("biggold Upward Stairway"));
+		room1.setTile(1, 7, tiles.get("biggold Up/Down Stairway"));
+		map1.addRoom(room1);
+		map1.addRoom(room2);
+		map1.addRoom(room3);
+		map1.addRoom(room4);
+		map1.addRoom(room5);
+		
+		map1.setName("Map 1");
+		
+		cloc = map1;
+		maps.put("Map 1", map1);
+		maps.put("Map 2", map2);
+		dungeon = new Dungeon();
+		dungeon.setName("Default dungeon");
+		//dungeon.addMap(maps.get("Between Ford"), maps.get("Between Ford").getPosition());
+		dungeon.addMap(map1, map1.getPosition());
+		dungeon.addMap(map2, map2.getPosition());
+		
+		/*
+		rooms.put("Room 1", room);
+		rooms.put("Room 2", room2);
+		rooms.put("Room 3", room3);
+		rooms.put("Room 4", room4);
+		rooms.put("Room 5", room5);
+		rooms.put("Corridor 1", corridor1);
+		rooms.put("Corridor 2", corridor2);
+		
+		cloc = rooms.get("Room 1");*/
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);
+		
 		initialiseMainImage();
 //		SPOT FURTHER DOWN, BELOW COMMANDS
-
+		
 		//TODO - modify speed counter to account for things like
 		//opening inventory (1/20th a move time), long wind-up moves and so on
 		//Perhaps an action list of what to do next, i.e. "Minotaur move in 20 ticks, Player perform Great Strike in 35 ticks", etc?
@@ -180,6 +205,9 @@ public class GameClass {
 		//Cool-down 1, so it takes 10000/speed ticks before you can perform another action
 		while (true) {
 			System.out.print("Please enter a command: ");
+			for (Map map : maps.values()) {
+				System.out.println(map.getName()+", "+map.getX()+", "+map.getY());
+			}
 			try {
 				command = readIn.readLine();
 			} catch (IOException ex) {
@@ -255,14 +283,14 @@ public class GameClass {
 	 					}
 	 				} else {
 	 					print("Entity not recognised.");
-	 					for (EntityTile entityN:cloc.getEntities()) {
+	 					for (EntityTile entityN : cloc.getEntities()) {
 	 						print(entityN.getName());
 	 					}
 	 				}
 				}
-				else if (!self.hasStat("mana")) {print("Undefined mana");}
-				else if(!self.hasStat("magic power")) {print("Undefined magic power");}
-				else if(self.getStat("mana")<=0) {print("Out of mana!");}
+				else if (!self.hasStat("mana")) 		{print("Undefined mana");}
+				else if (!self.hasStat("magic power")) 	{print("Undefined magic power");}
+				else if (self.getStat("mana")<=0) 		{print("Out of mana!");}
 			}
 			
 			//Heal thyself
@@ -340,14 +368,28 @@ public class GameClass {
 		}
 	}
 	
+	private static void createBetweenFord() {
+		//A very dark, very large map with little in it.
+		//TODO - redo it into a non-space that is basically an exception handler.
+		//TODO - make the graphics draw programatically, so no hint of it exists in the graphics folders. Should be an animation, since the game should be converted to a framerate-based one before this is relevant. 
+		//Something like, "when the player first enters, select 3 random points on the floor. Set them to be RGB 0.5/0.5/0.5. Add these pixels to a list.
+		//Then, each frame, have all pixels above RGB 0.03 total check their 4 neighbours. Against each neighbour, roll 3 rands.
+		//If the first rand > 0.5, add a random amount of up to 80% of your own colour to this neighbour, and decrease said colour by 1/10th of that. Repeat for each rand, and each neighbour, and each pixel.
+		//Add this new pixel to the list of checked pixels, and redo. Once there are no pixels above RGB 0.05, delete them all and start again.
+		//The intention is to create little staticy "explosions" in the background, that look like... I dunno, something weird and cool.
+		/*Map betweenford = new Map(50, 50, 0, 0, 0, tiles.get("Dark Floor"));
+		betweenford.setName("Between Ford");
+		maps.put("Between Ford", betweenford);*/
+	}
+
 	public static void initialiseMainImage() {
-		mainImage = new GameImage(new ArrayList<Location>(locations.values()), cloc, dx, dy);
-		mainImage.setSize(1800, 730);
+		mainImage = new GameImage(dungeon, dx, dy);
+		mainImage.setPreferredSize(new Dimension(1400, 730));
 		mainImage.setPlayer(self);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(Math.min(dx*mainImage.xUnit+505, 1900), Math.min(dy*mainImage.yUnit, 1020));
+				frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.infoWidth+5, 1900), Math.min(dy*mainImage.Y_UNIT, 1020));
 				frame.setTitle("Dungeon Game What Has No Name");
 				frame.setVisible(true);
 				frame.add(mainImage);
@@ -357,13 +399,14 @@ public class GameClass {
 				//infoPanel.setSize(100, mainImage.getHeight());
 				//frame.add(infoPanel);
 				frame.setResizable(false);
+				frame.pack();
 			}
 		});
 	}
 	
 	public static void readFromFile() throws Exception {
 		//TODO - make loading screen a spirograph
-		String filename = "..\\ASCII_Game\\mazeInfo.txt";
+		String filename = "mazeInfo.txt";
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String contents = "";
 		String line = reader.readLine();
@@ -464,6 +507,37 @@ public class GameClass {
 		//Then make following attacks do better depending on previous attacks. E.g. CA works best with left-handed, then WZ makes you backslash, which is faster than CA -> QE.
 		//EQ with left-hand sword into W with right-hand shield is also much faster, and a good, strong attack.
 		//My main thought is having things like Keening and Sunder. That would be AWESOME. (and by that I mean dual swords, apparently Sunder is a hammer. Sod that. Keening deals large unarmoured damage, Sunder breaks armour))
+		
+		//TODO - change typing system to mouse-based system.
+		//Holding left click will bring up a sort of wheel where you can see your character holding their weapon.
+		//Swinging the mouse will swing the weapon - faster makes it do more damage, but might not be possible with heavier weapons.
+		//Normally, you won't turn to match it, but holding right click will let you do that.
+		//Swinging round and round will either whirl it round your head (great for flails) but holding right click lets you swing it for a very powerful whirlwind attack.
+		//Also, holding WSAD while holding right click will keep you stuck in that direction, good if you want to quickly turn or something.
+		
+		//TODO - more exposition on arena fights
+		//You have about 10-20 levels, each of which sees you fighting in a greater area.
+		//Maybe the first can be an arena - you get points for things (maybe more points the less you take damage) and after 10,000 points a boss comes out of a gate.
+		//Beat this boss and the gate remains open, so you can move out into a wider area. The second level has you doing something else, maybe clearing a bunch of narrowish corridors.
+		//Once you get to a certain area, another boss battle and you reach level 3. And so on.
+		//You have a choice in level 1 - what weapon do you take? You have sword, mace, flail, hammer, etc.
+		//Every level you complete makes your weapon a bit more powerful - maybe 10 gives you a small chance to give an elemental strike after a 3-hit combo. Level 5 gives double damage after a 5th hit, etc.
+		//Once you get to level 3 3 times with a certain weapon, you unlock the ability to start at level 2 with that weapon. This allows players to progress without having to do the same stuff again, as well as increasing replayability, without letting you power through the game.
+		//After the final level and final boss, the entire game is available to you, maybe one level shuts off earlier parts, but you can get back to them after the finale. Here, you can fight ever-more-powerful (just more HP, defence, attack, attack speed) enemies.
+		//The final enemies should be allocated "points" to spend in attributes, and these will be static at first but based on how well you do against them as time goes on.
+		//If you beat a super-attack-speed enemy much more easily ("ease": a function of damage taken, time taken and number/strength of attacks used (stronger attacks mean a harder enemy)), attack speed will cost less but be less weighted to be spent on.
+		//This ensures the player will always be forced to fight the more challenging variants of enemies - ones that THEY in particular find more challenging.
+		//There might have to be some way to detect cheesing (deliberately taking damage to encourage attributes they find easier), but this might hamper the Any% max-score runs.
+		//It should be such that you can do a speedrun, a max points run and a min points run - plus other things like a run to get the max points in the game (minus the final level - i.e. all enemies killed in level 2 etc) as fast as possible. You'd need setup for getting max points - less setup = faster time. Once max score is reached, this should be a speedrun category.
+		//TL;DR: Arena, expands with each of 10-20 levels, with different expansion conditions. Different weapons encourage replayability, as does letting you continue from later areas. Make it speedrun-friendly and have intelligently-attributed ever-stronger enemies after the final boss for high-score competition.
+		
+		//TODO - simple combat system, maybe that could be the "easy" mode for players.
+		//Basically, hold shift and tap QWEDCXZAS for any one of 9 attacks.
+		//Q/E do a left/right slash. W is a downward strike. A/D are left/right swipes. Z/C are left/right upward chops. X is upward slice. S is a simple stab.
+		//Have 2 options - relative controls and absolute controls. Absolute are those at all times, relative is based on the direction you're facing.
+		//This allows you to do much better combos - you can have more fighting-game-style combat then. For example, QCW is a powerful slam. You slice the enemy, chop them up into the air, then slam them down, stunning them.
+		//That's for hammers, the stun. You only gain the ability to do this around level 10. It can be seen as an air attack, or earth. With swords, you get a fire attack. This shoots a fire wave (think Air Cutter but with fire) forwards, or does extra damage if you whap them with the firey blade.
+		
 		if (command.matches("m([swen])$")) {
 			switch (command.charAt(1)) {
 			case 's':
@@ -483,11 +557,13 @@ public class GameClass {
 						"tell me what you pressed, and that \"the direction regex was passed\""
 						+command+"\" as a parameter\"");
 			}
+			//print(cloc.getTile(self.getXY()));
+			//print(self.getXY()+", "+self.getX()+", "+self.getY());
 		}
 		
 		//Pick up item
 		else if (command.equals("p")) {
-			Pair<Boolean, Item> itemHere = cloc.itemAt(self.getX(), self.getY(), self.getZ()); 
+			Pair<Boolean, Item> itemHere = cloc.itemAt(self.getX(), self.getY()); 
 			if (itemHere.getLeft()) {
 				Item item =	itemHere.getRight();
 				Pair<Boolean, ItemTile> itemAt = 
@@ -495,7 +571,7 @@ public class GameClass {
 				if (itemAt.getLeft()) {
 					cloc.removeItem(itemAt.getRight());
 					self.pickupItem(item);
-					mainImage.setCurrentLocation(cloc);
+					print("Picked up "+itemAt.getRight().getName());
 					mainImage.redrawMap();
 					mainImage.dispInventory();
 				}
@@ -505,7 +581,7 @@ public class GameClass {
 						"Something went seriously wrong here. I can't find an item at the place\n" +
 						"you're at, but the only way to get here is if you picked one up.\n" +
 						"Did it disappear before this thing deleted it? Exiting anyway, this will crash otherwise.");
-					System.exit(0);
+					System.exit(-3);
 				}
 			} else {
 				print("No item here.");
@@ -544,7 +620,7 @@ public class GameClass {
 					print("Entity "+entity+" not found, no damage will be dealt.");
 				} else {
 					print("More than 1 entity of same name found - something is probably wrong with" +
-							"the combat system, so report it to whoever made it. If you ARE that person, hi me!");
+							"the combat system, so report it to the developer.");
 				}
 			} else {
 				print("Improper usage of \"d\" command.\n" +
@@ -574,7 +650,13 @@ public class GameClass {
 				if (tiles.containsKey(tileName)) {
 					TileType tile = tiles.get(tileName);
 					print("Changing at "+x+" "+y+" "+z);
-					cloc.setTile(x, y, tile);
+					if (cloc instanceof Location2D) {
+						((Location2D) cloc).setTile(x, y, tile);
+					} else if (cloc instanceof Location3D) {
+						((Location3D) cloc).setTile(x, y, z, tile);
+					} else {
+						print(cloc.getClass()+" is not either a 2D or 3D location. It's probably 4D - I haven't added behaviour for that yet, nag me.");
+					}
 				} else {
 					print("Tile "+tileName+" not found, " +
 							"tile at ("+x+", "+y+") will not be changed.");
@@ -608,8 +690,6 @@ public class GameClass {
 				print("Mixing failed, less than 2 Potions in inventory");
 			}
 		}
-		//TODO - deprecate this, it shouldn't need to have to update it in the image all the time
-		mainImage.setCurrentLocation(cloc);
 		//Change this to only repaint the small area being changed
 		frame.getContentPane().repaint();
 		//TODO - have pictorial representations of engravings, like the DF engravings. See jef's stream on 21/03/2015 (http://www.twitch.tv/jefmajor/b/639760684)
@@ -627,18 +707,19 @@ public class GameClass {
 		int ticks = self.getTicks();
 		self.resetTicks();
 		
-		//Print out all the locatios and their entities
+		//Print out all the locations and their entities
 		//TODO - delete this
-		for (Location loc : locations.values()) {
+		/*for (Location loc : rooms.values()) {
 			System.out.println(loc.getName());
 			for (EntityTile ent : loc.getEntities()) {
 				System.out.println("\t"+ent.getName());
 			}
-		}
+		}*/
 		
 		//Move the player
-		boolean leftRoom = move(dir, self, cloc);
-		
+		Pair<Boolean, Boolean> didMove = move(dir, self);
+		boolean leftRoom = didMove.getRight();
+				
 		//If the player entered a new room, alter the path of every entity that needs it
 		if (leftRoom) {
 			for (EntityTile entity : unfrozenEntities.keySet()) {
@@ -688,236 +769,66 @@ public class GameClass {
 		mainImage.redrawMap();
 	}
 	
-	public static boolean move(Direction dir, EntityTile entity, Location loc) {
-		//TODO - replace the location parameter, replace it with this line
-		//Location loc = entity.getLocation();
+	public static Pair<Boolean, Boolean> move(Direction dir, EntityTile entity) {
+		Location loc = entity.getLocation();
+		//NOTE: If moving is being weird, this used to have an extra parameter, location, instead of assuming it's the same as the entity's location.
+		//Also, there was a z-position defined for the entity, but it didn't do anything as far as I saw.
 		
 		//TODO - this is an absolute mess, clean it up! (Put most things into separate functions)
 		
-		//TODO - have 2 return statements - one true iff move was successful, one true iff new room was entered
 		byte x = (byte) entity.getX();
 		byte y = (byte) entity.getY();
 		short xy = (short) (x + (y << 8));
-		byte z = entity.getZ();
-		//First, check and see if it has an entrance listed.
-		if (entity.getEntrance()!=null) {
-			//If it does, compare directions.
-			Entrance entrance = entity.getEntrance();
-			if (entrance.getDirection()==dir) {
-				//If they are equal, move through the entrance.
-				Entrance newEntrance = entrance.getLinkedEntrance();
-				Location newLoc = newEntrance.getLocation();
-				byte dx = (byte) (x-entrance.getLocA().getX());
-				byte dy = (byte) (y-entrance.getLocA().getY());
-				if (entity.getName()=="Player") {
-					//If the entity is the player, change cloc
-					cloc.removeEntity(entity);
-					print("You moved to a new location! From "+cloc.getName()+" to "+newLoc.getName());
-					cloc = newLoc;
-					cloc.addEntity(entity);
-					mainImage.setCurrentLocation(cloc);
-				} else {
-					//Otherwise remove the entity from its current location and move it to the new location
-					print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+newLoc.getName());
-					loc.removeEntity(entity);
-					newLoc.addEntity(entity);
-					if (entity.getPath().get(0)==newLoc) {
-						entity.updatePath();
-					}
-				}
-				entity.setNewEntrance(newEntrance);
-				entity.setCoords((byte) (newEntrance.getLocA().getX()+dx), (byte) (newEntrance.getLocA().getY()+dy), z);
-				entity.setNewEntrance(entrance.getLinkedEntrance());
-				return true;
-			} else {
-				//If the entity does not go through the door, just perform the movement.
-				if (entrance.getDirection().getOppositeDirection()==dir) {
-					//If the direction is opposite, it is no longer in the entrance, so un-set that.
-					entity.setNewEntrance(null);
-				}
-				short newxy = (short) (xy+dir.getNumVal());
-				Tile newTile = null;
-				try {
-					newTile = loc.getTile(newxy);
-				} catch (ArrayIndexOutOfBoundsException e) {
-					e.printStackTrace();
-					print("Error: Attempting to get tile at "+(newxy >> 8)+", "+(newxy % 8));
-				}
-				if (!newTile.getType().isWalkable()) {
-					print(entity.getName()+": Cannot move there.");
-				} else {
-					Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
-					if (otherEntTile.getLeft()) {
-						print("The "+entity.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
-						fight(entity, otherEntTile.getRight());
-					} else {
-						entity.setCoords(newxy, z);
-						if (entity==self) {
-							print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
-						} else {
-							print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
-						}
-					}
-				}
-				//drawMap(cmap);
-				return false;
-			}
-		}
+		//First, check and see if the new position is outside of the current location.
+		int newxy = xy+dir.getNumVal();
+		int wh = loc.getWH();
+		int w = loc.getW();
+		int h = loc.getH();
+		int nx = mod(newxy);
+		int ny = (newxy - nx) >> 8;
 		
-		//If it does not currently have an entrance listed, check if it is on the border of one. This bit gives no chance of being at one.
-		else if (x>0 && x<loc.getW()-1 && y>0 && y<loc.getH()-1) {
-			//If all of these are true, there is no way moving will lead to a separate location, so move there.
-			
-			//The direction values are selected so that adding them will change xy to the appropriate value
-			short newxy = (short) (xy+dir.getNumVal());
-			Tile newTile = loc.getTile(newxy);
-			if (!newTile.getType().isWalkable()) {
-				print(entity.getName()+": Cannot move there.");
-				return false;
+		if (newxy >= 0 && newxy < wh && nx >= 0 && nx < w) {
+			//If it is inside the current Location, just try to perform the movement. Note that some tiles might only let certain entities through.
+			if (loc.getTile(newxy).isWalkable(entity)) {
+				entity.setXY(newxy);
+				System.out.println(entity.getLocation().getTile(newxy));
+				return new Pair<Boolean, Boolean>(true, false);
 			} else {
-				Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
-				if (otherEntTile.getLeft()) {
-					print("The "+entity.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
-					fight(entity, otherEntTile.getRight());
-				} else {
-					entity.setCoords(newxy, z);
-					if (entity==self) {
-						print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
-				 		mainImage.drawLocation(entity.getX(), entity.getY());
-					} else {
-						print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
-					}
-				}
+				print(entity.getName()+" cannot move to "+nx+", "+((newxy - nx) >> 8)+" in location "+loc.getName());
+				return new Pair<Boolean, Boolean>(false, false);
 			}
-			//drawMap(cmap);
-			return false;
 		} else {
-			//Otherwise, it's possible that the entity's at an Entrance, so check against all of them to find the right one.
-			//Once it's found, if the direction matches up, go straight through it.
-			HashMap<Location, Entrance> attachments = loc.getAttached();
-			boolean found = false;
-			Entrance foundEntrance = null;
-			int dx = 0;
-			int dy = 0;
-			search:
-			for (Entry<Location, Entrance> entry : attachments.entrySet()) {
-				Entrance entrance = entry.getValue();
-				//Make sure the current location is within the entrance
-				if (	   entrance.getLocB().getY()>=y && entrance.getLocA().getY()<=y
-						&& entrance.getLocA().getX()<=x && entrance.getLocB().getX()>=x) {
-					found = true;
-					foundEntrance = entrance;
-					dx = x-entrance.getLocA().getX();
-					dy = y-entrance.getLocA().getY();
-					break search;
-				}
+			//Otherwise, it's outside the current Location and should go to whatever Location is there.
+			print ("Moving to new location");
+			Location newloc = dungeon.getMapRel(loc, new Coord3D(nx, ny, entity.getZ()));
+			entity.setX(nx);
+			entity.setY(ny);
+			loc.removeEntity(entity);
+			try {
+				newloc.addEntity(entity);
+				print ("New map info: "+newloc.toString());
+			} catch (NullPointerException e) {
+				//In this case, the player has made an illegal move - shunt them to the Between Ford.
+				between = true;
+				return new Pair<Boolean, Boolean>(true, true);
 			}
-			//If an entrance has been found, set the entity's current entrance to be the one found.
-			if (found) {
-				//If the direction happens to be the same, move to the new location immediately.
-				if (foundEntrance.getDirection()==dir) {
-					//If the entity moving is the player, change cloc
-					Entrance newEnt = foundEntrance.getLinkedEntrance();
-					Location newLoc = newEnt.getLocation();
-					if (entity.getName()=="Player") {
-						cloc.removeEntity(entity);
-						print("You moved to a new location! From "+cloc.getName()+" to "+newLoc.getName());
-						cloc = newLoc;
-						cloc.addEntity(entity);
-						mainImage.setCurrentLocation(cloc);
-					} else {
-						//Otherwise remove the entity from its current location and move it to the new location
-						print(entity.getName()+" has moved to a new location! From "+loc.getName()+" to "+newLoc.getName());
-						loc.removeEntity(entity);
-						newLoc.addEntity(entity);
-						if (entity.getPath().get(0)==newLoc) {
-							entity.updatePath();
-						}
-					}
-					entity.setNewEntrance(newEnt);
-					entity.setCoords((byte) (newEnt.getLocA().getX()+dx), (byte) (newEnt.getLocA().getY()+dy), z);
-					return true;
-				} else {
-					//If the entity does not go through the door, just perform the movement.
-					if (foundEntrance.getDirection().getOppositeDirection()!=dir) {
-						//If the direction is not opposite, it is still in the entrance, so set that as the current entrance.
-						entity.setNewEntrance(foundEntrance);
-					}
-					//Else just set the entity's current entrance as this one (as long as it's not opposite), to speed up finding it next time, as well as actually moving over there.
-					short newxy = (short) (xy+dir.getNumVal());
-					Tile newTile = loc.getTile(newxy);
-					if (!newTile.getType().isWalkable()) {
-						print(entity.getName()+": Cannot move there.");
-					} else {
-						Pair<Boolean, EntityTile> otherEntTile = existsAtLoc(loc, newxy);
-						if (otherEntTile.getLeft()) {
-							print("The "+entity.getName()+" attacks the "+otherEntTile.getRight().getName()+"!");
-							fight(entity, otherEntTile.getRight());
-						} else {
-							entity.setCoords(newxy, z);
-							if (entity==self) {
-								print("You move "+dir+" to "+entity.getX()+", "+entity.getY());
-							} else {
-								print("The "+entity.getName()+" moves "+dir+" to "+entity.getX()+", "+entity.getY());
-							}
-						}
-					}
-					//drawMap(cmap);
-					return false;
-				}
-			} else {
-				return false;
-			}
+			//if (newloc.equals(maps.get("Between Ford"))) {
+			//	entity.setCoords(0, 0, 0);
+			//}
+			return new Pair<Boolean, Boolean>(true, true);
 		}
-		//I don't think it should ever get to this point - this could be a link to Betweenford if someone manages to get here. For now, return false.
-		//TODO - add Betweenford entrance here
-		//print ("Shouldn't have got here (it's at the end of \"move\")");
-		//return false;
+	}
+	
+	private static int mod(int i) {
+		//Is i > 0? If so, return i % 256. Else return i % 256 + 256
+		return i > 0 ? i % 256 : i % 256 + 256;
 	}
 
-	public static void moveToEntrance(EntityTile entity, Entrance entrance) {
-		//If the entity isn't yet at the entrance, move towards it. If the entity is at the entrance, move right through it.
-		
-		//Check the orientation of the Entrance. If it is east/west, check the entity's y position. If it's above the entrance, moveTo the northernmost point.
-		//If it's below the entrance (plus size), moveTo the southernmost. If it's between, move east/west.
-		//Do the same with north/south and the x position.
-		//Find the closest point in the entrance, then attempt to move to there.
-		
-		byte x = entity.getX();
-		byte y = entity.getY();
-		Coord2D ca = entrance.getLocA();
-		Coord2D cb = entrance.getLocB();
-		int minX;
-		if (x<=ca.getX()) {
-			minX = ca.getX();
-		} else if (x>=cb.getX()) {
-			minX = cb.getX();
-		} else {
-			minX = x;
-		}
-		
-		int minY;
-		if (y<ca.getY()) {
-			minY = ca.getY();
-		} else if (y>cb.getY()) {
-			minY = cb.getY();
-		} else {
-			minY = y;
-		}
-		
-		if (minX == x && minY == y) {
-			//If the entity is at the entrance, move straight through it.
-			move(entrance.getDirection(), entity, entity.getLocation());
-		} else {
-			//Otherwise move towards it
-			moveTo(entity, new Coord3D(minX, minY, 0));
-		}
-	}
 	public static void moveToPlayer(EntityTile entity) {
 		moveTo(entity, self.getCoords());
 	}
 	
-	public static void moveTo(EntityTile entity, Coord3D coords) {
+	public static void moveTo(EntityTile entity, Coord coords) {
 		//Assuming it's all handled and the stuff is all valid
 		
 		//Get the relative differences. If abs(diffX)>=abs(diffY), try to move EAST or WEST depending on signum(diffX).
@@ -927,44 +838,44 @@ public class GameClass {
 		if (Math.abs(x)>=Math.abs(y)) {
 			if (x<0) {
 				if (canMove(Direction.EAST, entity)) {
-					move(Direction.EAST, entity, entity.getLocation());
+					move(Direction.EAST, entity);
 				} else {
 					if (y<0) {
-						move(Direction.SOUTH, entity, entity.getLocation());
+						move(Direction.SOUTH, entity);
 					} else {
-						move(Direction.NORTH, entity, entity.getLocation());
+						move(Direction.NORTH, entity);
 					}
 				}
 			} else {
 				if (canMove(Direction.WEST, entity)) {
-					move(Direction.WEST, entity, entity.getLocation());
+					move(Direction.WEST, entity);
 				} else {
 					if (y<0) {
-						move(Direction.SOUTH, entity, entity.getLocation());
+						move(Direction.SOUTH, entity);
 					} else {
-						move(Direction.NORTH, entity, entity.getLocation());
+						move(Direction.NORTH, entity);
 					}
 				}
 			}
 		} else {
 			if (y<0) {
 				if (canMove(Direction.SOUTH, entity)) {
-					move(Direction.SOUTH, entity, entity.getLocation());
+					move(Direction.SOUTH, entity);
 				} else {
 					if (x<0) {
-						move(Direction.EAST, entity, entity.getLocation());
+						move(Direction.EAST, entity);
 					} else {
-						move(Direction.WEST, entity, entity.getLocation());
+						move(Direction.WEST, entity);
 					}
 				}
 			} else {
 				if (canMove(Direction.NORTH, entity)) {
-					move(Direction.NORTH, entity, entity.getLocation());
+					move(Direction.NORTH, entity);
 				} else {
 					if (x<0) {
-						move(Direction.EAST, entity, entity.getLocation());
+						move(Direction.EAST, entity);
 					} else {
-						move(Direction.WEST, entity, entity.getLocation());
+						move(Direction.WEST, entity);
 					}
 				}
 			}
@@ -972,7 +883,7 @@ public class GameClass {
 	}
 	
 	private static boolean canMove(Direction direction, EntityTile entity) {
-		return entity.getLocation().getTile((short) (entity.getXY()+direction.getNumVal())).isWalkable();
+		return entity.getLocation().getTile(entity.getXY()+direction.getNumVal()).isWalkable(entity);
 	}
 
 	public static boolean pathfindToPlayer(EntityTile entity) {
@@ -981,7 +892,8 @@ public class GameClass {
 			moveToPlayer(entity);
 			return false;
 		} else {
-			//If the entity has a path to follow, follow it. Otherwise, create the path to the player.
+			//TODO - change this to A* search, and do it every 5 steps or so.
+			/*//If the entity has a path to follow, follow it. Otherwise, create the path to the player.
 			Location aimingFor = null;
 			try {
 				Path path = entity.getPath();
@@ -1001,14 +913,14 @@ public class GameClass {
 				//We have a list of paths to search - at first, it is a list of paths that are single-length starting at the entity's location.
 				//For each path, we want to check the last index.
 				Path path = searchLocations.pop();
-				Location location = path.peekLast();
-				Location target = self.getLocation();
+				Loc2DSp2D location = path.peekLast();
+				Loc2DSp2D target = self.getLocation();
 				
 				search:
 				while (location != target) {
 					//If it isn't, in a while loop, get all of the attachments of it, put them on the end of the list, and get the first one and do the same thing.
 					//You already have the path to expand - expand it.
-					for (Location attachedLoc : location.getAttached().keySet()) {
+					for (Loc2DSp2D attachedLoc : location.getAttached().keySet()) {
 						if (attachedLoc.equals(self.getLocation())) {
 							//If the location is found, break the loop.
 							location = attachedLoc;
@@ -1039,7 +951,7 @@ public class GameClass {
 					print(entranceP.toString());
 				}
 				print("\nLocation it is aiming for:\n"+aimingFor);
-			}
+			}*/
 			return false;
 		}
 	}
@@ -1052,27 +964,24 @@ public class GameClass {
 		}
 		return new Pair<Boolean, EntityTile>(false, null);
 	}
-	private static Pair<Boolean, EntityTile> existsAtLoc(Location loc, short newxy) {
-		return existsAtLoc(loc, (byte) (newxy & 0xff), (byte) (newxy >> 8));
-	}
 	
 	public static Map initialiseMap(int x, int y, Map map, String type) {
 		for (int j=1; j<(y-1); j++) {
 			for (int i=1; i<(x-1); i++) {
 				if (type.equals("empty")) {
-					map.setTile(i, j, 0, tiles.get("Marble Floor"));					
+					map.setTile(i, j, tiles.get("Marble Floor"));					
 				} else if (type.equals("full")) {
-					map.setTile(i, j, 0, tiles.get("Marble Wall"));
+					map.setTile(i, j, tiles.get("Marble Wall"));
 				}
 			}
 		}
 		for (int i=0; i<x; i++) {
-			map.setTile(i, 0, 0, tiles.get("Marble Wall"));
-			map.setTile(i, y-1, 0, tiles.get("Marble Wall"));
+			map.setTile(i, 0, tiles.get("Marble Wall"));
+			map.setTile(i, y-1, tiles.get("Marble Wall"));
 		}
 		for (int j=0; j<y; j++) {
-			map.setTile(0, j, 0, tiles.get("Marble Wall"));
-			map.setTile(x-1, j, 0, tiles.get("Marble Wall"));
+			map.setTile(0, j, tiles.get("Marble Wall"));
+			map.setTile(x-1, j, tiles.get("Marble Wall"));
 		}
 		return map;
 		
@@ -1263,19 +1172,19 @@ public class GameClass {
 				BufferedImage downImg = null;
 				BufferedImage upDownImg = null;
 				BufferedImage pillarImg = null;
+				float scaleFactor = 0.7f;
+				RescaleOp op = new RescaleOp(scaleFactor, 0, null);	
 				try {
 					img = ImageIO.read(new File(filepath));
 					upImg = ImageIO.read(new File(filepath));
 					downImg = ImageIO.read(new File(filepath));
 					upDownImg = ImageIO.read(new File(filepath));
 					pillarImg = ImageIO.read(new File(filepath));
-					float scaleFactor = 0.7f;
-					RescaleOp op = new RescaleOp(scaleFactor, 0, null);
 					floorImg = op.filter(img, null);
 					upImg = op.filter(img, null);
 					downImg = op.filter(img, null);
 					upDownImg = op.filter(img, null);
-					//pillarImg = op.filter(img, null);
+					pillarImg = op.filter(img, null);
 					Graphics2D upG = upImg.createGraphics();
 					Graphics2D downG = downImg.createGraphics();
 					Graphics2D upDownG = upDownImg.createGraphics();
@@ -1288,15 +1197,21 @@ public class GameClass {
 					e.printStackTrace();
 					System.out.println("Path of invalid material: "+filepath);
 				}
-				
-				tiles.put(name+" Wall", new TileType(name+" Wall", img, false, null, null));
-				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, true, null, null));
-				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, true, null, null));
-				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, true, null, null));
-				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, true, null, null));
-				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, true, null, null));
-				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, true, null, null));
-				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, true, null, null));
+
+				ArrayList<String> allRestricted = new ArrayList<String>();
+				ArrayList<String> playerRestricted = new ArrayList<String>();
+				ArrayList<String> playerNotRestricted = new ArrayList<String>();
+				ArrayList<String> noneRestricted = new ArrayList<String>();
+				allRestricted.add("All");
+				playerRestricted.add("Player");
+				tiles.put(name+" Wall", new TileType(name+" Wall", img, allRestricted, null));
+				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, noneRestricted, null));
+				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, noneRestricted, null));
+				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, noneRestricted, null));
+				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, noneRestricted, null));
+				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, noneRestricted, null));
+				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, noneRestricted, null));
+				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, noneRestricted, null));
 			} else {
 				System.out.println("Material name not found, please check syntax");
 			}
@@ -1511,6 +1426,7 @@ public class GameClass {
 		System.out.println("done.");
 	}
 	
+	@SuppressWarnings("unused")
 	private static void fight(EntityTile ent1, EntityTile ent2) {
 		int str1 = ent1.getStrength()+random.nextInt(20)-10;
 		int str2 = ent2.getStrength()+random.nextInt(20)-10;
@@ -1734,173 +1650,7 @@ public class GameClass {
 	public static void print(Object o) {
 		print(o.toString());
 	}
-	
-	//TODO - put this and other things in a GameUtilities class
-	public static void floorify(int dimX, int dimY, int centreX, int centreY, Map map) {
-		double radiusX = (dimX-1.0)/2.0;
-		int lowRadX = (int) Math.floor(radiusX);
-		int highRadX = (int) Math.ceil(radiusX);
 		
-		double radiusY = (dimY-1.0)/2.0;
-		int lowRadY = (int) Math.floor(radiusY);
-		int highRadY = (int) Math.ceil(radiusY);
-
-		for (int j = centreY-lowRadY; j <= centreY+highRadY; j++) {
-			for (int i = centreX-lowRadX; i<=centreX+highRadX; i++) {
-				String name = map.getTile(i, j, 0).getType().getName().replaceAll("Floor|Wall|Up Stair|Down Stair|Up/Down Stair", "Floor");
-				TileType tile = tiles.get(name);
-				map.setTile(i, j, 0, tile);
-			}
-		}
-	}
-	
-	public static void wallify(int dimX, int dimY, int centreX, int centreY, Map map) {
-		double radiusX = (dimX-1.0)/2.0;
-		int lowRadX = (int) Math.floor(radiusX);
-		int highRadX = (int) Math.ceil(radiusX);
-		
-		double radiusY = (dimY-1.0)/2.0;
-		int lowRadY = (int) Math.floor(radiusY);
-		int highRadY = (int) Math.ceil(radiusY);
-
-		for (String tileName : tiles.keySet()) {
-			print(tileName);
-		}
-		for (int j = centreY-lowRadY; j <= centreY+highRadY; j++) {
-			for (int i = centreX-lowRadX; i<=centreX+highRadX; i++) {
-				String name = map.getTile(i, j, 0).getType().getName().replaceAll("Floor|Wall|Up Stair|Down Stair|Up/Down Stair", "Wall");
-				name = "Marble Up/Down Stairway";
-				TileType tile = tiles.get(name);
-				map.setTile(i, j, 0, tile);
-			}
-		}
-	}
-	
-	public static void wallify(String a, String b, String c, String d, Map map) {
-		wallify(Integer.parseInt(a), Integer.parseInt(b), Integer.parseInt(c), Integer.parseInt(d), map);
-	}
-	
-	public static void surround(int dimX, int dimY, int centreX, int centreY, Map map) {
-		double radiusX = dimX/2;
-		int lowRadX = (int) Math.floor(radiusX)+1;
-		int highRadX = (int) Math.ceil(radiusX)+1;
-
-		double radiusY = dimY/2;
-		int lowRadY = (int) Math.floor(radiusY)+1;
-		int highRadY = (int) Math.ceil(radiusY)+1;
-		
-		for (int j=centreY-lowRadY; j<=centreY+highRadY; j++) {
-			int[] xArr = {centreX-lowRadX, centreX+highRadX};
-			for (int i : xArr) {
-				String name = map.getTile(i, j, 0).getType().getName().replace("Floor|Wall|Up Stairs|Down Stairs|Up/Down Stairs", "Wall");
-				TileType tile = tiles.get(name);
-				map.setTile(i, j, 0, tile);				
-			}
-		}
-		for (int i = centreX-lowRadX; i<=centreX+highRadX; i++) {
-			int[] yArr = {centreY-lowRadY, centreY+highRadY};
-			for (int j : yArr) {
-				String name = map.getTile(i, j, 0).getType().getName().replace("Floor|Wall|Up Stairs|Down Stairs|Up/Down Stairs", "Wall");
-				TileType tile = tiles.get(name);
-				map.setTile(i, j, 0, tile);				
-			}
-		}
-	}
-	
-	public static void attachTwoLocations(Location loc1, Location loc2, Entrance entrance) {
-		//First, check if they are allowed to have a connection (if they're aligned right). If so, create the connection.
-		//Creating: Take the Direction, and place it onto loc1 in that direction, with the second in the Triplet as the location, third width.
-		//Then, reverse the Direction, calculate the relative 2nd point on loc2 (relative to loc1) and put it in that too.
-		
-		//In order to be a valid connection, the other location must be in an appropriate place. take the relative x and y coords, and check the entrance's direction.
-		int relX = loc2.getX()-loc1.getX();
-		int relY = loc2.getY()-loc1.getY();
-		Coord2D locA = entrance.getLocA();
-		Coord2D locB = entrance.getLocB();
-		Direction dir = entrance.getDirection();
-		//TODO - generalise cond1, entrA and entrB so I don't need different things for each direction
-		boolean cond1;
-		
-		//Is the entrance vertical, i.e. NORTH/SOUTH?
-		//	If so, these 2 conditions are only true iff the 2nd location begins left of the entrance, and ends to the right of it.
-		//	If not these 2 conditions are only true iff the 2nd location begins above the entrance, and ends below it.
-		boolean cond2 = dir.verticality() ?
-				(relX < locA.getX()):
-				(relY < locA.getY());
-		boolean cond3 = dir.verticality() ?
-				(relX+loc2.getW() > locB.getX()):
-				(relY+loc2.getH() > locB.getY());
-		
-		//Is the entrance vertical, i.e. NORTH/SOUTH?
-		//	If so, this is true iff both locations are wider than the entrance.
-		//	If not this is true iff both locations are taller than the entrance.
-		boolean cond4 = dir.verticality() ?
-				(loc1.getW() >= entrance.getWidth() && loc2.getW() >= entrance.getWidth()):
-				(loc1.getH() >= entrance.getWidth() && loc2.getH() >= entrance.getWidth());
-		
-		Coord2D entrA;
-		Coord2D entrB;
-		Entrance entrance2 = new Entrance();
-		switch(dir) {
-		case NORTH:
-			cond1 = (-relY==loc2.getH());
-			entrA = new Coord2D(entrance.getLocA().getX()-relX, loc2.getH()-1);
-			entrB = new Coord2D(entrance.getLocB().getX()-relX, loc2.getH()-1);
-			break;
-		case SOUTH:
-			cond1 = (relY==loc1.getH());
-			entrA = new Coord2D(entrance.getLocA().getX()-relX, 0);
-			entrB = new Coord2D(entrance.getLocB().getX()-relX, 0);
-			break;
-		case EAST:
-			cond1 = (relX==loc1.getW());
-			entrA = new Coord2D(0, entrance.getLocA().getY()-relY);
-			entrB = new Coord2D(0, entrance.getLocB().getY()-relY);
-			break;
-		case WEST:
-			cond1 = (-relX==loc2.getW());
-			entrA = new Coord2D(loc2.getW()-1, entrance.getLocA().getY()-relY);
-			entrB = new Coord2D(loc2.getW()-1, entrance.getLocB().getY()-relY);
-			break;
-		default:
-			cond1 = false;
-			cond2 = false;
-			cond3 = false;
-			entrA = null;
-			entrB = null;
-		}
-		if (cond1 && cond2 && cond3 && cond4) {
-			entrance2.setInfo(entrance.getDirection().getOppositeDirection(), entrA, entrB);
-			entrance.setLinkedEntrance(entrance2);
-			entrance2.setLinkedEntrance(entrance);
-			loc1.addAttachment(loc2, entrance);
-			//Modify the Entrance here to contain the relative location
-			loc2.addAttachment(loc1, entrance2);
-			System.out.println("Valid connection between\n"+loc1+"\nand\n"+loc2);
-			//TODO next time - figure out why all entrances created are valid, but only the one from one Room to another gets drawn
-		} else {
-			String printStr = "Invalid connection between\n"+loc1+"\nand\n"+loc2+"\nfrom entrance\n"+entrance+"\nbecause: ";
-			char direc = dir.getDirectionality();
-			char oppDirec = dir.getOppositeDirectionality();
-			String sign = (dir==Direction.SOUTH || dir==Direction.WEST) ? "negative " : "positive ";
-			String oppSign = (dir==Direction.SOUTH || dir==Direction.WEST) ? "positive " : "negative ";
-			String widthStr = dir.verticality() ? "wide" : "tall";
-			if (!cond1) {
-				printStr += "the locations were not aligned in the "+direc+" direction.";
-			} else if (!cond2) {
-				printStr += "the first location is too far in the "+sign+oppDirec+" direction.";
-			} else if (!cond3) {
-				printStr += "the first location is too far in the "+oppSign+oppDirec+" direction.";
-			} else if (!cond4) {
-				printStr += "one of the locations is not "+widthStr+" enough.";
-			} else {
-				printStr += "something completely weird went on and I don't know what. The locations are as follows: "+loc1.toString()+", and "+loc2.toString()+". The entrance is "+entrance.toString();
-			}
-			System.out.println(printStr);
-			System.exit(1);
-		}
-	}
-	
 	public static BufferedImage colorImage(BufferedImage loadImg, Color colour) {
 	    BufferedImage img = new BufferedImage(loadImg.getWidth(), loadImg.getHeight(), BufferedImage.TRANSLUCENT);
 	    final float tintOpacity = 0.45f;
@@ -1936,6 +1686,25 @@ public class GameClass {
 		pot.getGraphics().drawImage(shine, 0, 0, 20, 30, null);
 		
 		return pot;
+	}
+	
+	private static boolean createEntity(String name, Location loc, int x, int y, int z, int speed) {
+		if (entities.containsKey(name)) {
+			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, (byte) z);
+			unfrozenEntities.put(entity, speed);
+			return true;
+		} else {
+			System.out.println("Entity with name "+name+" not found.\n"
+					+ "Please note that names in the database may be different from the actual entity name; the database name should be used.\n"
+					+ "Run with debug mode on to view the entire list of available entities.");
+			if (debug) {
+				System.out.println("List of entities:");
+				for (String entity : entities.keySet()) {
+					System.out.println(entity+", where the entity's name is "+entities.get(entity));
+				}
+			}
+			return false;
+		}
 	}
 
 }

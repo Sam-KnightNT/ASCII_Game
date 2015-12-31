@@ -33,10 +33,6 @@ public class EntityTesting {
 		room1 = new Room(10, 10, 0, 10, "Room 1");
 		room2 = new Room(10, 10, 0, 0, "Room 2");
 		room3 = new Room(10, 10, 0, -10, "Room 3");
-		Entrance ent1 = new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(9, 0));
-		Entrance ent2 = new Entrance(Direction.NORTH, new Coord2D(1, 0), new Coord2D(9, 0));
-		GameClass.attachTwoLocations(room1, room2, ent1);
-		GameClass.attachTwoLocations(room2, room3, ent2);
 		entity = new Entity("Test Entity", null, null, null);
 		entityTile = new EntityTile(entity, (byte) 3, (byte) 4, (byte) 0);
 		room1.addEntity(entityTile);
@@ -54,7 +50,7 @@ public class EntityTesting {
 
 	@Test
 	public void moveEntityNorth() {
-		GameClass.move(Direction.NORTH, entityTile, room1);
+		GameClass.move(Direction.NORTH, entityTile);
 		assertEquals("Entity's new position is correct", new Coord3D(3, 3, 0), entityTile.getCoords());
 		assertEquals("Entity's x position has been changed", 3, entityTile.getX());
 		assertEquals("Entity's y position has been changed", 3, entityTile.getY());
@@ -63,11 +59,14 @@ public class EntityTesting {
 
 	@Test
 	public void moveEntityEast() {
-		GameClass.move(Direction.EAST, entityTile, room1);
+		GameClass.move(Direction.EAST, entityTile);
 		assertEquals("Entity's new position is correct", new Coord3D(4, 4, 0), entityTile.getCoords());
 		assertEquals("Entity's x position has been changed", 4, entityTile.getX());
 		assertEquals("Entity's y position has been changed", 4, entityTile.getY());
 		assertEquals("Entity's z position has been changed", 0, entityTile.getZ());
 	}
+	
+	//Need to check moving an entity from one room into the next
+	//Although since it uses a map system, probably need to check that instead
 	
 }

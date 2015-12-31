@@ -42,7 +42,7 @@ public class LiquidTesting {
 		LiquidType healingFluid = new LiquidType("health", "Healing Fluid");
 		LiquidPure liquid = new LiquidPure(healingFluid, 75.0, 55);
 		assertEquals("Pure liquid created with both params given is the correct concentration", 75.0, liquid.getConcentration(), 0.0001);
-		assertEquals("Pure liquid created with both params given has 1 litre of fluid", 55, liquid.getVolume());
+		assertEquals("Pure liquid created with both params given has the correct volume", 55, liquid.getVolume());
 		assertEquals("Pure liquid created with both params given has the correct type", healingFluid, liquid.getType());
 	}
 	
@@ -56,6 +56,7 @@ public class LiquidTesting {
 		mixture.addConstituent(manaFluid, 1000);
 		mixture.addConstituent(strengthFluid, 1500);
 		assertEquals("Liquid mixture created has correct volume", 6000, mixture.getVolume());
+		assertEquals("Liquid mixture has correct name", "Health-mana-strength Mixture", mixture.getName());
 	}
 	
 	@Test

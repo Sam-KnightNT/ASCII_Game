@@ -1,10 +1,12 @@
 package version_7;
 
-import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class Map {
+import javax.imageio.ImageIO;
+
+public class Map extends Location2D {
 
 	/*
 	 * Rewrite this to be a single floor of a dungeon. A Dungeon is a series of Maps, stitched together - it has Shorts telling each Map where it is in xyz coord space.
@@ -26,187 +28,125 @@ public class Map {
 	 * These will be defined later.
 	 */
 	
-	private Tile[][][] tiles;
 	private ArrayList<Room> rooms = new ArrayList<Room>();
-	private HashMap<Link, Point2D> exits = new HashMap<Link, Point2D>();
-	private ArrayList<EntityTile> entities = new ArrayList<EntityTile>();
-	private ArrayList<ItemTile> items = new ArrayList<ItemTile>();
-	private String name;
+	private Coord3D position;
+	private byte x;
+	private byte y;
+	private byte z;
 	
-	public Map(int x, int y, int z) {
-		tiles = new Tile[x][y][z];
+	public Map(int w, int h, int x, int y, int z) throws IOException {
+		this((byte) w, (byte) h, (byte) x, (byte) y, (byte) z);
 	}
 
-	public Map(int x, int y, int z, TileType tileType) {
-		tiles = new Tile[x][y][z];
-		for (int zI = 0; zI < z; zI++) {
-			for (int yI = 0; yI < y; yI++) {
-				for (int xI = 0; xI < x; xI++) {
-					tiles[xI][yI][zI] = new Tile(tileType);
-				}
+	public Map(int w, int h, int x, int y, int z, TileType tileType) {
+		this((byte) w, (byte) h, (byte) x, (byte) y, (byte) z, tileType);
+	}
+	
+	public Map(byte w, byte h, byte x, byte y, byte z) throws IOException {
+		this(w, h, x, y, z, new TileType("Dummy Tile", ImageIO.read(new File("images/materials/default.png")), new ArrayList<String>(), null));
+	}
+
+	public Map(byte w, byte h, byte x, byte y, byte z, TileType tileType) {
+		this.setW(w);
+		this.setH(h);
+		this.setPosition(x, y, z);
+		TileSpace2D tilespace = new TileSpace2D();
+		tilespace.setTiles(new Tile[w][h]);
+		tilespace.x = w;
+		tilespace.y = h;
+		for (int hI = 0; hI < h; hI++) {
+			for (int wI = 0; wI < w; wI++) {
+				tilespace.setTile(wI, hI, tileType);
 			}
 		}
+		this.setTiles(tilespace);
 	}
 	
-	public Map(Tile[][][] tiles, ArrayList<EntityTile> entities, ArrayList<ItemTile> items, String name) {
-		this.tiles = tiles;
-		this.entities = entities;
-		this.items = items;
-		this.name = name;
+	public byte getX() {
+		return x;
+	}
+	public void setX(byte x) {
+		this.x = x;
 	}
 	
-	public void setTile(int x, int y, int z, TileType newTile) {
-		tiles[x][y][z] = new Tile(newTile);
+	public byte getY() {
+		return y;
+	}
+	public void setY(byte y) {
+		this.y = y;
 	}
 	
-	public Map changeTile(int x, int y, int z, TileType newTile) {
-		tiles[x][y][z] = new Tile(newTile);
-		return new Map(tiles, entities, items, name);
+	public byte getZ() {
+		return z;
+	}
+	public void setZ(byte z) {
+		this.z = z;
 	}
 	
-	public int getDimX() {
-		return tiles.length;
+	public Coord3D getPosition() {
+		return position;
 	}
 	
-	public int getDimY() {
-		return tiles[0].length;
+	public void setPosition(Coord3D p) {
+		position = p;
+		setX(p.getX());
+		setY(p.getY());
+		setZ(p.getZ());
 	}
-	
-	public int getDimZ() {
-		return tiles[0][0].length;
-	}
-	
-	public Tile getTile(int x, int y, int z) {
-		return tiles[x][y][z];
-	}
-	
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public Pair<Boolean, Entity> entityAt(int x, int y, int z) {
-		for (EntityTile entity:entities) {
-			if (entity.getX()==x && entity.getY()==y && entity.getZ()==z) {
-				return new Pair<Boolean, Entity>(true, entity.getEntity());
-			}
-		}
-		return new Pair<Boolean, Entity>(false, null);
-	}
-	
-	public Pair<Boolean, Item> itemAt(int x, int y, int z) {
-		for (ItemTile item:items) {
-			if (item.getX()==x && item.getY()==y && item.getZ()==z) {
-				return new Pair<Boolean, Item>(true, item.getItem());
-			}
-		}
-		return new Pair<Boolean, Item>(false, null);
-	}
-	
-	public void addEntity(EntityTile entity) {
-		entities.add(entity);
-	}
-	public boolean removeEntity(EntityTile entity) {
-		boolean removed = entities.remove(entity);
-		if (!removed) {
-			System.out.println("ERROR. ERROR.");
-			return false;
-		} else {
-			return true;
-		}
-	}
-	public ArrayList<EntityTile> getEntities() {
-		return entities;
-	}
-	public ArrayList<EntityTile> getEntityByName (String name) {
-		ArrayList<EntityTile> entReturned = new ArrayList<EntityTile>();
-		for (EntityTile entity : entities) {
-			String otherName = entity.getEntity().getName();
-			if (otherName.equals(name) && entReturned.isEmpty()) {
-				entReturned.add(entity);
-			} else if (otherName.equals(name) && !entReturned.isEmpty()) {
-				System.out.println("Another entity called "+name+" has been found.");
-				entReturned.add(entity);
-			}
-		}
-		if (!entReturned.isEmpty()) {
-			return entReturned;
-		} else {
-			System.out.println("No entities found, this will go wrong soon.");
-			return null;
-		}
-	}
-	public EntityTile getEntity(EntityTile entity) {
-		return entities.get(entities.indexOf(entity));
-	}
-	public boolean replaceEntity(EntityTile entityToReplace, EntityTile replacer) {
-		boolean replace = entities.remove(entityToReplace);
-		boolean add = entities.add(replacer);
-		if (add && replace) {
-			return true;
-		} else {
-			System.out.println("Error while replacing entity "+entityToReplace.getEntity().getName()+
-					" with "+replacer.getEntity().getName()+" to map "+this.name+".");
-			if (!add) {
-				System.out.println("The entity to add was not found.");
-			} else if (!replace) {
-				System.out.println("The entity to remove was not found.");
-			} else {
-				System.out.println("I have no idea how you got here, apparently (add && replace) is false,\n" +
-						"but so are (!add) and (!replace). Please tell me how this happened.");
-			}
-			return false;
-		}
-	}
-	
-	public void addItem(ItemTile item) {
-		items.add(item);
-	}
-	public void removeItem(ItemTile item) {
-		items.remove(item);
-	}
-	public ArrayList<ItemTile> getItems() {
-		return items;
-	}
-		
-	/**
-	 * @param entName: name of the entity to check for
-	 * @return number of entities found
-	 */
-	public int getCount(String entName) {
-		int count = 0;
-		for (EntityTile entity:entities) {
-			if (entity.getName().equals(entName)) {
-				count++;
-			}
-		}
-		return count;
-	}
-	
-	public void update(ArrayList<EntityTile> entities, ArrayList<ItemTile> items) {
-		this.entities = entities;
-		this.items = items;
-		System.out.println(items);
-	}
-	
-	public void addRoom(Room room, boolean hasWall) {
-		rooms.add(room);
-		GameClass.floorify(room.getW(), room.getH(), room.getX(), room.getY(), this);
-		if (hasWall) {
-			GameClass.surround(room.getW(), room.getH(), room.getX(), room.getY(), this);
-		}
+	public void setPosition(byte x, byte y, byte z) {
+		position = new Coord3D(x, y, z);
+		this.setX(x);
+		this.setY(y);
+		this.setZ(z);
 	}
 	
 	public void addRoom(Room room) {
-		addRoom(room, false);
+		rooms.add(room);
+		int rx = room.getX();
+		int ry = room.getY();
+		for (int y = 0; y < room.getH(); y++) {
+			for (int x = 0; x < room.getW(); x++) {
+				this.setTile(x+rx, y+ry, room.getTile(x, y).getType());
+			}
+		}
+		for (ItemTile item : room.getItems()) {
+			this.addItem(new ItemTile(item.getItem(), new Coord3D(item.getLocation().add(room.getPosition()))));
+		}
+		for (EntityTile entity : room.getEntities()) {
+			this.addEntity(entity);
+		}
+	}
+
+	public ArrayList<Room> getRooms() {
+		return rooms;
 	}
 	
-	public void addExit(Link exit, Point2D coords) {
-		exits.put(exit, coords);
+	
+	public boolean containsPoint(Coord3D coords) {
+		int dx = coords.getX()-getX();
+		int dy = coords.getY()-getY();
+		if (getZ() == coords.getZ() && (dx >= 0 && dx <= getW()) && (dy >= 0 && dy <= getH())) {
+			return true;
+		}
+		return false;
 	}
-	public HashMap<Link, Point2D> getExits() {
-		return exits;
+	
+	public Coord2D getSize() {
+		// TODO Auto-generated method stub
+		return new Coord2D(getW(), getH());
+	}
+	
+	public String toString() {
+		return "Map: ("+getX()+", "+getY()+", "+getZ()+"), "+getW()+"x"+getH();
+	}
+	
+	public void fill(Coord a, Coord b, TileType t) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public byte getV() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

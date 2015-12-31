@@ -17,7 +17,11 @@ public class ItemTile {
 	public ItemTile(Item item, int x, int y, int z) {
 		this(item, (byte) x, (byte) y, (byte) z);
 	}
-
+	
+	public ItemTile(Item item, Coord3D c) {
+		this(item, c.getX(), c.getY(), c.getZ());
+	}
+	
 	public Item getItem() {
 		return item;
 	}
@@ -38,4 +42,23 @@ public class ItemTile {
 		return item.getName();
 	}
 
+	public void setX(byte x) {
+		this.x = x;
+	}
+
+	public void setY(byte y) {
+		this.y = y;
+	}
+
+	public void setZ(byte z) {
+		this.z = z;
+	}
+
+	public String toString() {
+		return "Item "+item+" at ("+x+", "+y+", "+z+")";
+	}
+
+	public Coord3D getLocation() {
+		return new Coord3D(x, y, z);
+	}
 }

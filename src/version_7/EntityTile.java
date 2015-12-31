@@ -10,7 +10,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private byte x;
 	private byte y;
 	private byte z;
-	private Coord3D coords;
+	private Coord coords;
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 	private ArrayList<Item> inventory = new ArrayList<Item>();
 	private int randomness = 0;
@@ -20,6 +20,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private Location location;
 	private Path path;
 	private Entrance entrance;
+	private String directions;
  
 	public EntityTile(Entity entity, byte x, byte y, byte z) {
 		this.entity = entity;
@@ -31,10 +32,10 @@ public class EntityTile implements Comparable<EntityTile> {
 		genStats();
 	}
 	
-	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z) {
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z) {
 		this(entity, x, y, z);
-		this.location = loc;
-		loc.addEntity(this);
+		this.location = cloc;
+		cloc.addEntity(this);
 		genStats();
 	}
 	
@@ -56,15 +57,15 @@ public class EntityTile implements Comparable<EntityTile> {
 		return y;
 	}
 
-	public byte getXY() {
-		return (byte) (x + (y << 8));
+	public short getXY() {
+		return (short) (x + (y << 8));
 	}
 	
 	public byte getZ() {
 		return z;
 	}
 	
-	public Coord3D getCoords() {
+	public Coord getCoords() {
 		return coords;
 	}
 	
@@ -78,9 +79,27 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.coords.setY(y);
 	}
 	
+	public void setX(int x) {
+		setX((byte) x);
+	}
+	
+	public void setY(int y) {
+		setY((byte) y);
+	}
+	
+	public void setXY(int newxy) {
+		setX((byte) (newxy % 256));
+		setY((byte) (newxy >> 8));
+	}
+	
 	public void setZ(byte z) {
-		this.z = z;
-		this.coords.setZ(z);
+		if (coords instanceof Coord3D || coords instanceof Coord4D) {
+			this.z = z;
+			((Coord3D) this.coords).setZ(z);
+		} else {
+			GameClass.print("Entity "+getName()+" tried to move to");
+			GameClass.print("z-location "+z+", but it is in a 2-D space.");
+		}
 	}
 	
 	public void setCoords(Coord3D coords) {
@@ -310,6 +329,13 @@ public class EntityTile implements Comparable<EntityTile> {
 	public void updatePath() {
 		//Occurs when the entity moves through an entrance. Remove the first location in the path - it's got to there.
 		path.remove(0);
+	}
+	
+	/**
+	 * Called every time an entity moves successfully. Simply deletes the first 2 bits off the string, since the entity's just performed that movement.
+	 */
+	public void move() {
+		
 	}
 	
 	public String toString() {
