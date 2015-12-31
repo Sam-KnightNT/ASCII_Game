@@ -33,7 +33,7 @@ public class GameImage extends JPanel {
 	//Rename these?
 	
 	private ArrayList<BufferedImage> dungeonSlices = new ArrayList<BufferedImage>();
-	protected final int infoWidth = 300;
+	protected final int infoWidth = 400;
 	
 	public GameImage() {
 		init();
@@ -45,6 +45,7 @@ public class GameImage extends JPanel {
 		xDim = X_UNIT*xArray;
 		yDim = Y_UNIT*yArray;
 		setSize(xDim, yDim);
+		setPreferredSize(new Dimension(xDim+infoWidth, yDim));
 		xView = xArray;
 		yView = yArray;
 		
@@ -122,19 +123,22 @@ public class GameImage extends JPanel {
 
 		this.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
-				
+				GameClass.print("Typed: "+e);
 			}
 
 			@Override
-			public void keyPressed(KeyEvent arg0) {
+			public void keyPressed(KeyEvent e) {
 				// TODO Auto-generated method stub
+				GameClass.print("Pressed: "+e);
 				
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+				if (e.getKeyCode()==16) {
+					GameClass.print("Released Shift");
+				}
 			}
 		});
 		this.getActionMap().put("pick up", new AbstractAction() {
@@ -270,8 +274,8 @@ public class GameImage extends JPanel {
 				System.out.println("Click at "+e.getPoint().toString());
 				int x = Math.floorDiv(e.getPoint().x, X_UNIT);
 				int y = Math.floorDiv(e.getPoint().y, Y_UNIT);
-				int val = x + (y >> 8);
-				System.out.println("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val));
+				int val = x + (y << 8);
+				GameClass.print("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val));
 			}
 		});
 		
@@ -446,8 +450,10 @@ public class GameImage extends JPanel {
 	}
 
 	public void debugDraw(BufferedImage img) {
-		//Make the image 10 times the size
-		AffineTransform t = AffineTransform.getScaleInstance(10, 10);
+		int xSize = img.getWidth();
+		int ySize = img.getHeight();
+		//Scale the image so that it fits properly into the space
+		AffineTransform t = AffineTransform.getScaleInstance(200/xSize, 300/ySize);
 		BufferedImage i = new BufferedImage(200, 300, BufferedImage.TYPE_INT_ARGB);
 		i.createGraphics().drawRenderedImage(img, t);
 		
@@ -473,5 +479,9 @@ public class GameImage extends JPanel {
 		gSide.drawImage(i, 200, 300, null);
 		gSide.drawImage(i, 0, 600, null);
 		gSide.drawImage(i, 200, 600, null);
+	}
+
+	public void setCombatPortrait(BufferedImage portrait) {
+		gSide.drawImage(portrait, 0, 600, null);
 	}
 }

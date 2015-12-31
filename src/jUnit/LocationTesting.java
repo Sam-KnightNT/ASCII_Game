@@ -15,8 +15,8 @@ public class LocationTesting {
 	public void roomChangeSize() throws IOException {
 		//This does not work - the tilespace does not change size when the location does.
 		Room room = new Room(20, 20, 1, 10);
-		room.setW(10);
-		assertEquals(10, room.getTileSpace().getW());
+		room.setW((byte) 10);
+		assertEquals(10, room.getTiles().getW());
 	}
 	
 }

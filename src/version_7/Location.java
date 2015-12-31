@@ -41,13 +41,13 @@ public abstract class Location {
 		this.name = name;
 	}
 	
-	public Pair<Boolean, Entity> entityAt(byte x, byte y) {
+	public Pair<Boolean, EntityTile> entityAt(byte x, byte y) {
 		for (EntityTile entity:entities) {
 			if (entity.getX()==x && entity.getY()==y) {
-				return new Pair<Boolean, Entity>(true, entity.getEntity());
+				return new Pair<Boolean, EntityTile>(true, entity);
 			}
 		}
-		return new Pair<Boolean, Entity>(false, null);
+		return new Pair<Boolean, EntityTile>(false, null);
 	}
 	
 	public void addEntity(EntityTile entity) {
@@ -148,5 +148,9 @@ public abstract class Location {
 			}
 		}
 		return count;
+	}
+
+	public Pair<Boolean, EntityTile> entityAt(int x, int y) {
+		return entityAt((byte) x, (byte) y);
 	}
 }

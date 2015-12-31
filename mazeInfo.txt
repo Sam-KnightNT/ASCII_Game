@@ -1,4 +1,4 @@
-dimensions: 57, 31, 1
+dimensions: 53, 23, 1
 
 player:
 	name: Lib
@@ -172,6 +172,46 @@ end
 
 material:
 	name: Phijkchu
+end
+
+material:
+	name: Stone Brick Small
+end
+
+material:
+	name: Stone Brick Large
+end
+
+material:
+	name: Dark
+end
+
+material:
+	name: Large Marble
+end
+
+material:
+	name: Sandstone Brick 1
+end
+
+material:
+	name: Sandstone Brick 2
+end
+
+material:
+	name: Sandstone Brick 3
+end
+
+material:
+	name: Sandstone Brick 4
+end
+
+material:
+	name: Sandstone Brick 5
+end
+
+material:
+	name: White Marble
 end
 
 end material definitions

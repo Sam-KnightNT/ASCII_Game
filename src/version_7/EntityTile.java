@@ -20,29 +20,33 @@ public class EntityTile implements Comparable<EntityTile> {
 	private Location location;
 	private Path path;
 	private Entrance entrance;
-	private String directions;
- 
-	public EntityTile(Entity entity, byte x, byte y, byte z) {
+	private BufferedImage portrait;
+	
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z, BufferedImage portrait) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.coords = new Coord3D(x, y, z);
 		this.path = new Path();
-		genStats();
-	}
-	
-	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z) {
-		this(entity, x, y, z);
 		this.location = cloc;
+		this.portrait = portrait;
 		cloc.addEntity(this);
 		genStats();
 	}
 	
-	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, int randomness, int id) {
-		this(entity, loc, x, y, z);
+	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait) {
+		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait);
+	}
+	
+	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, BufferedImage portrait, int randomness, int id) {
+		this(entity, loc, x, y, z, portrait);
 		this.randomness = randomness;
 		this.id = id;
+	}
+	
+	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait, int randomness, int id) {
+		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait, randomness, id);
 	}
 	
 	public Entity getEntity() {
@@ -331,18 +335,15 @@ public class EntityTile implements Comparable<EntityTile> {
 		path.remove(0);
 	}
 	
-	/**
-	 * Called every time an entity moves successfully. Simply deletes the first 2 bits off the string, since the entity's just performed that movement.
-	 */
-	public void move() {
-		
-	}
-	
 	public String toString() {
 		return (getName()+" in "+location.getName()+" at coordinates "+coords.toString());
 	}
 
 	public void setCoords(int x, int y, int z) {
 		setCoords((byte) x, (byte) y, (byte) z);
+	}
+
+	public BufferedImage getPortrait() {
+		return portrait;
 	}
 }

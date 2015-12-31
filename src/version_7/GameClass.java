@@ -48,7 +48,7 @@ public class GameClass {
 	public static EntityTile self;
 	private static Location cloc;
 	private static boolean AIon = false;
-	protected static TreeMap<EntityTile, Integer> unfrozenEntities = new TreeMap<EntityTile, Integer>();
+	private static TreeMap<EntityTile, Integer> unfrozenEntities = new TreeMap<EntityTile, Integer>();
 	private static BufferedImage bottle;
 	private static BufferedImage liquid;
 	private static BufferedImage shine;
@@ -91,6 +91,31 @@ public class GameClass {
 	 * 
 	 * 
 	 * TODO - redo this. Probably v0.something should have a test map, v0.s+1 implements the combat system, s+2 adds enemies, items and a progression, s+3 is the full map with events, s+4 has points and a menu, and s+5 is the full game (with different weapon progressions).
+	 * 
+	 * 
+	 * 
+	 * Roadmap for To3: Arena
+	 * v0.01: Drawing player on map, in ASCII
+	 * v0.02: Drawn on Swing graphics
+	 * v0.03: Changed into non-ASCII, instead using map tiles
+	 * v0.04: Created other entities
+	 * v0.05: Added basic combat system and pathfinding
+	 * v0.06: Created info panel, with info on combat and such (where I am now)
+	 * v0.07: Completed complex combat system
+	 * v0.08: Working combat panel, flavour text and swipe previews
+	 * v0.09: Completed tutorial
+	 * v0.10: Completed arena/textures
+	 * v1.00: Progression, scores 
+	 * 
+	 * Details on v0.07
+	 * There should be new controls. If more than one enemy is standing next to you, 1-9 points at them.
+	 * Shift+QWEDCXZA does the already-mentioned swipey things, which compares the enemy's defence against that particular attack to the player's attack strength.
+	 * Hitting some button ('s' for stance probably) opens a panel in front of the main view (this'll be a third pane) that can be dismissed with Esc.
+	 * It shows a menu - several numbers with stances written beside, such as "two-handed overhead". One (your current stance) is highlighted.
+	 * Pressing numbers highlights that stance, and whichever stance is highlighted has flavour text beside it.
+	 * For example, two-handed is "Allows devastating downward smashes, but little in the way of other attacks and weak defences."
+	 * There could be different stances for different weapon combos later down the line - sword and shield, for example, or polearm.
+	 * Also, don't forget the possibility of using, say, WW as a stab, or S- as a stab to the middle then a slice outwards.
 	 */
 	public static void main(String[] args) throws Exception {
 		readFromFile();
@@ -191,7 +216,7 @@ public class GameClass {
 		rooms.put("Corridor 2", corridor2);
 		
 		cloc = rooms.get("Room 1");*/
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0);
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0, null);
 		
 		initialiseMainImage();
 //		SPOT FURTHER DOWN, BELOW COMMANDS
@@ -205,9 +230,6 @@ public class GameClass {
 		//Cool-down 1, so it takes 10000/speed ticks before you can perform another action
 		while (true) {
 			System.out.print("Please enter a command: ");
-			for (Map map : maps.values()) {
-				System.out.println(map.getName()+", "+map.getX()+", "+map.getY());
-			}
 			try {
 				command = readIn.readLine();
 			} catch (IOException ex) {
@@ -384,12 +406,11 @@ public class GameClass {
 
 	public static void initialiseMainImage() {
 		mainImage = new GameImage(dungeon, dx, dy);
-		mainImage.setPreferredSize(new Dimension(1400, 730));
 		mainImage.setPlayer(self);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.infoWidth+5, 1900), Math.min(dy*mainImage.Y_UNIT, 1020));
+				frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.infoWidth+5, 1920), Math.min(dy*mainImage.Y_UNIT, 1200));
 				frame.setTitle("Dungeon Game What Has No Name");
 				frame.setVisible(true);
 				frame.add(mainImage);
@@ -399,7 +420,7 @@ public class GameClass {
 				//infoPanel.setSize(100, mainImage.getHeight());
 				//frame.add(infoPanel);
 				frame.setResizable(false);
-				frame.pack();
+				//frame.pack();
 			}
 		});
 	}
@@ -507,6 +528,14 @@ public class GameClass {
 		//Then make following attacks do better depending on previous attacks. E.g. CA works best with left-handed, then WZ makes you backslash, which is faster than CA -> QE.
 		//EQ with left-hand sword into W with right-hand shield is also much faster, and a good, strong attack.
 		//My main thought is having things like Keening and Sunder. That would be AWESOME. (and by that I mean dual swords, apparently Sunder is a hammer. Sod that. Keening deals large unarmoured damage, Sunder breaks armour))
+		
+		//Enemies have a number of stances, which are associated with a sprite on the combat screen and a series of resistances.
+		//Resistances are a string of numbers, like "104244304224030420", which represent how much damage reduction is applied to each swing in each direction.
+		//Their stance also determines the same thing for their attack strength.
+		//For example, the start of the string being "123456789" means QW is resisted by 1, QE by 2 etc. 0 means there is no resistance (bare skin tends to be 1 or 2, fur 3-5, 0 would be reserved for ethereal beings and such).
+		//The scale goes from 0-f, f being something like impact-resistant steel armour. There is also '!', which indicates a complete block of the attack or an OHKO for attacks (attack takes precedence), and a '.' for misses.
+		//You can add breaks in between each set of attacks. So you could just have "435627544543945678...", or "436636536, 454636346, 554463445...".
+		//On the sprite attack indicator, once you press a button, the possible attacks come up in a fan-like thing, with the easier attacks being greener, !s (blocks) being black and .s (misses) white.
 		
 		//TODO - change typing system to mouse-based system.
 		//Holding left click will bring up a sort of wheel where you can see your character holding their weapon.
@@ -766,6 +795,21 @@ public class GameClass {
 		/*for (EntityTile ent : unfrozenEntities.keySet()) {
 			print(ent.getName());
 		}*/
+		//Check the 8 tiles around the player, and display the entity/ies that are there
+		ArrayList<EntityTile> adjacents = new ArrayList<EntityTile>();
+		
+		for (int x = self.getX()-1; x <= self.getX()+1; x++) {
+			for (int y = self.getY()-1; y <= self.getY()+1; y++) {
+				if (x != self.getX() || y != self.getY()) {
+					if (cloc.entityAt(x, y).getLeft()) {
+						adjacents.add(cloc.entityAt(x, y).getRight());
+					}
+				}
+			}
+		}
+		if (adjacents.size() > 0) {
+			mainImage.setCombatPortrait(adjacents.get(0).getPortrait());
+		}
 		mainImage.redrawMap();
 	}
 	
@@ -1690,7 +1734,7 @@ public class GameClass {
 	
 	private static boolean createEntity(String name, Location loc, int x, int y, int z, int speed) {
 		if (entities.containsKey(name)) {
-			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, (byte) z);
+			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, (byte) z, null);
 			unfrozenEntities.put(entity, speed);
 			return true;
 		} else {

@@ -34,7 +34,7 @@ public class EntityTesting {
 		room2 = new Room(10, 10, 0, 0, "Room 2");
 		room3 = new Room(10, 10, 0, -10, "Room 3");
 		entity = new Entity("Test Entity", null, null, null);
-		entityTile = new EntityTile(entity, (byte) 3, (byte) 4, (byte) 0);
+		entityTile = new EntityTile(entity, room1, (byte) 3, (byte) 4, (byte) 0, null);
 		room1.addEntity(entityTile);
 	}
 	
