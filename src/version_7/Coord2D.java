@@ -79,12 +79,9 @@ public class Coord2D extends Coord {
 		return x + (y << 8);
 	}
 
-	public static int singleVal(byte x, byte y) {
-		return x + (y << 8);
+	public static Coord2D fromSingleVal(int val) {
+		int x = val % 256;
+		int y = (val - x) >> 8;
+		return new Coord2D(x, y);
 	}
-
-	public static int singleVal(int x, int y) {
-		return singleVal((byte) x, (byte) y);
-	}
-     
 }

@@ -6,7 +6,9 @@ public enum Direction {
 	//North should decrement y by 1. South should increment y by 1.
 	//East should increment x by 1. West should decrement x by 1.
 	//Up should increment z by 1. Down should decrement z by 1.
-	NORTH(-256), SOUTH(256), EAST(1), WEST(-1), UP(65536), DOWN(-65536), OUT(65536*256), IN(-65536*256);
+	NORTH(-256), SOUTH(256), EAST(1), WEST(-1), 
+	NORTHEAST(-255), SOUTHEAST(257), SOUTHWEST(255), NORTHWEST(-257),
+	UP(65536), DOWN(-65536), OUT(65536*256), IN(-65536*256);
 	
 	private Direction opposite;
 	private boolean isVertical;
@@ -17,6 +19,14 @@ public enum Direction {
         SOUTH.opposite = NORTH;
         EAST.opposite = WEST;
         WEST.opposite = EAST;
+        NORTHEAST.opposite = SOUTHWEST;
+        SOUTHWEST.opposite = NORTHEAST;
+        NORTHWEST.opposite = SOUTHEAST;
+        SOUTHEAST.opposite = NORTHWEST;
+        UP.opposite = DOWN;
+        DOWN.opposite = UP;
+        OUT.opposite = IN;
+        IN.opposite = OUT;
     }
     
     static {

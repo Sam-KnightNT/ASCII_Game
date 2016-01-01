@@ -879,60 +879,44 @@ public class GameClass {
 		}
 	}
 	
-	public static void moveTo(EntityTile entity, Coord coords) {
+	public static void moveTo(EntityTile entity, Coord target) {
 		//If the coast is clear, move in a particular direction. If not, use A* to find your way.
 		//TODO - once awkward mazes are possible, rewrite this to include A*.
-		//Assuming it's all handled and the stuff is all valid
 		
-		//Get the relative differences. If abs(diffX)>=abs(diffY), try to move EAST or WEST depending on signum(diffX).
-		int x = entity.getX()-coords.getX();
-		int y = entity.getY()-coords.getY();
+		//Finds where it needs to go, checks the distance to that place.
+		//Tries to head straight for it.
+		//If that is blocked for whatever reason, tries to head diagonally or whatever towards that location - basically, aims to minimise the distance.
 		
-		if (Math.abs(x)>=Math.abs(y)) {
-			if (x<0) {
-				if (canMove(Direction.EAST, entity)) {
-					move(Direction.EAST, entity);
-				} else {
-					if (y<0) {
-						move(Direction.SOUTH, entity);
-					} else {
-						move(Direction.NORTH, entity);
-					}
-				}
-			} else {
-				if (canMove(Direction.WEST, entity)) {
-					move(Direction.WEST, entity);
-				} else {
-					if (y<0) {
-						move(Direction.SOUTH, entity);
-					} else {
-						move(Direction.NORTH, entity);
-					}
-				}
+		//Get the distance to the target.
+		double distance = entity.getCoords().distanceTo(target);
+		
+		//Make sure it's not 0 - it should never call this code if it is, but it might do.
+		if (distance < 0.001) {
+			GameClass.print("The entity "+entity.getName()+" is at its target, and that means \"moveTo\" shouldn't have been called. Check the distance BEFORE this method. Exiting.");
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} else {
-			if (y<0) {
-				if (canMove(Direction.SOUTH, entity)) {
-					move(Direction.SOUTH, entity);
-				} else {
-					if (x<0) {
-						move(Direction.EAST, entity);
-					} else {
-						move(Direction.WEST, entity);
-					}
-				}
-			} else {
-				if (canMove(Direction.NORTH, entity)) {
-					move(Direction.NORTH, entity);
-				} else {
-					if (x<0) {
-						move(Direction.EAST, entity);
-					} else {
-						move(Direction.WEST, entity);
-					}
-				}
-			}
-		}	
+			System.exit(12);
+		}
+		
+		//Get the distance when moving in all 8 directions.
+		int coords = entity.getCoords().toSingleVal();
+		int[] directions = {-257, -256, -255, -1, 1, 255, 256, 257};
+		double minDist = Integer.MAX_VALUE;
+		double direction = 0;
+		Coord2D c2d = new Coord2D(5, 5);
+		Coord3D c3d = new Coord3D(6, 4, 2);
+		int c2ds = c2d.toSingleVal();
+		int c3ds = c3d.toSingleVal();
+		for (int i=0; i<8; i++) {
+			print("Number:" +directions[i]+".\n"
+					+ "2D translation: "+c2d+", "+c2ds+", "+(c2ds+directions[i])+", "+Coord2D.fromSingleVal(c2ds+directions[i]) + "\n"
+					+ "3D translation: "+c3d+", "+c3ds+", "+(c3ds+directions[i])+", "+Coord3D.fromSingleVal(c3ds+directions[i]));
+			//if (entity.getCoords().add())
+		}
 	}
 	
 	private static boolean canMove(Direction direction, EntityTile entity) {

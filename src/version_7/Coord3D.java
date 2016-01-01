@@ -114,6 +114,13 @@ public class Coord3D extends Coord {
 	public int toSingleVal() {
 		return x + (y << 8) + (z << 16);
 	}
+
+	public static Coord3D fromSingleVal(int val) {
+		int x = val % 256;
+		int y = ((val - x) >> 8) % 256;
+		int z = (val - x - y) >> 16;
+		return new Coord3D(x, y, z);
+	}
 	
 	public static Coord3D c3sum(Coord3D c1, Coord3D c2) {
 		return new Coord3D(c1.x+c2.x, c1.y+c2.y, c1.z+c2.z);
