@@ -21,8 +21,9 @@ public class EntityTile implements Comparable<EntityTile> {
 	private Path path;
 	private Entrance entrance;
 	private BufferedImage portrait;
+	private String AI;
 	
-	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z, BufferedImage portrait) {
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z, BufferedImage portrait, String AI) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
@@ -32,7 +33,12 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.location = cloc;
 		this.portrait = portrait;
 		cloc.addEntity(this);
+		this.setAI(AI);
 		genStats();
+	}
+	
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z, BufferedImage portrait) {
+		this(entity, cloc, x, y, z, portrait, "SimpleMelee");
 	}
 	
 	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait) {
@@ -346,4 +352,13 @@ public class EntityTile implements Comparable<EntityTile> {
 	public BufferedImage getPortrait() {
 		return portrait;
 	}
+
+	public String getAI() {
+		return AI;
+	}
+
+	public void setAI(String AI) {
+		this.AI = AI;
+	}
+
 }

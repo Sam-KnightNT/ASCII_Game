@@ -44,7 +44,7 @@ public class Tile {
 		System.out.println(action+" was performed on "+tile.getName());
 	}
 	
-	public boolean isWalkable(EntityTile entity) {
+	public boolean isTraversable(EntityTile entity) {
 		return tile.isTraversable(entity);
 	}
 	public void setRestrictedEntities(ArrayList<String> restrictedEntities) {

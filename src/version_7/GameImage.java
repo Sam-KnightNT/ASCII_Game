@@ -128,6 +128,13 @@ public class GameImage extends JPanel {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
+				/* TODO allow charging attacks
+				 * These will allow the player to get out of situations where they are surrounded, at the cost of a LOT of life (they'll be hit by most of the enemies).
+				 * If you hold a direction for 2 seconds you can perform a charging attack, where you basically attempt to ram the enemy out of the way.
+				 * If you fail, nothing happens. If you succeed barely (DIFF = 1) you push them 1 space back, deal minor damage and move where they were, allowing you to move diagonally out.
+				 * If DIFF=2-5, you push them 2 spaces back and deal increasing amounts of damage. DIFF=6-9 is 3 spaces back. DIFF=10 (might be impossible) means you launch them 5 spaces back and deal heavy damage.
+				 * Since enemies will attempt to surround you, this is probably going to be used a fair bit.   
+				 */
 				// TODO Auto-generated method stub
 				GameClass.print("Pressed: "+e);
 				

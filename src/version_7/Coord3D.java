@@ -84,11 +84,11 @@ public class Coord3D extends Coord {
 		}
 	}
 	
-	public double distance(Coord2D c) {
-		return distance(new Coord3D(c, 0));
+	public double distanceTo(Coord2D c) {
+		return distanceTo(new Coord3D(c, 0));
 	}
 	
-	public double distance(Coord3D c) {
+	public double distanceTo(Coord3D c) {
 		int dx = c.x-x;
 		int dy = c.y-y;
 		int dz = c.z-z;
@@ -96,9 +96,18 @@ public class Coord3D extends Coord {
 	}
 	
 	@Override
-	public double distance(Coord c) {
-		// TODO Auto-generated method stub
-		return c.distance(this);
+	public double distanceTo(Coord c) {
+		if (c instanceof Coord3D) {
+			return distanceTo((Coord3D) c);
+		} else if (c instanceof Coord2D) {
+			return distanceTo((Coord2D) c);
+		} else if (c instanceof Coord4D) {
+			return ((Coord4D) c).distanceTo(this);
+		} else {
+			GameClass.print("distanceTo not defined for Coord3D and "+c.getClass()+", please bug the developer to fix this.");
+			System.exit(1);
+			return 0;
+		}
 	}
 
 	@Override

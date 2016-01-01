@@ -25,7 +25,7 @@ public abstract class Coord {
     public abstract byte getV();
     
     public abstract Coord add(Coord c);
-	public abstract double distance(Coord c);
+	public abstract double distanceTo(Coord c);
 	public abstract int toSingleVal();
 	public static double sumD(Coord c1, Coord c2) {
 		return c1.toSingleVal() + c2.toSingleVal();

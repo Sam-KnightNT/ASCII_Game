@@ -93,13 +93,13 @@ public class Coord4D extends Coord {
 		}
 	}
 	
-	public double distance(Coord2D c) {
-		return distance(new Coord4D(c, 0, 0));
+	public double distanceTo(Coord2D c) {
+		return distanceTo(new Coord4D(c, 0, 0));
 	}
-	public double distance(Coord3D c) {
-		return distance(new Coord4D(c, 0));
+	public double distanceTo(Coord3D c) {
+		return distanceTo(new Coord4D(c, 0));
 	}
-	public double distance(Coord4D c) {
+	public double distanceTo(Coord4D c) {
 		int dx = c.x-x;
 		int dy = c.y-y;
 		int dz = c.z-z;
@@ -107,8 +107,8 @@ public class Coord4D extends Coord {
 		return Math.sqrt(dx*dx + dy*dy + dz*dz + dv*dv);
 	}
 	
-	public double distance(Coord c) {
-		return c.distance(this);
+	public double distanceTo(Coord c) {
+		return c.distanceTo(this);
 	}
 	
 	public int toSingleVal() {

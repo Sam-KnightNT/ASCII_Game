@@ -417,8 +417,6 @@ public class GameClass {
 				//TODO - Add a more pretty graphical thing to infoPanel, that shows you your attack
 				//Like a swipey thing with the 9 directions, that shows you what your wand is doing, how strong the attack is, etc
 				//This is how it becomes a fusion of old-style graphics and new-style features
-				//infoPanel.setSize(100, mainImage.getHeight());
-				//frame.add(infoPanel);
 				frame.setResizable(false);
 				//frame.pack();
 			}
@@ -780,7 +778,7 @@ public class GameClass {
 			entity.resetTicks();
 			
 			//Attempt to pathfind to the player
-			boolean leftRoomEnt = pathfindToPlayer(entity);
+			boolean leftRoomEnt = pathfind(entity);
 			if (leftRoomEnt) {
 				//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 				entity.alterPathBeginning(entity.getLocation());
@@ -869,10 +867,21 @@ public class GameClass {
 	}
 
 	public static void moveToPlayer(EntityTile entity) {
-		moveTo(entity, self.getCoords());
+		//Move into a position around the player, respecting other enemy positions.
+		if (entity.getCoords().distanceTo(self.getCoords())<1.5) {
+			//Then the entity is next to the player - do nothing.
+			print("Next to player: "+entity.getCoords().distanceTo(self.getCoords()));
+		} else {
+			print("Moving to player: "+entity.getCoords().distanceTo(self.getCoords()));
+			//Otherwise move towards the player.
+			//TODO - respect other entities, move to a location where they aren't in the way.
+			moveTo(entity, self.getCoords());
+		}
 	}
 	
 	public static void moveTo(EntityTile entity, Coord coords) {
+		//If the coast is clear, move in a particular direction. If not, use A* to find your way.
+		//TODO - once awkward mazes are possible, rewrite this to include A*.
 		//Assuming it's all handled and the stuff is all valid
 		
 		//Get the relative differences. If abs(diffX)>=abs(diffY), try to move EAST or WEST depending on signum(diffX).
@@ -930,10 +939,14 @@ public class GameClass {
 		return entity.getLocation().getTile(entity.getXY()+direction.getNumVal()).isWalkable(entity);
 	}
 
-	public static boolean pathfindToPlayer(EntityTile entity) {
+	public static boolean pathfind(EntityTile entity) {
 		//If the entity is in the same room as the player, try to move towards the player.
 		if (entity.getLocation() == self.getLocation()) {
-			moveToPlayer(entity);
+			if (entity.getAI() == "SimpleMelee") {
+				moveToPlayer(entity);
+			} else if (entity.getAI() == "Ranged") {
+				moveTo(entity, getDesiredLocation(entity));
+			}
 			return false;
 		} else {
 			//TODO - change this to A* search, and do it every 5 steps or so.
@@ -1000,6 +1013,10 @@ public class GameClass {
 		}
 	}
 	
+	private static Coord getDesiredLocation(EntityTile entity) {
+		return null;
+	}
+
 	public static Pair<Boolean, EntityTile> existsAtLoc(Location loc, byte xPos, byte yPos) {
 		for (EntityTile entity : loc.getEntities()) {
 			if (entity.getX()==xPos && entity.getY()==yPos) {
