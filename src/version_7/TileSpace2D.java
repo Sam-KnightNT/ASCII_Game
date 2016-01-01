@@ -40,20 +40,20 @@ public class TileSpace2D extends TileSpace {
 	public void setTile(int x, int y, TileType tile) {
 		this.setTile((byte) x, (byte) y, tile);
 	}
-	public void setTile(byte x, byte y, TileType tile, ArrayList<String> restrictedEntities) {
+	public void setTile(byte x, byte y, TileType tile, ArrayList<String> permittedEntities) {
 		this.setTile(x, y, tile);
-		tiles[x][y].setRestrictedEntities(restrictedEntities);
+		tiles[x][y].setPermittedEntities(permittedEntities);
 	}
-	public void setTile(int x, int y, TileType tile, ArrayList<String> restrictedEntities) {
+	public void setTile(int x, int y, TileType tile, ArrayList<String> permittedEntities) {
 		this.setTile(x, y, tile);
-		tiles[x][y].setRestrictedEntities(restrictedEntities);
+		tiles[x][y].setPermittedEntities(permittedEntities);
 	}
 	public void setTiles(Tile[][] tiles) {
 		this.tiles = tiles;
 	}
 	@Override
-	public void setTile(int loc, TileType tile, ArrayList<String> restrictedEntities) {
-		setTile((byte) (loc % 256), (byte) (loc >> 8) % 256, tile, restrictedEntities);
+	public void setTile(int loc, TileType tile, ArrayList<String> permittedEntities) {
+		setTile((byte) (loc % 256), (byte) (loc >> 8) % 256, tile, permittedEntities);
 	}
 	
 	public String toString() {

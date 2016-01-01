@@ -47,8 +47,8 @@ public class Tile {
 	public boolean isTraversable(EntityTile entity) {
 		return tile.isTraversable(entity);
 	}
-	public void setRestrictedEntities(ArrayList<String> restrictedEntities) {
-		tile.setRestrictedEntities(restrictedEntities);
+	public void setPermittedEntities(ArrayList<String> permittedEntities) {
+		tile.setPermittedEntities(permittedEntities);
 	}
 	
 	public String toString() {

@@ -15,7 +15,7 @@ public abstract class TileSpace {
 	private int d; //Dimension
 	public abstract Tile getTile(int loc);
 	
-	public abstract void setTile(int loc, TileType tile, ArrayList<String> restrictedEntities);
+	public abstract void setTile(int loc, TileType tile, ArrayList<String> permittedEntities);
 	
 	public String getName() {
 		return name;

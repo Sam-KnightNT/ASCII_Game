@@ -28,8 +28,8 @@ public abstract class Location2D extends Location {
 	public void setTile(int x, int y, TileType tile) {
 		tilespace.setTile((byte) x, (byte) y, tile);
 	}
-	public void setTile(int x, int y, TileType tile, ArrayList<String> restrictedEntities) {
-		tilespace.setTile((byte) x, (byte) y, tile, restrictedEntities);
+	public void setTile(int x, int y, TileType tile, ArrayList<String> permittedEntities) {
+		tilespace.setTile((byte) x, (byte) y, tile, permittedEntities);
 	}
 	public void setTile(int x, int y, TileType tileType, boolean isTraversable) {
 		tilespace.setTile((byte) x, (byte) y, tileType, (isTraversable ? new ArrayList<String>() : new ArrayList<String>(Arrays.asList("All"))));

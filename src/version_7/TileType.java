@@ -8,20 +8,20 @@ public class TileType {
 	private int[] actions;
 	private String name;
 	private BufferedImage image;
-	private ArrayList<String> restrictedEntities;
+	private ArrayList<String> permittedEntities;
 	
-	public TileType(String name, BufferedImage image, ArrayList<String> restrictedEntities, int[] actions) {
+	public TileType(String name, BufferedImage image, ArrayList<String> permittedEntities, int[] actions) {
 		this.actions = actions;
 		this.name = name;
 		this.image = image;
-		this.restrictedEntities = restrictedEntities;
+		this.permittedEntities = permittedEntities;
 	}
 	
-	public TileType(String name, BufferedImage[] image, int imageNum, ArrayList<String> restrictedEntities, int[] actions) {
+	public TileType(String name, BufferedImage[] image, int imageNum, ArrayList<String> permittedEntities, int[] actions) {
 		this.actions = actions;
 		this.name = name;
 		this.image = image[imageNum];
-		this.restrictedEntities = restrictedEntities;
+		this.permittedEntities = permittedEntities;
 	}
 	
 	public TileType() {
@@ -42,18 +42,16 @@ public class TileType {
 		return name;
 	}
 	
-	public void setRestrictedEntities(ArrayList<String> restrictedEntities) {
-		this.restrictedEntities = restrictedEntities;
+	public void setPermittedEntities(ArrayList<String> permittedEntities) {
+		this.permittedEntities = permittedEntities;
 	}
 	public boolean isTraversable(EntityTile entity) {
-		if (restrictedEntities.isEmpty()) {
-			return true;
-		} else if (restrictedEntities.get(0).equals("All")) {
-			return false;
-		} else if (restrictedEntities.contains(entity.getName())) {
-			return false;
+		boolean containsEntity = permittedEntities.contains(entity.getName()) || permittedEntities.contains("All");
+		//If permittedEntities contains a reverser, it instead becomes restrictedEntities.
+		if (permittedEntities.contains("-")) {
+			return !containsEntity;
 		} else {
-			return true;
+			return containsEntity;
 		}
 	}
 	

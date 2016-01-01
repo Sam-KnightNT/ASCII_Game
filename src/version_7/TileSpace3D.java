@@ -29,7 +29,7 @@ public abstract class TileSpace3D extends TileSpace {
 	public void setTile(int x, int y, int z, TileType tile) {
 		this.setTile((byte) x, (byte) y, (byte) z, tile);
 	}
-	public void setTile(byte x, byte y, byte z, TileType tile, ArrayList<String> restrictedEntities) {
+	public void setTile(byte x, byte y, byte z, TileType tile, ArrayList<String> permittedEntities) {
 		try {
 			tiles[x][y][z] = new Tile(tile);
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -37,18 +37,18 @@ public abstract class TileSpace3D extends TileSpace {
 			System.out.println("Error: Tile at "+x+", "+y+" in tilespace "+this.getName()+" cannot be found.");
 			//System.exit(1);
 		}
-		tiles[x][y][z].setRestrictedEntities(restrictedEntities);
+		tiles[x][y][z].setPermittedEntities(permittedEntities);
 	}
-	public void setTile(int x, int y, int z, TileType tile, ArrayList<String> restrictedEntities) {
-		this.setTile(x, y, z, tile, restrictedEntities);
+	public void setTile(int x, int y, int z, TileType tile, ArrayList<String> permittedEntities) {
+		this.setTile(x, y, z, tile, permittedEntities);
 	}
 	
 	public void setTiles(Tile[][][] tiles) {
 		this.tiles = tiles;
 	}
 	@Override
-	public void setTile(int loc, TileType tile, ArrayList<String> restrictedEntities) {
-		setTile((byte) (loc % 256), (byte) (loc >> 8) % 256, (byte) (loc >> 16) % 256, tile, restrictedEntities);
+	public void setTile(int loc, TileType tile, ArrayList<String> permittedEntities) {
+		setTile((byte) (loc % 256), (byte) (loc >> 8) % 256, (byte) (loc >> 16) % 256, tile, permittedEntities);
 	}
 	
 	public String toString() {

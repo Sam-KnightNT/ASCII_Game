@@ -831,7 +831,7 @@ public class GameClass {
 		
 		if (newxy >= 0 && newxy < wh && nx >= 0 && nx < w) {
 			//If it is inside the current Location, just try to perform the movement. Note that some tiles might only let certain entities through.
-			if (loc.getTile(newxy).isWalkable(entity)) {
+			if (loc.getTile(newxy).isTraversable(entity)) {
 				entity.setXY(newxy);
 				System.out.println(entity.getLocation().getTile(newxy));
 				return new Pair<Boolean, Boolean>(true, false);
@@ -936,7 +936,8 @@ public class GameClass {
 	}
 	
 	private static boolean canMove(Direction direction, EntityTile entity) {
-		return entity.getLocation().getTile(entity.getXY()+direction.getNumVal()).isWalkable(entity);
+		//True iff there are no entities in the way and the tile is traversable.
+		return entity.getLocation().getTile(entity.getXY()+direction.getNumVal()).isTraversable(entity);
 	}
 
 	public static boolean pathfind(EntityTile entity) {
@@ -1259,20 +1260,22 @@ public class GameClass {
 					System.out.println("Path of invalid material: "+filepath);
 				}
 
-				ArrayList<String> allRestricted = new ArrayList<String>();
+				ArrayList<String> allPermitted = new ArrayList<String>();
 				ArrayList<String> playerRestricted = new ArrayList<String>();
-				ArrayList<String> playerNotRestricted = new ArrayList<String>();
-				ArrayList<String> noneRestricted = new ArrayList<String>();
-				allRestricted.add("All");
+				ArrayList<String> playerPermitted = new ArrayList<String>();
+				ArrayList<String> allRestricted = new ArrayList<String>();
+				allPermitted.add("All");
+				playerPermitted.add("Player");
+				playerRestricted.add("-");
 				playerRestricted.add("Player");
 				tiles.put(name+" Wall", new TileType(name+" Wall", img, allRestricted, null));
-				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, noneRestricted, null));
-				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, noneRestricted, null));
-				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, noneRestricted, null));
-				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, noneRestricted, null));
-				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, noneRestricted, null));
-				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, noneRestricted, null));
-				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, noneRestricted, null));
+				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, allPermitted, null));
+				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, allPermitted, null));
+				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, allPermitted, null));
+				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, allPermitted, null));
+				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, allPermitted, null));
+				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, allPermitted, null));
+				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, allRestricted, null));
 			} else {
 				System.out.println("Material name not found, please check syntax");
 			}
