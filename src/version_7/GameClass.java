@@ -123,9 +123,9 @@ public class GameClass {
 		BufferedReader readIn = new BufferedReader(new InputStreamReader(System.in));
 		String command = "";
 		
-		createBetweenFord();
+		/*createBetweenFord();
 		
-		Map map1 = new Map(54, 54, 0, 0, 0, tiles.get("Sandstone Brick 2 Floor"));
+		Map map1 = new Map(50, 50, 0, 0, 0, tiles.get("Sandstone Brick 2 Floor"));
 		Map map2 = new Map(100, 100, 43, -50, 0, tiles.get("Marble Floor"));
 		
 		//Construct 2 rooms and a corridor to connect them
@@ -141,8 +141,6 @@ public class GameClass {
 		room4.setName("Room 4");
 		room5.setName("Room 5");
 		
-		//Add Minotaur
-		createEntity("Minotaur", map1, 10, 10, 0);
 		
 		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
@@ -197,25 +195,30 @@ public class GameClass {
 		
 		map1.setName("Map 1");
 		
-		cloc = map1;
 		maps.put("Map 1", map1);
-		maps.put("Map 2", map2);
+		maps.put("Map 2", map2);*/
+		
+
+		//Create arena map
+		Map arena = new Map(100, 100, 0, 60, 0, tiles.get("Sandstone Brick 2 Floor"));
+		arena.setName("Arena");
+		maps.put("Arena", arena);
+
+		cloc = arena;
+		
+		//Add enemies
+		createEntity("Minotaur", arena, 10, 10, 0);
+		createEntity("Minotaur", arena, 12, 12, 0);
+		
+		//Create dungeon (currently doesn't matter, but if you remove it it goes haywire so don't)
 		dungeon = new Dungeon();
 		dungeon.setName("Default dungeon");
 		//dungeon.addMap(maps.get("Between Ford"), maps.get("Between Ford").getPosition());
-		dungeon.addMap(map1, map1.getPosition());
-		dungeon.addMap(map2, map2.getPosition());
+		for (Map map : maps.values()) {
+			dungeon.addMap(map, map.getPosition());
+		}
 		
-		/*
-		rooms.put("Room 1", room);
-		rooms.put("Room 2", room2);
-		rooms.put("Room 3", room3);
-		rooms.put("Room 4", room4);
-		rooms.put("Room 5", room5);
-		rooms.put("Corridor 1", corridor1);
-		rooms.put("Corridor 2", corridor2);
-		
-		cloc = rooms.get("Room 1");*/
+		//Set the player down in the world
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0, null);
 		
 		initialiseMainImage();
