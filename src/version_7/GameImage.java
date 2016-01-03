@@ -122,6 +122,10 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD9"), "up-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD1"), "down-left");
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD3"), "down-right");
+		this.getInputMap().put(KeyStroke.getKeyStroke("HOME"), "up-left");
+		this.getInputMap().put(KeyStroke.getKeyStroke("PAGE_UP"), "up-right");
+		this.getInputMap().put(KeyStroke.getKeyStroke("END"), "down-left");
+		this.getInputMap().put(KeyStroke.getKeyStroke("PAGE_DOWN"), "down-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke('c'), "change");
 		this.getInputMap().put(KeyStroke.getKeyStroke('z'), "prime");
 		this.getInputMap().put(KeyStroke.getKeyStroke('i'), "inventory");
@@ -144,7 +148,7 @@ public class GameImage extends JPanel {
 				 * Since enemies will attempt to surround you, this is probably going to be used a fair bit.   
 				 */
 				// TODO Auto-generated method stub
-				GameClass.print("Pressed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar());
+				GameClass.print("Pressed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar()+", "+e.getKeyLocation());
 				
 			}
 
@@ -415,9 +419,6 @@ public class GameImage extends JPanel {
 		//Draw dungeon slice first, draw entities and items on top
 		byte h = (byte) Math.min(dungeon.getH(), player.getY()+(yView/2)+2);
 		byte w = (byte) Math.min(dungeon.getW(), player.getX()+(xView/2)+2);
-		
-		System.out.println("Drawing map: "+(20*(player.getX()+player.getLocation().getX()-(xView/2)-2))+", "+(30*(player.getY()+player.getLocation().getY()-(yView/2)-2)));
-		System.out.println(dungeonSlices.get(0).getHeight());
 		
 		//Is this thing greater than 0? If so, set it equal. Otherwise, set it equal to 0.
 		//"This thing" is the location of the player in the map, plus the location of the map in the dungeon, multipled by the number of pixels each unit takes up,
