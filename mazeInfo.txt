@@ -226,7 +226,7 @@ entity:
 		defence: 40
 		magic power: 60
 		mana: 10
-		speed: 60
+		speed: 100
 	end
 end
 

@@ -142,7 +142,7 @@ public class GameClass {
 		room5.setName("Room 5");
 		
 		//Add Minotaur
-		createEntity("Minotaur", map1, 1, 1, 0, 100);
+		createEntity("Minotaur", map1, 10, 10, 0);
 		
 		
 		room2.addItem(new ItemTile(items.get("Pick of Destiny"), (byte) 3, (byte) 5, (byte) 0));
@@ -531,7 +531,7 @@ public class GameClass {
 		//Resistances are a string of numbers, like "104244304224030420", which represent how much damage reduction is applied to each swing in each direction.
 		//Their stance also determines the same thing for their attack strength.
 		//For example, the start of the string being "123456789" means QW is resisted by 1, QE by 2 etc. 0 means there is no resistance (bare skin tends to be 1 or 2, fur 3-5, 0 would be reserved for ethereal beings and such).
-		//The scale goes from 0-f, f being something like impact-resistant steel armour. There is also '!', which indicates a complete block of the attack or an OHKO for attacks (attack takes precedence), and a '.' for misses.
+		//The scale goes from 0-f, 8 being about the level of steel armour and f being magically-resistant carbon nanotube plate. There is also '!', which indicates a complete block of the attack or an OHKO for attacks (attack takes precedence), and a '.' for misses.
 		//You can add breaks in between each set of attacks. So you could just have "435627544543945678...", or "436636536, 454636346, 554463445...".
 		//On the sprite attack indicator, once you press a button, the possible attacks come up in a fan-like thing, with the easier attacks being greener, !s (blocks) being black and .s (misses) white.
 		
@@ -580,14 +580,35 @@ public class GameClass {
 				cycle(Direction.EAST);
 				break;
 			default:
-				print("I've apparently set the command system a bit wrong,\n" +
-						"tell me what you pressed, and that \"the direction regex was passed\""
-						+command+"\" as a parameter\"");
+				print("I've apparently set the command system a bit wrong.");
+				print("This part of the code deals with orthogonal movement,");
+				print("but none of the directions were valid. The param was "+command+".");
+				print("Please show the developer this message.");
 			}
 			//print(cloc.getTile(self.getXY()));
 			//print(self.getXY()+", "+self.getX()+", "+self.getY());
 		}
-		
+		else if (command.matches("m([ns])([we])$")) {
+			switch (command.substring(1)) {
+			case "ne":
+				cycle(Direction.NORTHEAST);
+				break;
+			case "nw":
+				cycle(Direction.NORTHWEST);
+				break;
+			case "se":
+				cycle(Direction.SOUTHEAST);
+				break;
+			case "sw":
+				cycle(Direction.SOUTHWEST);
+				break;
+			default:
+				print("I've apparently set the command system a bit wrong.");
+				print("This part of the code deals with diagonal movement,");
+				print("but none of the directions were valid. The param was "+command+".");
+				print("Please show the developer this message.");
+			}
+		}
 		//Pick up item
 		else if (command.equals("p")) {
 			Pair<Boolean, Item> itemHere = cloc.itemAt(self.getX(), self.getY()); 
@@ -879,7 +900,7 @@ public class GameClass {
 		}
 	}
 	
-	public static void moveTo(EntityTile entity, Coord target) {
+	public static boolean moveTo(EntityTile entity, Coord target) {
 		//If the coast is clear, move in a particular direction. If not, use A* to find your way.
 		//TODO - once awkward mazes are possible, rewrite this to include A*.
 		
@@ -887,11 +908,10 @@ public class GameClass {
 		//Tries to head straight for it.
 		//If that is blocked for whatever reason, tries to head diagonally or whatever towards that location - basically, aims to minimise the distance.
 		
-		//Get the distance to the target.
-		double distance = entity.getCoords().distanceTo(target);
+		//Check if the distance to the target is (basically) 0 - it shouldn't ever be, so throw an error if it is.
+		boolean isTooClose = entity.getCoords().distanceTo(target) < 0.001;
 		
-		//Make sure it's not 0 - it should never call this code if it is, but it might do.
-		if (distance < 0.001) {
+		if (isTooClose) {
 			GameClass.print("The entity "+entity.getName()+" is at its target, and that means \"moveTo\" shouldn't have been called. Check the distance BEFORE this method. Exiting.");
 			try {
 				Thread.sleep(1500);
@@ -904,23 +924,45 @@ public class GameClass {
 		
 		//Get the distance when moving in all 8 directions.
 		int coords = entity.getCoords().toSingleVal();
-		int[] directions = {-257, -256, -255, -1, 1, 255, 256, 257};
+		Direction[] directions = {Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
+				Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST};
 		double minDist = Integer.MAX_VALUE;
-		double direction = 0;
-		Coord2D c2d = new Coord2D(5, 5);
-		Coord3D c3d = new Coord3D(6, 4, 2);
-		int c2ds = c2d.toSingleVal();
-		int c3ds = c3d.toSingleVal();
+		print(coords);
+		print(target);
+		Direction direction = null;
 		for (int i=0; i<8; i++) {
-			print("Number:" +directions[i]+".\n"
-					+ "2D translation: "+c2d+", "+c2ds+", "+(c2ds+directions[i])+", "+Coord2D.fromSingleVal(c2ds+directions[i]) + "\n"
-					+ "3D translation: "+c3d+", "+c3ds+", "+(c3ds+directions[i])+", "+Coord3D.fromSingleVal(c3ds+directions[i]));
-			//if (entity.getCoords().add())
+			double distance = Coord2D.fromSingleVal(coords+directions[i].getNumVal()).distanceTo(target);
+			if (canMove(directions[i], entity) && distance <= minDist) {
+				if (distance < minDist) {
+					minDist = distance;
+					direction = directions[i];
+				} else {
+					//If the 2 distances are equidistant, randomly select one of them.
+					Random rand = new Random();
+					if (rand.nextBoolean()) {
+						direction = directions[i];
+					}
+				}
+			}
+		}
+		if (direction != null) {
+			move(direction, entity);
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
 	private static boolean canMove(Direction direction, EntityTile entity) {
 		//True iff there are no entities in the way and the tile is traversable.
+		//TODO - this'll be called a lot, so I'll probably need to optimise it to shit.
+		int newLoc = entity.getCoords().toSingleVal()+direction.getNumVal();
+		for (EntityTile entityO : cloc.getEntities()) {
+			if (newLoc == entityO.getCoords().toSingleVal()) {
+				print ("Urist Mc"+entity.getName()+" cancels move: Interrupted by "+entityO.getName()+"'s fat ass");
+				return false;
+			}
+		}
 		return entity.getLocation().getTile(entity.getXY()+direction.getNumVal()).isTraversable(entity);
 	}
 
@@ -1736,10 +1778,10 @@ public class GameClass {
 		return pot;
 	}
 	
-	private static boolean createEntity(String name, Location loc, int x, int y, int z, int speed) {
+	private static boolean createEntity(String name, Location loc, int x, int y, int z) {
 		if (entities.containsKey(name)) {
 			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, (byte) z, null);
-			unfrozenEntities.put(entity, speed);
+			unfrozenEntities.put(entity, entity.getStat("Speed"));
 			return true;
 		} else {
 			System.out.println("Entity with name "+name+" not found.\n"

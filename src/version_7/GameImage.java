@@ -114,6 +114,14 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke("DOWN"), "down");
 		this.getInputMap().put(KeyStroke.getKeyStroke("LEFT"), "left");
 		this.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "right");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD8"), "up");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD2"), "down");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD4"), "left");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD6"), "right");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD7"), "up-left");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD9"), "up-right");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD1"), "down-left");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD3"), "down-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke('c'), "change");
 		this.getInputMap().put(KeyStroke.getKeyStroke('z'), "prime");
 		this.getInputMap().put(KeyStroke.getKeyStroke('i'), "inventory");
@@ -123,7 +131,7 @@ public class GameImage extends JPanel {
 
 		this.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
-				GameClass.print("Typed: "+e);
+				//GameClass.print("Typed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar());
 			}
 
 			@Override
@@ -136,7 +144,7 @@ public class GameImage extends JPanel {
 				 * Since enemies will attempt to surround you, this is probably going to be used a fair bit.   
 				 */
 				// TODO Auto-generated method stub
-				GameClass.print("Pressed: "+e);
+				GameClass.print("Pressed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar());
 				
 			}
 
@@ -191,7 +199,7 @@ public class GameImage extends JPanel {
 				GameClass.command("mw");
 			}
 		});
-		
+
 		this.getActionMap().put("right", new AbstractAction() {
 			/**
 			 * 
@@ -200,6 +208,50 @@ public class GameImage extends JPanel {
 			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("me");
+			}
+		});
+		
+		this.getActionMap().put("up-left", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3164380163562077592L;
+			
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("mnw");
+			}
+		});
+		
+		this.getActionMap().put("up-right", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3132645763777895288L;
+			
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("mne");
+			}
+		});
+
+		this.getActionMap().put("down-left", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 6230524046884637525L;
+			
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("msw");
+			}
+		});
+
+		this.getActionMap().put("down-right", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -4038166830328845870L;
+			
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("mse");
 			}
 		});
 		
