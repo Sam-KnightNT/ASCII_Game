@@ -214,6 +214,10 @@ material:
 	name: White Marble
 end
 
+material:
+	name: Test
+end
+
 end material definitions
 
 begin entity definitions
@@ -251,6 +255,18 @@ entity:
 		magic power: 3
 		mana: 2
 		speed: 160
+	end
+end
+
+entity:
+	name: Slime
+	stats:
+		health: 60
+		strength: 2
+		defence: 250
+		magic power: 80
+		mana: 1
+		speed: 55
 	end
 end
 

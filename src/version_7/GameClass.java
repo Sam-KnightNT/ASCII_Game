@@ -200,15 +200,17 @@ public class GameClass {
 		
 
 		//Create arena map
-		Map arena = new Map(100, 100, 0, 60, 0, tiles.get("Sandstone Brick 2 Floor"));
+		Map arena = new Map(100, 100, 0, 60, 0, tiles.get("Test Floor"));
 		arena.setName("Arena");
 		maps.put("Arena", arena);
 
 		cloc = arena;
 		
 		//Add enemies
-		createEntity("Minotaur", arena, 10, 10, 0);
+		createEntity("Minotaur", arena, 11, 11, 0);
 		createEntity("Minotaur", arena, 12, 12, 0);
+		createEntity("Slime", arena, 6, 10, 0);
+		createEntity("Slime", arena, 16, 8, 0);
 		
 		//Create dungeon (currently doesn't matter, but if you remove it it goes haywire so don't)
 		dungeon = new Dungeon();
@@ -962,7 +964,7 @@ public class GameClass {
 		int newLoc = entity.getCoords().toSingleVal()+direction.getNumVal();
 		for (EntityTile entityO : cloc.getEntities()) {
 			if (newLoc == entityO.getCoords().toSingleVal()) {
-				print ("Urist Mc"+entity.getName()+" cancels move: Interrupted by "+entityO.getName()+"'s fat ass");
+				print ("Urist Mc"+entityO.getName()+" cancels move: Interrupted by "+entity.getName()+" being in the way");
 				return false;
 			}
 		}
