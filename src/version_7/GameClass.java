@@ -35,6 +35,7 @@ public class GameClass {
 	 */
 	static HashMap<String, Item> items = new HashMap<String, Item>();
 	static HashMap<String, Entity> entities = new HashMap<String, Entity>();
+	static int entityCount = 0;
 	static Dungeon dungeon;
 	static HashMap<String, Map> maps = new HashMap<String, Map>();
 	//static HashMap<String, Location> rooms = new HashMap<String, Location>();
@@ -53,7 +54,7 @@ public class GameClass {
 	private static BufferedImage liquid;
 	private static BufferedImage shine;
 	
-	private static boolean debug = true;
+	static boolean debug = true;
 	
 	//Where the player is initially
 	static int px = 1;
@@ -205,6 +206,9 @@ public class GameClass {
 		maps.put("Arena", arena);
 
 		cloc = arena;
+
+		//Create the player
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0, null);
 		
 		//Add enemies
 		createEntity("Minotaur", arena, 11, 11, 0);
@@ -219,9 +223,6 @@ public class GameClass {
 		for (Map map : maps.values()) {
 			dungeon.addMap(map, map.getPosition());
 		}
-		
-		//Set the player down in the world
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0, null);
 		
 		initialiseMainImage();
 //		SPOT FURTHER DOWN, BELOW COMMANDS
@@ -614,6 +615,11 @@ public class GameClass {
 				print("Please show the developer this message.");
 			}
 		}
+		
+		//Wait a cycle
+		else if (command.equals("wait")) {
+			cycle(false, null);
+		}
 		//Pick up item
 		else if (command.equals("p")) {
 			Pair<Boolean, Item> itemHere = cloc.itemAt(self.getX(), self.getY()); 
@@ -753,6 +759,9 @@ public class GameClass {
 	}
 	
 	public static void cycle(Direction dir) {
+		cycle(true, dir);
+	}
+	public static void cycle(boolean move, Direction dir) {
 		TreeMap<EntityTile, Integer> newList = new TreeMap<EntityTile, Integer>();
 		
 		//Reset your own tick count
@@ -769,9 +778,12 @@ public class GameClass {
 			}
 		}*/
 		
+		boolean leftRoom = false;
 		//Move the player
-		Pair<Boolean, Boolean> didMove = move(dir, self);
-		boolean leftRoom = didMove.getRight();
+		if (move) {
+			Pair<Boolean, Boolean> didMove = move(dir, self);
+			leftRoom = didMove.getRight();
+		}
 				
 		//If the player entered a new room, alter the path of every entity that needs it
 		if (leftRoom) {
@@ -880,9 +892,6 @@ public class GameClass {
 				between = true;
 				return new Pair<Boolean, Boolean>(true, true);
 			}
-			//if (newloc.equals(maps.get("Between Ford"))) {
-			//	entity.setCoords(0, 0, 0);
-			//}
 			return new Pair<Boolean, Boolean>(true, true);
 		}
 	}
@@ -894,13 +903,9 @@ public class GameClass {
 
 	public static void moveToPlayer(EntityTile entity) {
 		//Move into a position around the player, respecting other enemy positions.
-		if (entity.getCoords().distanceTo(self.getCoords())<1.5) {
-			//Then the entity is next to the player - do nothing.
-			print("Next to player: "+entity.getCoords().distanceTo(self.getCoords()));
-		} else {
-			print("Moving to player: "+entity.getCoords().distanceTo(self.getCoords()));
-			//Otherwise move towards the player.
-			//TODO - respect other entities, move to a location where they aren't in the way.
+		if (entity.getCoords().distanceTo(self.getCoords())>=1.5) {
+			//Move towards the player.
+			//TODO - respect other entities, attempt to move to a location where they aren't in the way so you block the player from moving.
 			moveTo(entity, self.getCoords());
 		}
 	}
@@ -917,14 +922,19 @@ public class GameClass {
 		boolean isTooClose = entity.getCoords().distanceTo(target) < 0.001;
 		
 		if (isTooClose) {
-			GameClass.print("The entity "+entity.getName()+" is at its target, and that means \"moveTo\" shouldn't have been called. Check the distance BEFORE this method. Exiting.");
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (debug) {
+				print("The entity "+entity.getName()+" is at its target, and that means \"moveTo\" shouldn't have been called.");
+				print("Check the distance BEFORE this method. Exiting in 10 seconds.");
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+				// 	TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.exit(12);
+			} else {
+				print ("Error: \"moveTo\" called when it shouldn't have been, run in debug mode for more info.");
 			}
-			System.exit(12);
 		}
 		
 		//Get the distance when moving in all 8 directions.
@@ -932,8 +942,7 @@ public class GameClass {
 		Direction[] directions = {Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
 				Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST};
 		double minDist = Integer.MAX_VALUE;
-		print(coords);
-		print(target);
+		
 		Direction direction = null;
 		for (int i=0; i<8; i++) {
 			double distance = Coord2D.fromSingleVal(coords+directions[i].getNumVal()).distanceTo(target);
@@ -964,7 +973,6 @@ public class GameClass {
 		int newLoc = entity.getCoords().toSingleVal()+direction.getNumVal();
 		for (EntityTile entityO : cloc.getEntities()) {
 			if (newLoc == entityO.getCoords().toSingleVal()) {
-				print ("Urist Mc"+entityO.getName()+" cancels move: Interrupted by "+entity.getName()+" being in the way");
 				return false;
 			}
 		}
@@ -1786,7 +1794,14 @@ public class GameClass {
 	private static boolean createEntity(String name, Location loc, int x, int y, int z) {
 		if (entities.containsKey(name)) {
 			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, (byte) z, null);
-			unfrozenEntities.put(entity, entity.getStat("Speed"));
+			Integer v = unfrozenEntities.put(entity, entity.getStat("Speed"));
+			
+			if (debug) {
+				System.out.println("New entity created: "+entity);
+				if (v != null) {
+					System.out.println("WARNING: Entity just created clashes with another. It has replaced that one, the ID of that entity was "+v+".");
+				}
+			}
 			return true;
 		} else {
 			System.out.println("Entity with name "+name+" not found.\n"

@@ -122,6 +122,7 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD9"), "up-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD1"), "down-left");
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD3"), "down-right");
+		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD5"), "wait");
 		this.getInputMap().put(KeyStroke.getKeyStroke("HOME"), "up-left");
 		this.getInputMap().put(KeyStroke.getKeyStroke("PAGE_UP"), "up-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke("END"), "down-left");
@@ -148,7 +149,7 @@ public class GameImage extends JPanel {
 				 * Since enemies will attempt to surround you, this is probably going to be used a fair bit.   
 				 */
 				// TODO Auto-generated method stub
-				GameClass.print("Pressed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar()+", "+e.getKeyLocation());
+				//GameClass.print("Pressed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar()+", "+e.getKeyLocation());
 				
 			}
 
@@ -256,6 +257,17 @@ public class GameImage extends JPanel {
 			
 			public void actionPerformed(ActionEvent e) {
 				GameClass.command("mse");
+			}
+		});
+
+		this.getActionMap().put("wait", new AbstractAction() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -1079775521788366681L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.command("wait");
 			}
 		});
 		

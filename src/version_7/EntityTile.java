@@ -13,6 +13,8 @@ public class EntityTile implements Comparable<EntityTile> {
 	private Coord coords;
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 	private ArrayList<Item> inventory = new ArrayList<Item>();
+	
+	//Each stat is modified by a random amount from -r to +r. TODO - change this, it's a bit crap.
 	private int randomness = 0;
 	private Random ran = new Random();
 	private int ticksLeft;
@@ -34,6 +36,8 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.portrait = portrait;
 		cloc.addEntity(this);
 		this.setAI(AI);
+		this.id = GameClass.entityCount+1;
+		GameClass.entityCount++;
 		genStats();
 	}
 	
@@ -45,14 +49,13 @@ public class EntityTile implements Comparable<EntityTile> {
 		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait);
 	}
 	
-	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, BufferedImage portrait, int randomness, int id) {
+	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, BufferedImage portrait, int randomness) {
 		this(entity, loc, x, y, z, portrait);
 		this.randomness = randomness;
-		this.id = id;
 	}
 	
-	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait, int randomness, int id) {
-		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait, randomness, id);
+	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait, int randomness) {
+		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait, randomness);
 	}
 	
 	public Entity getEntity() {
@@ -267,17 +270,11 @@ public class EntityTile implements Comparable<EntityTile> {
 		if (this.equals(e)) {
 			return 0;
 		} else if (this.ticksLeft==e.ticksLeft) {
-			//TODO: Change this to ID later on, once you implement global entity saving 
-			return this.getName().compareTo(e.getName());
+			//TODO: This is probably slowish with all the casting and it'll need to be called a monstrous numer of times - optimise it 
+			return (int) Math.signum(((Integer) this.getID()).compareTo(e.getID()));
 		} else {
 			return this.ticksLeft-e.ticksLeft;
 		}
-		/*if (this.equals(e)) {
-			return 0;
-		} else if (this.entity.equals(e.entity)) {
-			return 1;
-		}
-		return -1;*/
 	}
 
 	public void setImage(BufferedImage image) {
@@ -342,7 +339,11 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	
 	public String toString() {
-		return (getName()+" in "+location.getName()+" at coordinates "+coords.toString());
+		if (GameClass.debug) {
+			return (getName()+"#"+id+" in "+location.getName()+" at coordinates "+coords.toString());
+		} else {
+			return (getName()+"#"+id);
+		}
 	}
 
 	public void setCoords(int x, int y, int z) {
