@@ -102,13 +102,14 @@ public class GameClass {
 	 * v0.04: Created other entities
 	 * v0.05: Added basic combat system and pathfinding
 	 * v0.06: Created info panel, with info on combat and such (where I am now)
-	 * v0.07: Completed complex combat system
-	 * v0.08: Working combat panel, flavour text and swipe previews
-	 * v0.09: Completed tutorial
-	 * v0.10: Completed arena/textures
+	 * v0.07: Working simple combat system with multiple entities, simple AI behaviour and an arena (possibly untextured)
+	 * v0.08: Completed complex combat system
+	 * v0.09: Working combat panel, flavour text and swipe previews
+	 * v0.10: Completed tutorial and finalised arena
+	 * v0.11?: More advanced AI, featuring rangers and such
 	 * v1.00: Progression, scores 
 	 * 
-	 * Details on v0.07
+	 * Details on v0.08
 	 * There should be new controls. If more than one enemy is standing next to you, 1-9 points at them.
 	 * Shift+QWEDCXZA does the already-mentioned swipey things, which compares the enemy's defence against that particular attack to the player's attack strength.
 	 * Hitting some button ('s' for stance probably) opens a panel in front of the main view (this'll be a third pane) that can be dismissed with Esc.
@@ -201,20 +202,26 @@ public class GameClass {
 		
 
 		//Create arena map
-		Map arena = new Map(100, 100, 0, 60, 0, tiles.get("Test Floor"));
+		Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 		arena.setName("Arena");
 		maps.put("Arena", arena);
 
 		cloc = arena;
 
+		//Put walls around arena
+		TileType wall = tiles.get("Sandstone Brick 2 Wall");
+		arena.fill(new Coord2D(0, 0), new Coord2D(119, 119), wall);
+		arena.fill(new Coord2D(30, 30), new Coord2D(90, 90), wall);
+		arena.setTile(31, 31, wall);
+		
 		//Create the player
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 5, (byte) 5, (byte) 0, null);
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 22, (byte) 22, (byte) 0, null);
 		
 		//Add enemies
-		createEntity("Minotaur", arena, 11, 11, 0);
-		createEntity("Minotaur", arena, 12, 12, 0);
-		createEntity("Slime", arena, 6, 10, 0);
-		createEntity("Slime", arena, 16, 8, 0);
+		createEntity("Minotaur", arena, 25, 25, 0);
+		createEntity("Minotaur", arena, 26, 26, 0);
+		createEntity("Slime", arena, 20, 24, 0);
+		createEntity("Slime", arena, 28, 22, 0);
 		
 		//Create dungeon (currently doesn't matter, but if you remove it it goes haywire so don't)
 		dungeon = new Dungeon();
