@@ -53,6 +53,8 @@ public class GameClass {
 	private static BufferedImage bottle;
 	private static BufferedImage liquid;
 	private static BufferedImage shine;
+
+	private static Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 	
 	static boolean debug = true;
 	
@@ -107,6 +109,7 @@ public class GameClass {
 	 * v0.09: Working combat panel, flavour text and swipe previews
 	 * v0.10: Completed tutorial and finalised arena
 	 * v0.11?: More advanced AI, featuring rangers and such
+	 * v0.12: All extraneous things removed - "Generating" statements, printouts, all that guff. Make it ready for public release
 	 * v1.00: Progression, scores 
 	 * 
 	 * Details on v0.08
@@ -202,26 +205,55 @@ public class GameClass {
 		
 
 		//Create arena map
-		Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 		arena.setName("Arena");
 		maps.put("Arena", arena);
 
 		cloc = arena;
 
 		//Put walls around arena
-		TileType wall = tiles.get("Sandstone Brick 2 Wall");
-		arena.fill(new Coord2D(0, 0), new Coord2D(119, 119), wall);
-		arena.fill(new Coord2D(30, 30), new Coord2D(90, 90), wall);
-		arena.setTile(31, 31, wall);
+		arena.fill(new Coord2D(0, 0), new Coord2D(119, 119), tiles.get("Limestone 2 Wall"));
+		arena.fill(new Coord2D(30, 50), new Coord2D(91, 90), tiles.get("Limestone 2 Floor"));
+		
+		fillLine(30, 64);
+		fillLine(31, 60);
+		fillLine(32, 58);
+		fillLine(33, 56);
+		fillLine(34, 55);
+		fillLine(35, 54);
+		fillLine(36, 53);
+		fillLine(37, 52);
+		fillLine(38, 52);
+		fillLine(39, 51);
+		fillLine(40, 51);
+		fillLine(41, 51);
+		fillLine(42, 51);
+		fillLine(43, 51);
+		fillLine(44, 50);
+		fillLine(45, 50);
+		fillLine(46, 50);
+		fillLine(47, 50);
+		fillLine(48, 50);
+		fillLine(49, 50);
+		fillLine(50, 50);
+		fillLine(51, 50);
+		fillLine(52, 50);
+		
+		TileType floor = tiles.get("Limestone 2 Floor");
+		
+		arena.fill(new Coord2D(59, 30), new Coord2D(62, 49), floor);
+		arena.fill(new Coord2D(30, 27), new Coord2D(91, 30), floor);
+		arena.fill(new Coord2D(30, 20), new Coord2D(37, 27), floor);
+		arena.fill(new Coord2D(84, 20), new Coord2D(91, 27), floor);
+		
 		
 		//Create the player
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 22, (byte) 22, (byte) 0, null);
+		self = new EntityTile(entities.get("Player"), cloc, (byte) 42, (byte) 62, (byte) 0, null);
 		
 		//Add enemies
-		createEntity("Minotaur", arena, 25, 25, 0);
-		createEntity("Minotaur", arena, 26, 26, 0);
-		createEntity("Slime", arena, 20, 24, 0);
-		createEntity("Slime", arena, 28, 22, 0);
+		createEntity("Minotaur", arena, 45, 65, 0);
+		createEntity("Minotaur", arena, 46, 66, 0);
+		createEntity("Slime", arena, 40, 64, 0);
+		createEntity("Slime", arena, 48, 62, 0);
 		
 		//Create dungeon (currently doesn't matter, but if you remove it it goes haywire so don't)
 		dungeon = new Dungeon();
@@ -878,7 +910,6 @@ public class GameClass {
 			//If it is inside the current Location, just try to perform the movement. Note that some tiles might only let certain entities through.
 			if (loc.getTile(newxy).isTraversable(entity)) {
 				entity.setXY(newxy);
-				System.out.println(entity.getLocation().getTile(newxy));
 				return new Pair<Boolean, Boolean>(true, false);
 			} else {
 				print(entity.getName()+" cannot move to "+nx+", "+((newxy - nx) >> 8)+" in location "+loc.getName());
@@ -1821,6 +1852,21 @@ public class GameClass {
 				}
 			}
 			return false;
+		}
+	}
+	
+	private static void fillLine(int x, int y) {
+		TileType wall = tiles.get("Sandstone Brick 2 Wall");
+		ArrayList<Integer> tiles = new ArrayList<Integer>();
+		for (int i=50; i<=y; i++) {
+			tiles.add(x);
+			tiles.add(i);
+		}
+		for (int i=0; i<tiles.size(); i+=2) {
+			arena.setTile(tiles.get(i), tiles.get(i+1), wall);
+			arena.setTile(121-tiles.get(i), tiles.get(i+1), wall);
+			arena.setTile(tiles.get(i), 140-tiles.get(i+1), wall);
+			arena.setTile(121-tiles.get(i), 140-tiles.get(i+1), wall);
 		}
 	}
 

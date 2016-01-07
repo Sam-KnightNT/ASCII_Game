@@ -218,6 +218,22 @@ material:
 	name: Test
 end
 
+material:
+	name: Test 2
+end
+
+material:
+	name: Limestone 2
+end
+
+material:
+	name: Limestone 3
+end
+
+material:
+	name: Limestone 4
+end
+
 end material definitions
 
 begin entity definitions
