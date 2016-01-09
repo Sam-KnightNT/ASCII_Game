@@ -212,7 +212,7 @@ public class GameClass {
 
 		//Put walls around arena
 		arena.fill(new Coord2D(0, 0), new Coord2D(119, 119), tiles.get("Limestone 2 Wall"));
-		arena.fill(new Coord2D(30, 50), new Coord2D(91, 90), tiles.get("Limestone 2 Floor"));
+		arena.fill(new Coord2D(30, 50), new Coord2D(94, 90), tiles.get("Limestone 2 Floor"));
 		
 		fillLine(30, 64);
 		fillLine(31, 60);
@@ -237,14 +237,15 @@ public class GameClass {
 		fillLine(50, 50);
 		fillLine(51, 50);
 		fillLine(52, 50);
-		
+
 		TileType floor = tiles.get("Limestone 2 Floor");
+		TileType gate = tiles.get("Limestone Gate");
 		
-		arena.fill(new Coord2D(59, 30), new Coord2D(62, 49), floor);
-		arena.fill(new Coord2D(30, 27), new Coord2D(91, 30), floor);
+		arena.fill(new Coord2D(60, 30), new Coord2D(63, 49), floor);
+		arena.fill(new Coord2D(30, 27), new Coord2D(93, 30), floor);
 		arena.fill(new Coord2D(30, 20), new Coord2D(37, 27), floor);
-		arena.fill(new Coord2D(84, 20), new Coord2D(91, 27), floor);
-		
+		arena.fill(new Coord2D(86, 20), new Coord2D(93, 27), floor);
+		arena.fill(new Coord2D(60, 49), new Coord2D(63, 49), gate);
 		
 		//Create the player
 		self = new EntityTile(entities.get("Player"), cloc, (byte) 42, (byte) 62, (byte) 0, null);
@@ -1305,54 +1306,66 @@ public class GameClass {
 				name = nMatch.group(1);
 				System.out.println("Name: "+name);
 				String filepath = "images/materials/"+name+".png";
-				BufferedImage img = null;
-				BufferedImage floorImg = null;
-				BufferedImage upImg = null;
-				BufferedImage downImg = null;
-				BufferedImage upDownImg = null;
-				BufferedImage pillarImg = null;
-				float scaleFactor = 0.7f;
-				RescaleOp op = new RescaleOp(scaleFactor, 0, null);	
-				try {
-					img = ImageIO.read(new File(filepath));
-					upImg = ImageIO.read(new File(filepath));
-					downImg = ImageIO.read(new File(filepath));
-					upDownImg = ImageIO.read(new File(filepath));
-					pillarImg = ImageIO.read(new File(filepath));
-					floorImg = op.filter(img, null);
-					upImg = op.filter(img, null);
-					downImg = op.filter(img, null);
-					upDownImg = op.filter(img, null);
-					pillarImg = op.filter(img, null);
-					Graphics2D upG = upImg.createGraphics();
-					Graphics2D downG = downImg.createGraphics();
-					Graphics2D upDownG = upDownImg.createGraphics();
-					Graphics2D pillarG = pillarImg.createGraphics();
-					upG.drawImage(upStairs, null, 0, 0);
-					downG.drawImage(downStairs, null, 0, 0);
-					upDownG.drawImage(upDownStairs, null, 0, 0);
-					pillarG.drawImage(pillar, null, 0, 0);
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.out.println("Path of invalid material: "+filepath);
+				if(name.endsWith("Gate")) {
+					float scaleFactor = 0.7f;
+					RescaleOp op = new RescaleOp(scaleFactor, 0, null);	
+					try {
+						BufferedImage img = ImageIO.read(new File(filepath));
+						BufferedImage gateImg = op.filter(img, null);
+						ArrayList<String> playerRestricted = new ArrayList<String>();
+						//playerRestricted.add("-");
+						playerRestricted.add("Player");
+						tiles.put(name, new TileType(name, gateImg, playerRestricted, null));
+						
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.out.println("Path of invalid material: "+filepath);
+					}
+				} else {
+					BufferedImage img = null;
+					BufferedImage floorImg = null;
+					BufferedImage upImg = null;
+					BufferedImage downImg = null;
+					BufferedImage upDownImg = null;
+					BufferedImage pillarImg = null;
+					float scaleFactor = 0.7f;
+					RescaleOp op = new RescaleOp(scaleFactor, 0, null);	
+					try {
+						img = ImageIO.read(new File(filepath));
+						upImg = ImageIO.read(new File(filepath));
+						downImg = ImageIO.read(new File(filepath));
+						upDownImg = ImageIO.read(new File(filepath));
+						pillarImg = ImageIO.read(new File(filepath));
+						floorImg = op.filter(img, null);
+						upImg = op.filter(img, null);
+						downImg = op.filter(img, null);
+						upDownImg = op.filter(img, null);
+						pillarImg = op.filter(img, null);
+						Graphics2D upG = upImg.createGraphics();
+						Graphics2D downG = downImg.createGraphics();
+						Graphics2D upDownG = upDownImg.createGraphics();
+						Graphics2D pillarG = pillarImg.createGraphics();
+						upG.drawImage(upStairs, null, 0, 0);
+						downG.drawImage(downStairs, null, 0, 0);
+						upDownG.drawImage(upDownStairs, null, 0, 0);
+						pillarG.drawImage(pillar, null, 0, 0);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.out.println("Path of invalid material: "+filepath);
+					}
+					
+					ArrayList<String> allPermitted = new ArrayList<String>();
+					ArrayList<String> allRestricted = new ArrayList<String>();
+					allPermitted.add("All");
+					tiles.put(name+" Wall", new TileType(name+" Wall", img, allRestricted, null));
+					tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, allPermitted, null));
+					tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, allPermitted, null));
+					tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, allPermitted, null));
+					tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, allPermitted, null));
+					tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, allPermitted, null));
+					tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, allPermitted, null));
+					tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, allRestricted, null));
 				}
-
-				ArrayList<String> allPermitted = new ArrayList<String>();
-				ArrayList<String> playerRestricted = new ArrayList<String>();
-				ArrayList<String> playerPermitted = new ArrayList<String>();
-				ArrayList<String> allRestricted = new ArrayList<String>();
-				allPermitted.add("All");
-				playerPermitted.add("Player");
-				playerRestricted.add("-");
-				playerRestricted.add("Player");
-				tiles.put(name+" Wall", new TileType(name+" Wall", img, allRestricted, null));
-				tiles.put(name+" Floor", new TileType(name+" Floor", floorImg, allPermitted, null));
-				tiles.put(name+" Upward Stairway", new TileType(name+" Upward Stairway", upImg, allPermitted, null));
-				tiles.put(name+" Downward Stairway", new TileType(name+" Downward Stairway", downImg, allPermitted, null));
-				tiles.put(name+" Up/Down Stairway", new TileType(name+" Up/Down Stairway", upDownImg, allPermitted, null));
-				tiles.put(name+" Upward Slope", new TileType(name+" Upward Slope", img, allPermitted, null));
-				tiles.put(name+" Downward Slope", new TileType(name+" Downward Slope", img, allPermitted, null));
-				tiles.put(name+" Pillar", new TileType(name+" Pillar", pillarImg, allRestricted, null));
 			} else {
 				System.out.println("Material name not found, please check syntax");
 			}
@@ -1856,7 +1869,7 @@ public class GameClass {
 	}
 	
 	private static void fillLine(int x, int y) {
-		TileType wall = tiles.get("Sandstone Brick 2 Wall");
+		TileType wall = tiles.get("Limestone 2 Wall");
 		ArrayList<Integer> tiles = new ArrayList<Integer>();
 		for (int i=50; i<=y; i++) {
 			tiles.add(x);
@@ -1864,9 +1877,9 @@ public class GameClass {
 		}
 		for (int i=0; i<tiles.size(); i+=2) {
 			arena.setTile(tiles.get(i), tiles.get(i+1), wall);
-			arena.setTile(121-tiles.get(i), tiles.get(i+1), wall);
+			arena.setTile(123-tiles.get(i), tiles.get(i+1), wall);
 			arena.setTile(tiles.get(i), 140-tiles.get(i+1), wall);
-			arena.setTile(121-tiles.get(i), 140-tiles.get(i+1), wall);
+			arena.setTile(123-tiles.get(i), 140-tiles.get(i+1), wall);
 		}
 	}
 

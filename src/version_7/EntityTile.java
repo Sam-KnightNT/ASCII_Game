@@ -12,6 +12,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private byte z;
 	private Coord coords;
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
+	private HashMap<String, Triplet<BufferedImage, String, String>> patterns;
 	private ArrayList<Item> inventory = new ArrayList<Item>();
 	
 	//Each stat is modified by a random amount from -r to +r. TODO - change this, it's a bit crap.
