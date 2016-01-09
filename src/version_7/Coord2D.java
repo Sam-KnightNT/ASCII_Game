@@ -84,4 +84,8 @@ public class Coord2D extends Coord {
 		int y = (val - x) >> 8;
 		return new Coord2D(x, y);
 	}
+
+	public Coord2D shift(Direction dir) {
+		return Coord2D.fromSingleVal(this.toSingleVal() + dir.getNumVal());
+	}
 }

@@ -153,4 +153,8 @@ public abstract class Location {
 	public Pair<Boolean, EntityTile> entityAt(int x, int y) {
 		return entityAt((byte) x, (byte) y);
 	}
+
+	public Pair<Boolean, EntityTile> entityAt(Coord c) {
+		return entityAt(c.x, c.y);
+	}
 }

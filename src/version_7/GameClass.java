@@ -108,8 +108,9 @@ public class GameClass {
 	 * v0.08: Completed complex combat system
 	 * v0.09: Working combat panel, flavour text and swipe previews
 	 * v0.10: Completed tutorial and finalised arena
-	 * v0.11?: More advanced AI, featuring rangers and such
-	 * v0.12: All extraneous things removed - "Generating" statements, printouts, all that guff. Make it ready for public release
+	 * v0.11: (Optional) More advanced AI, featuring rangers and such
+	 * v0.12: All extraneous things removed - "Generating" statements, printouts, most commands, potion system, all that guff.
+	 * 			Make it ready for public release
 	 * v1.00: Progression, scores 
 	 * 
 	 * Details on v0.08
@@ -248,13 +249,16 @@ public class GameClass {
 		arena.fill(new Coord2D(60, 49), new Coord2D(63, 49), gate);
 		
 		//Create the player
-		self = new EntityTile(entities.get("Player"), cloc, (byte) 42, (byte) 62, (byte) 0, null);
+		self = new EntityTile(entities.get("Player"), cloc, 42, 62, null);
 		
 		//Add enemies
-		createEntity("Minotaur", arena, 45, 65, 0);
-		createEntity("Minotaur", arena, 46, 66, 0);
-		createEntity("Slime", arena, 40, 64, 0);
-		createEntity("Slime", arena, 48, 62, 0);
+		createEntity("Minotaur", arena, 45, 65);
+		createEntity("Minotaur", arena, 46, 66);
+		createEntity("Slime", arena, 40, 64);
+		createEntity("Slime", arena, 48, 62);
+		createEntity("Slime", arena, 50, 65);
+		createEntity("Slime", arena, 50, 62);
+		createEntity("Slime", arena, 49, 62);
 		
 		//Create dungeon (currently doesn't matter, but if you remove it it goes haywire so don't)
 		dungeon = new Dungeon();
@@ -824,7 +828,8 @@ public class GameClass {
 			Pair<Boolean, Boolean> didMove = move(dir, self);
 			leftRoom = didMove.getRight();
 		}
-				
+		
+		//TODO - remove for arena release, there is only one room.
 		//If the player entered a new room, alter the path of every entity that needs it
 		if (leftRoom) {
 			for (EntityTile entity : unfrozenEntities.keySet()) {
@@ -891,10 +896,9 @@ public class GameClass {
 	
 	public static Pair<Boolean, Boolean> move(Direction dir, EntityTile entity) {
 		Location loc = entity.getLocation();
-		//NOTE: If moving is being weird, this used to have an extra parameter, location, instead of assuming it's the same as the entity's location.
-		//Also, there was a z-position defined for the entity, but it didn't do anything as far as I saw.
 		
 		//TODO - this is an absolute mess, clean it up! (Put most things into separate functions)
+		//TODO - remove extraneous stuff, no need to check if the player's in a different room because there aren't any.
 		
 		byte x = (byte) entity.getX();
 		byte y = (byte) entity.getY();
@@ -919,7 +923,7 @@ public class GameClass {
 		} else {
 			//Otherwise, it's outside the current Location and should go to whatever Location is there.
 			print ("Moving to new location");
-			Location newloc = dungeon.getMapRel(loc, new Coord3D(nx, ny, entity.getZ()));
+			Location newloc = dungeon.getMapRel(loc, new Coord3D(nx, ny, loc.getZ()));
 			entity.setX(nx);
 			entity.setY(ny);
 			loc.removeEntity(entity);
@@ -945,7 +949,25 @@ public class GameClass {
 		if (entity.getCoords().distanceTo(self.getCoords())>=1.5) {
 			//Move towards the player.
 			//TODO - respect other entities, attempt to move to a location where they aren't in the way so you block the player from moving.
-			moveTo(entity, self.getCoords());
+			//In other words, make the target not equal to the player.
+			
+			//Find which of the 8 directions surrounding the player are already taken, and move to one which isn't.
+			Direction[] directions = Direction.class.getEnumConstants();
+			Coord2D playerCoords = self.getCoords();
+			double minDist = Integer.MAX_VALUE;
+			Coord2D target = null;
+			
+			for (Direction dir : directions) {
+				Coord2D shiftedCoords = playerCoords.shift(dir);
+				//If there is no entity at this particular location (next to the player), and it is closer than the current one...
+				if (!cloc.entityAt(shiftedCoords).getLeft() && entity.getCoords().distanceTo(shiftedCoords)<minDist) {
+					//Set it as the new target.
+					target = playerCoords.shift(dir);
+					minDist = entity.getCoords().distanceTo(shiftedCoords);
+				}
+			}
+			
+			moveTo(entity, target);
 		}
 	}
 	
@@ -1775,10 +1797,6 @@ public class GameClass {
 		return self.getY();
 	}
 	
-	public static int getPZ() {
-		return self.getZ();
-	}
-	
 	public static void print(String s) {
 		System.out.println(s);
 		//Try to draw to the main image. If it doesn't exist (such as, for testing purposes), print to the console.
@@ -1842,9 +1860,9 @@ public class GameClass {
 		return pot;
 	}
 	
-	private static boolean createEntity(String name, Location loc, int x, int y, int z) {
+	private static boolean createEntity(String name, Location loc, int x, int y) {
 		if (entities.containsKey(name)) {
-			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, (byte) z, null);
+			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, null);
 			Integer v = unfrozenEntities.put(entity, entity.getStat("Speed"));
 			
 			if (debug) {

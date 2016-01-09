@@ -9,8 +9,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private Entity entity;
 	private byte x;
 	private byte y;
-	private byte z;
-	private Coord coords;
+	private Coord2D coords;
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 	private HashMap<String, Triplet<BufferedImage, String, String>> patterns;
 	private ArrayList<Item> inventory = new ArrayList<Item>();
@@ -26,12 +25,11 @@ public class EntityTile implements Comparable<EntityTile> {
 	private BufferedImage portrait;
 	private String AI;
 	
-	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z, BufferedImage portrait, String AI) {
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait, String AI) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
-		this.z = z;
-		this.coords = new Coord3D(x, y, z);
+		this.coords = new Coord2D(x, y);
 		this.path = new Path();
 		this.location = cloc;
 		this.portrait = portrait;
@@ -42,21 +40,21 @@ public class EntityTile implements Comparable<EntityTile> {
 		genStats();
 	}
 	
-	public EntityTile(Entity entity, Location cloc, byte x, byte y, byte z, BufferedImage portrait) {
-		this(entity, cloc, x, y, z, portrait, "SimpleMelee");
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait) {
+		this(entity, cloc, x, y, portrait, "SimpleMelee");
 	}
 	
-	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait) {
-		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait);
+	public EntityTile(Entity entity, Location cloc, int x, int y, BufferedImage portrait) {
+		this(entity, cloc, (byte) x, (byte) y, portrait);
 	}
 	
-	public EntityTile(Entity entity, Location loc, byte x, byte y, byte z, BufferedImage portrait, int randomness) {
-		this(entity, loc, x, y, z, portrait);
+	public EntityTile(Entity entity, Location loc, byte x, byte y, BufferedImage portrait, int randomness) {
+		this(entity, loc, x, y, portrait);
 		this.randomness = randomness;
 	}
 	
-	public EntityTile(Entity entity, Location cloc, int x, int y, int z, BufferedImage portrait, int randomness) {
-		this(entity, cloc, (byte) x, (byte) y, (byte) z, portrait, randomness);
+	public EntityTile(Entity entity, Location cloc, int x, int y, BufferedImage portrait, int randomness) {
+		this(entity, cloc, (byte) x, (byte) y, portrait, randomness);
 	}
 	
 	public Entity getEntity() {
@@ -75,11 +73,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		return (short) (x + (y << 8));
 	}
 	
-	public byte getZ() {
-		return z;
-	}
-	
-	public Coord getCoords() {
+	public Coord2D getCoords() {
 		return coords;
 	}
 	
@@ -106,32 +100,19 @@ public class EntityTile implements Comparable<EntityTile> {
 		setY((byte) (newxy >> 8));
 	}
 	
-	public void setZ(byte z) {
-		if (coords instanceof Coord3D || coords instanceof Coord4D) {
-			this.z = z;
-			((Coord3D) this.coords).setZ(z);
-		} else {
-			GameClass.print("Entity "+getName()+" tried to move to");
-			GameClass.print("z-location "+z+", but it is in a 2-D space.");
-		}
-	}
-	
-	public void setCoords(Coord3D coords) {
+	public void setCoords(Coord2D coords) {
 		this.x = coords.getX();
 		this.y = coords.getY();
-		this.z = coords.getZ();
 		this.coords = coords;
 	}
-
-	public void setCoords(byte x, byte y, byte z) {
+	public void setCoords(int x, int y) {
+		setCoords((byte) x, (byte) y);
+	}
+	
+	public void setCoords(byte x, byte y) {
 		this.x = x;
 		this.y = y;
-		this.z = z;
-		this.coords = new Coord3D(x, y, z);
-	}
-
-	public void setCoords(short xy, byte z) {
-		this.setCoords((byte) (xy & 0xff), (byte) (xy >> 8), z); 
+		this.coords = new Coord2D(x, y);
 	}
 	
 	public int getStrength() {
@@ -277,18 +258,18 @@ public class EntityTile implements Comparable<EntityTile> {
 			return this.ticksLeft-e.ticksLeft;
 		}
 	}
-
+	
 	public void setImage(BufferedImage image) {
 		entity.setImage(image);
 	}
 	public BufferedImage getImage() {
 		return entity.getImage();
 	}
-
+	
 	public Location getLocation() {
 		return location;
 	}
-
+	
 	public void setLocation(Location location) {
 		this.location = location;
 	}
@@ -296,11 +277,11 @@ public class EntityTile implements Comparable<EntityTile> {
 	public Path getPath() {
 		return path;
 	}
-
+	
 	public void setPath(Path locationPath) {
 		this.path = locationPath.get();
 	}
-
+	
 	public Entrance getEntrance() {
 		return entrance;
 	}
@@ -314,7 +295,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		//Give it the new Entrance
 		setNewEntrance(entrance.getLinkedEntrance());
 	}
-
+	
 	public void alterPathBeginning(Location newLocation) {
 		//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 		Location newRoom = path.get(1);
@@ -324,6 +305,7 @@ public class EntityTile implements Comparable<EntityTile> {
 			path.add(0, location);
 		}
 	}
+	
 	public void alterPathEnd(Location newDestination) {
 		 //If passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
 		if (path.contains(newDestination)) {
@@ -346,21 +328,16 @@ public class EntityTile implements Comparable<EntityTile> {
 			return (getName()+"#"+id);
 		}
 	}
-
-	public void setCoords(int x, int y, int z) {
-		setCoords((byte) x, (byte) y, (byte) z);
-	}
-
+	
 	public BufferedImage getPortrait() {
 		return portrait;
 	}
-
+	
 	public String getAI() {
 		return AI;
 	}
-
+	
 	public void setAI(String AI) {
 		this.AI = AI;
 	}
-
 }

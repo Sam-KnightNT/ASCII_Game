@@ -125,4 +125,9 @@ public class Coord3D extends Coord {
 	public static Coord3D c3sum(Coord3D c1, Coord3D c2) {
 		return new Coord3D(c1.x+c2.x, c1.y+c2.y, c1.z+c2.z);
 	}
+
+	public Coord2D shift(Direction dir) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
