@@ -1619,6 +1619,18 @@ public class GameClass {
 		System.out.println("done.");
 	}
 	
+	static void attack(int val, boolean firstDir) {
+		if (firstDir) {
+			attackValue = val*9;
+		} else {
+			attackValue += val;
+			//Actually perform the attack now that you have both inputs.
+			//Command: get the attackValue'th value from the defence of a given defender, and the attack of you. This is so other entities can also attack without going through this method.
+			command("att "+self.getName()+" "+mainImage.getTargetedEntity()+" "+attackValue);
+			attackValue = 0;
+		}
+	}
+	
 	private static void fight(EntityTile ent1, EntityTile ent2) {
 		int str1 = ent1.getStrength()+random.nextInt(20)-10;
 		int str2 = ent2.getStrength()+random.nextInt(20)-10;

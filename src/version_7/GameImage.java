@@ -13,10 +13,16 @@ import java.util.Map.Entry;
 import javax.swing.*;
 
 public class GameImage extends JPanel {
+
+	private static String attackDir;
+	private static int swingDir;
 	
-	/**
-	 * 
-	 */
+	//I think this was used for hammer, sword etc
+	//private static String attackType;
+	private static boolean firstSwing = false;
+	private static boolean takeSwing = false;
+	private static int attackValue = 0;
+	
 	private static final long serialVersionUID = -2736624963222321827L;
 	private BufferedImage mainPane;
 	private BufferedImage controlPane;
@@ -123,6 +129,17 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD1"), "down-left");
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD3"), "down-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke("NUMPAD5"), "wait");
+		
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift Q"), "attack ul");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift W"), "attack u");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift E"), "attack ur");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift D"), "attack r");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift C"), "attack dr");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift X"), "attack d");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift Z"), "attack dl");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift A"), "attack l");
+		this.getInputMap().put(KeyStroke.getKeyStroke("shift S"), "attack m");
+		
 		this.getInputMap().put(KeyStroke.getKeyStroke("HOME"), "up-left");
 		this.getInputMap().put(KeyStroke.getKeyStroke("PAGE_UP"), "up-right");
 		this.getInputMap().put(KeyStroke.getKeyStroke("END"), "down-left");
@@ -134,8 +151,256 @@ public class GameImage extends JPanel {
 		this.getInputMap().put(KeyStroke.getKeyStroke('m'), "mix");
 		this.getInputMap().put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "exit");
 
+		
+		this.getActionMap().put("attack ul", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -2009680800825896652L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(0, firstSwing);
+				//TODO - should firstSwing be taken out of here and put into GameClass? Probably, if I can manage that it'd be cleaner.
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack u", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -209214811183776165L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(1, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack ur", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3689905985716910794L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(2, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack r", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -741929602045979173L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(3, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack dr", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -9144489421743145667L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(4, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack d", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 6661878174206714302L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(5, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack dl", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3164380163562077592L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(6, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack l", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3132645763777895288L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(7, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		this.getActionMap().put("attack m", new AbstractAction() {
+			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 6230524046884637525L;
+
+			public void actionPerformed(ActionEvent e) {
+				GameClass.attack(8, firstSwing);
+				firstSwing = !firstSwing;
+			}
+		});
+		
+		//So, hitting Q first will mean the thing's looking in the first 9 characters for what it needs.
+		//What I need is:
+		//If Shift and a direction are held, charge.
+		//If Shift and a direction is pressed, set firstSwing to true, and add 9xn to the checkPosition, as well as putting up the swing preview.
+		//If firstSwing is true and a direction is pressed, add n to the checkPosition and do the relevant attack.
+		//TODO - what happens when you hold one button, then hold another button? Should you charge in the first direction?
+		//A neat idea - if you hold QE at the same time, maybe it could be basically charging towards W, while holding 2 weapons to QE, dealing damage to each of them?
+		//I think the combat should be really bloody complex, so combos like this should be included.
 		this.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
+				if (!firstSwing) {
+					switch (e.getKeyChar()) {
+					case 'Q':
+						attackDir = "front left";
+						swingDir -= 8;
+						firstSwing = true;
+						break;
+					case 'W':
+						attackDir = "front";
+						swingDir -= 1;
+						firstSwing = true;
+						break;
+					case 'E':
+						attackDir = "front right";
+						swingDir -= 2;
+						firstSwing = true;
+						break;
+					case 'D':
+						attackDir = "right";
+						swingDir -= 3;
+						firstSwing = true;
+						break;
+					case 'C':
+						attackDir = "back right";
+						swingDir -= 4;
+						firstSwing = true;
+						break;
+					case 'X':
+						attackDir = "back";
+						swingDir -= 5;
+						firstSwing = true;
+						break;
+					case 'Z':
+						attackDir = "back left";
+						swingDir -= 6;
+						firstSwing = true;
+						break;
+					case 'A':
+						attackDir = "left";
+						swingDir -= 7;
+						firstSwing = true;
+						break;
+					}
+				} else {
+					switch (e.getKeyChar()) {
+					case 'W':
+						swingDir += 1;
+						firstSwing = false;
+						break;
+					case 'E':
+						swingDir += 2;
+						firstSwing = false;
+						break;
+					case 'D':
+						swingDir += 3;
+						firstSwing = false;
+						break;
+					case 'C':
+						swingDir += 4;
+						firstSwing = false;
+						break;
+					case 'X':
+						swingDir += 5;
+						firstSwing = false;
+						break;
+					case 'Z':
+						swingDir += 6;
+						firstSwing = false;
+						break;
+					case 'A':
+						swingDir += 7;
+						firstSwing = false;
+						break;
+					case 'Q':
+						swingDir += 8;
+						firstSwing = false;
+						break;
+					}
+					if (e.getKeyChar()=='S') {
+						swingDir=-1;
+						firstSwing = false;
+					} else {
+						swingDir = (swingDir+8) % 8;
+					}
+					takeSwing = true;
+					System.out.println(swingDir);
+				}
+				if (takeSwing) {
+					switch(swingDir) {
+					case -1:
+						System.out.println("You perform a thrust to the "+attackDir);
+						break;
+					case 0:
+						System.out.println("You slice downwards to the "+attackDir);
+						break;
+					case 1:
+						System.out.println("You perform a left swipe to the "+attackDir);
+						break;
+					case 2:
+						System.out.println("You perform a left slice to the "+attackDir);
+						break;
+					case 3:
+						System.out.println("You slice from the top left to the bottom right in a "+attackDir+" direction");
+						break;
+					case 4:
+						System.out.println("You slice from bottom to top to the "+attackDir);
+						break;
+					case 5:
+						System.out.println("You slice from the top right to the bottom left in a "+attackDir+" direction");
+						break;
+					case 6:
+						System.out.println("You perform a right slice to the "+attackDir);
+						break;
+					case 7:
+						System.out.println("You perform a right swipe to the "+attackDir);
+						break;
+					}
+					takeSwing = false;
+					swingDir=0;
+					attackDir="";
+				}
 				//GameClass.print("Typed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar());
 			}
 
