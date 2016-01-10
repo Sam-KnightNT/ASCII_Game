@@ -278,7 +278,7 @@ public class GameImage extends JPanel {
 			private static final long serialVersionUID = -2549505830577275314L;
 			
 			public void actionPerformed(ActionEvent e) {
-				GameClass.command("cb Marble Wall "+(GameClass.getPX()+1)+" "+GameClass.getPY()+" "+GameClass.getPZ());
+				GameClass.command("cb Marble Wall "+(GameClass.getPX()+1)+" "+GameClass.getPY());
 			}
 		});
 

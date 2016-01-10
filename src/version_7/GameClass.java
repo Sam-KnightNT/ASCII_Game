@@ -34,7 +34,7 @@ public class GameClass {
 	 * It'll recalculate the destructive path once it gets to the town, heading straight for the next one.
 	 */
 	static HashMap<String, Item> items = new HashMap<String, Item>();
-	static HashMap<String, Entity> entities = new HashMap<String, Entity>();
+	static HashMap<String, Entity> entityTypes = new HashMap<String, Entity>();
 	static int entityCount = 0;
 	static Dungeon dungeon;
 	static HashMap<String, Map> maps = new HashMap<String, Map>();
@@ -49,7 +49,7 @@ public class GameClass {
 	public static EntityTile self;
 	private static Location cloc;
 	private static boolean AIon = false;
-	private static TreeMap<EntityTile, Integer> unfrozenEntities = new TreeMap<EntityTile, Integer>();
+	private static TreeMap<EntityTile, Integer> entityInstances = new TreeMap<EntityTile, Integer>();
 	private static BufferedImage bottle;
 	private static BufferedImage liquid;
 	private static BufferedImage shine;
@@ -249,7 +249,7 @@ public class GameClass {
 		arena.fill(new Coord2D(60, 49), new Coord2D(63, 49), gate);
 		
 		//Create the player
-		self = new EntityTile(entities.get("Player"), cloc, 42, 62, null);
+		self = new EntityTile(entityTypes.get("Player"), cloc, 42, 62, null);
 		
 		//Add enemies
 		createEntity("Minotaur", arena, 45, 65);
@@ -327,7 +327,7 @@ public class GameClass {
 						self.setStat("mana", self.getStat("mana")-1);
 						switch (rng) {
 						case 1:
-							entities.remove(self.getName());
+							entityTypes.remove(self.getName());
 							break;
 						case 2:
 							damage = random.nextInt(20); 
@@ -396,7 +396,7 @@ public class GameClass {
 			//Control another entity
 			else if (command.startsWith("control ")) {
 				String entity = command.substring(8);
-				if (entities.containsKey(entity)) {
+				if (entityTypes.containsKey(entity)) {
 					ArrayList<EntityTile> ent = cloc.getEntityByName(entity);
 					if (!ent.isEmpty()) {
 						if (ent.size()>1) {
@@ -415,7 +415,7 @@ public class GameClass {
 				}
 			}
 			else if (command.contentEquals("all entities")) {
-				for (String entName : entities.keySet()) {
+				for (String entName : entityTypes.keySet()) {
 					print(entName);
 				}
 			}
@@ -698,7 +698,7 @@ public class GameClass {
 		
 		//Show entity list and timings
 		else if (command.equals("ls")) {
-			for (EntityTile entity : unfrozenEntities.keySet()) {
+			for (EntityTile entity : entityInstances.keySet()) {
 				print(entity.getTicks()+" "+entity.getName());
 			}
 		}
@@ -809,7 +809,7 @@ public class GameClass {
 		TreeMap<EntityTile, Integer> newList = new TreeMap<EntityTile, Integer>();
 		
 		//Reset your own tick count
-		unfrozenEntities.remove(self);
+		entityInstances.remove(self);
 		int ticks = self.getTicks();
 		self.resetTicks();
 		
@@ -825,14 +825,14 @@ public class GameClass {
 		boolean leftRoom = false;
 		//Move the player
 		if (move) {
-			Pair<Boolean, Boolean> didMove = move(dir, self);
+			Pair<Boolean, Boolean> didMove = playerMove(dir);
 			leftRoom = didMove.getRight();
 		}
 		
 		//TODO - remove for arena release, there is only one room.
 		//If the player entered a new room, alter the path of every entity that needs it
 		if (leftRoom) {
-			for (EntityTile entity : unfrozenEntities.keySet()) {
+			for (EntityTile entity : entityInstances.keySet()) {
 				//alterPath pseudocode: if passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
 				entity.alterPathEnd(self.getLocation());
 				print("Path: "+entity.getPath().toString());
@@ -841,20 +841,20 @@ public class GameClass {
 		
 		//Put the player into the new list, as well as every other entity
 		newList.put(self, self.getTicks());
-		for (EntityTile other : unfrozenEntities.keySet()) {
+		for (EntityTile other : entityInstances.keySet()) {
 			other.setTicks(other.getTicks()-ticks);
 			newList.put(other, other.getTicks()-ticks);
 		}
 
 		//And set the unfrozen entity list to this new list
-		unfrozenEntities = newList;
+		entityInstances = newList;
 		
 		//Cycle through unfrozenEntities while there are entities to move
-		while (!unfrozenEntities.firstKey().equals(self)) {
+		while (!entityInstances.firstKey().equals(self)) {
 			
 			//Recreate the new list and pop the entity off
 			newList = new TreeMap<EntityTile, Integer>();
-			EntityTile entity = unfrozenEntities.pollFirstEntry().getKey();
+			EntityTile entity = entityInstances.pollFirstEntry().getKey();
 			
 			//Reset the entity's tick rate after getting its current remaining
 			ticks = entity.getTicks();
@@ -862,16 +862,21 @@ public class GameClass {
 			
 			//Attempt to pathfind to the player
 			boolean leftRoomEnt = pathfind(entity);
+			
 			if (leftRoomEnt) {
 				//Check the second Location on its Path. If the passed Location is equivalent, delete the first. Otherwise, add this to the start.
 				entity.alterPathBeginning(entity.getLocation());
 			}
-			newList.put(entity, entity.getTicks());
-			for (EntityTile other : unfrozenEntities.keySet()) {
+			
+			if (entity.getHealth()>0) {
+				newList.put(entity, entity.getTicks());
+			}
+			for (EntityTile other : entityInstances.keySet()) {
 				other.setTicks(other.getTicks()-ticks);
 				newList.put(other, other.getTicks()-ticks);
 			}
-			unfrozenEntities = newList;
+			
+			entityInstances = newList;
 		}
 		/*for (EntityTile ent : unfrozenEntities.keySet()) {
 			print(ent.getName());
@@ -943,7 +948,16 @@ public class GameClass {
 		//Is i > 0? If so, return i % 256. Else return i % 256 + 256
 		return i > 0 ? i % 256 : i % 256 + 256;
 	}
-
+	
+	public static Pair<Boolean, Boolean> playerMove(Direction dir) {
+		if (canMove(dir, self)) {
+			return move(dir, self);
+		} else if (cloc.getTile(self.getCoords().shift(dir).toSingleVal()).isTraversable(self)) {
+			fight (self, cloc.entityAt(self.getCoords().shift(dir)).getRight());
+		}
+		return new Pair<Boolean, Boolean>(false, false);
+	}
+	
 	public static void moveToPlayer(EntityTile entity) {
 		//Move into a position around the player, respecting other enemy positions.
 		if (entity.getCoords().distanceTo(self.getCoords())>=1.5) {
@@ -968,6 +982,9 @@ public class GameClass {
 			}
 			
 			moveTo(entity, target);
+		} else {
+			//If within range, attack the player.
+			fight(entity, self);
 		}
 	}
 	
@@ -1260,7 +1277,7 @@ public class GameClass {
 						e.printStackTrace();
 						print(entity.getName());
 					}
-					entities.put(entity.getName(), entity);
+					entityTypes.put(entity.getName(), entity);
 				}
 				else if (strs[i].trim().equals("")) {
 					i++;
@@ -1598,33 +1615,39 @@ public class GameClass {
 			e.printStackTrace();
 			print("Player");
 		}
-		entities.put("Player", player);
+		entityTypes.put("Player", player);
 		System.out.println("done.");
 	}
 	
-	@SuppressWarnings("unused")
 	private static void fight(EntityTile ent1, EntityTile ent2) {
 		int str1 = ent1.getStrength()+random.nextInt(20)-10;
 		int str2 = ent2.getStrength()+random.nextInt(20)-10;
 		
-		print(ent1.getName()+" strength: "+str1);
-		print(ent2.getName()+" strength: "+str2);
+		print(ent1.getName()+" strength: "+str1+". "+ent2.getName()+" strength: "+str2);
 
 		String printStr = "";
 		if (str1>str2) {
 			boolean kill = dealDamage(ent1, ent2, str1-str2);
 			if (kill) {
 				boolean killed = cloc.removeEntity(ent2);
-				unfrozenEntities.remove(ent2);
-				print(killed);
+				Integer killed2 = entityInstances.remove(ent2);
+				entityTypes.remove(ent2);
+				for (EntityTile entity : entityInstances.keySet()) {
+					print(entity+", "+entity.compareTo(ent2));
+				}
+				print(killed+", "+killed2);
 			}
 		}
 		else if (str2>str1) {
 			boolean kill = dealDamage(ent2, ent1, str2-str1);
 			if (kill) {
 				boolean killed = cloc.removeEntity(ent1);
-				unfrozenEntities.remove(ent1);
-				print(killed);
+				Integer killed2 = entityInstances.remove(ent1);
+				entityTypes.remove(ent1);
+				for (EntityTile entity : entityInstances.keySet()) {
+					print(entity+", "+entity.compareTo(ent1));
+				}
+				print(killed+", "+killed2);
 			}
 		}
 		else {
@@ -1668,36 +1691,27 @@ public class GameClass {
 		
 		//Damage taker
 		if (isDef)
-			printStr += "you!";
+			printStr += "you, ";
 		else
-			printStr += "the "+nameDef+"!";
+			printStr += "the "+nameDef+", ";
 		
-		print(printStr);
-		printStr = "";
+		printStr += "dealing ";
 		
-		//Damage dealt
-		if (isAtt)
-			printStr += "You deal ";
-		else
-			printStr += "The "+nameAtt+" deals ";
-		
-		printStr += diff+" damage!";
-		print(printStr);
-		printStr = "";
+		printStr += diff+" damage! ";
 		
 		//If defender dies
 		if (defender.getHealth()<=0) {
 			if (isDef)
-				print("You die!\n");
+				printStr += "You die!";
 			else
-				print("The "+nameDef+" dies!\n");
+				printStr += "The "+nameDef+" dies!";
 			return true;
 		}
 		else {
 			if (isDef)
-				printStr += "You now have ";
+				printStr += "You have ";
 			else
-				printStr += "The "+nameDef+" now has ";
+				printStr += "The "+nameDef+" has ";
 			printStr += defender.getHealth()+" health.\n";
 			print(printStr);
 		}
@@ -1861,9 +1875,9 @@ public class GameClass {
 	}
 	
 	private static boolean createEntity(String name, Location loc, int x, int y) {
-		if (entities.containsKey(name)) {
-			EntityTile entity = new EntityTile(entities.get(name), loc, (byte) x, (byte) y, null);
-			Integer v = unfrozenEntities.put(entity, entity.getStat("Speed"));
+		if (entityTypes.containsKey(name)) {
+			EntityTile entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null);
+			Integer v = entityInstances.put(entity, entity.getStat("Speed"));
 			
 			if (debug) {
 				System.out.println("New entity created: "+entity);
@@ -1878,8 +1892,8 @@ public class GameClass {
 					+ "Run with debug mode on to view the entire list of available entities.");
 			if (debug) {
 				System.out.println("List of entities:");
-				for (String entity : entities.keySet()) {
-					System.out.println(entity+", where the entity's name is "+entities.get(entity));
+				for (String entity : entityTypes.keySet()) {
+					System.out.println(entity+", where the entity's name is "+entityTypes.get(entity));
 				}
 			}
 			return false;

@@ -34,7 +34,7 @@ public class EntityTesting {
 		room2 = new Room(10, 10, 0, 0, "Room 2");
 		room3 = new Room(10, 10, 0, -10, "Room 3");
 		entity = new Entity("Test Entity", null, null, null);
-		entityTile = new EntityTile(entity, room1, (byte) 3, (byte) 4, (byte) 0, null);
+		entityTile = new EntityTile(entity, room1, 3, 4, null);
 		room1.addEntity(entityTile);
 	}
 	
@@ -45,7 +45,6 @@ public class EntityTesting {
 		assertEquals("Entity's position has been set correctly", new Coord3D(3, 4, 0), entityTile.getCoords());
 		assertEquals("Entity's x position has been initialised", 3, entityTile.getX());
 		assertEquals("Entity's y position has been initialised", 4, entityTile.getY());
-		assertEquals("Entity's z position has been initialised", 0, entityTile.getZ());
 	}
 
 	@Test
@@ -54,7 +53,6 @@ public class EntityTesting {
 		assertEquals("Entity's new position is correct", new Coord3D(3, 3, 0), entityTile.getCoords());
 		assertEquals("Entity's x position has been changed", 3, entityTile.getX());
 		assertEquals("Entity's y position has been changed", 3, entityTile.getY());
-		assertEquals("Entity's z position has been changed", 0, entityTile.getZ());
 	}
 
 	@Test
@@ -63,7 +61,6 @@ public class EntityTesting {
 		assertEquals("Entity's new position is correct", new Coord3D(4, 4, 0), entityTile.getCoords());
 		assertEquals("Entity's x position has been changed", 4, entityTile.getX());
 		assertEquals("Entity's y position has been changed", 4, entityTile.getY());
-		assertEquals("Entity's z position has been changed", 0, entityTile.getZ());
 	}
 	
 	//Need to check moving an entity from one room into the next
