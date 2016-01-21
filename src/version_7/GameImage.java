@@ -19,8 +19,7 @@ public class GameImage extends JPanel {
 	
 	//I think this was used for hammer, sword etc
 	//private static String attackType;
-	private static boolean firstSwing = false;
-	private static boolean takeSwing = false;
+	private static boolean firstSwing = true;
 	private static EntityTile targetedEntity = null;
 	
 	private static final long serialVersionUID = -2736624963222321827L;
@@ -286,127 +285,6 @@ public class GameImage extends JPanel {
 		//I think the combat should be really bloody complex, so combos like this should be included.
 		this.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
-				if (!firstSwing) {
-					switch (e.getKeyChar()) {
-					case 'Q':
-						attackDir = "front left";
-						swingDir -= 8;
-						firstSwing = true;
-						break;
-					case 'W':
-						attackDir = "front";
-						swingDir -= 1;
-						firstSwing = true;
-						break;
-					case 'E':
-						attackDir = "front right";
-						swingDir -= 2;
-						firstSwing = true;
-						break;
-					case 'D':
-						attackDir = "right";
-						swingDir -= 3;
-						firstSwing = true;
-						break;
-					case 'C':
-						attackDir = "back right";
-						swingDir -= 4;
-						firstSwing = true;
-						break;
-					case 'X':
-						attackDir = "back";
-						swingDir -= 5;
-						firstSwing = true;
-						break;
-					case 'Z':
-						attackDir = "back left";
-						swingDir -= 6;
-						firstSwing = true;
-						break;
-					case 'A':
-						attackDir = "left";
-						swingDir -= 7;
-						firstSwing = true;
-						break;
-					}
-				} else {
-					switch (e.getKeyChar()) {
-					case 'W':
-						swingDir += 1;
-						firstSwing = false;
-						break;
-					case 'E':
-						swingDir += 2;
-						firstSwing = false;
-						break;
-					case 'D':
-						swingDir += 3;
-						firstSwing = false;
-						break;
-					case 'C':
-						swingDir += 4;
-						firstSwing = false;
-						break;
-					case 'X':
-						swingDir += 5;
-						firstSwing = false;
-						break;
-					case 'Z':
-						swingDir += 6;
-						firstSwing = false;
-						break;
-					case 'A':
-						swingDir += 7;
-						firstSwing = false;
-						break;
-					case 'Q':
-						swingDir += 8;
-						firstSwing = false;
-						break;
-					}
-					if (e.getKeyChar()=='S') {
-						swingDir=-1;
-						firstSwing = false;
-					} else {
-						swingDir = (swingDir+8) % 8;
-					}
-					takeSwing = true;
-					System.out.println(swingDir);
-				}
-				if (takeSwing) {
-					switch(swingDir) {
-					case -1:
-						System.out.println("You perform a thrust to the "+attackDir);
-						break;
-					case 0:
-						System.out.println("You slice downwards to the "+attackDir);
-						break;
-					case 1:
-						System.out.println("You perform a left swipe to the "+attackDir);
-						break;
-					case 2:
-						System.out.println("You perform a left slice to the "+attackDir);
-						break;
-					case 3:
-						System.out.println("You slice from the top left to the bottom right in a "+attackDir+" direction");
-						break;
-					case 4:
-						System.out.println("You slice from bottom to top to the "+attackDir);
-						break;
-					case 5:
-						System.out.println("You slice from the top right to the bottom left in a "+attackDir+" direction");
-						break;
-					case 6:
-						System.out.println("You perform a right slice to the "+attackDir);
-						break;
-					case 7:
-						System.out.println("You perform a right swipe to the "+attackDir);
-						break;
-					}
-					takeSwing = false;
-					swingDir=0;
-					attackDir="";
-				}
 				//GameClass.print("Typed: "+e+"\n"+e.getKeyCode()+", "+e.getKeyChar());
 			}
 

@@ -58,7 +58,7 @@ public class GameClass {
 	private static Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 	
 	static boolean debug = true;
-	static boolean systemPrint = true;
+	static boolean systemPrint = false;
 	
 	//Where the player is initially
 	static int px = 1;
@@ -825,6 +825,7 @@ public class GameClass {
 	public static void cycle(Direction dir) {
 		cycle(true, dir);
 	}
+	
 	public static void cycle(boolean move, Direction dir) {
 		TreeMap<EntityTile, Integer> newList = new TreeMap<EntityTile, Integer>();
 		
@@ -1295,7 +1296,7 @@ public class GameClass {
 						entity.setImage(ImageIO.read(new File("images/entities/"+entity.getName()+".png")));
 					} catch (IOException e) {
 						e.printStackTrace();
-						print(entity.getName());
+						System.out.println("Entity not created: "+entity.getName());
 					}
 					entityTypes.put(entity.getName(), entity);
 				}
@@ -1303,7 +1304,7 @@ public class GameClass {
 					i++;
 				}
 				else {
-					print(
+					System.out.println(
 						"\"entity\" tag not found, please add it before each new entity. \n"+strs[i]);
 					i++;
 				}
