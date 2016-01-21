@@ -37,6 +37,7 @@ public class GameClass {
 	static HashMap<String, Entity> entityTypes = new HashMap<String, Entity>();
 	static int entityCount = 0;
 	static Dungeon dungeon;
+	static int attackValue = 0;
 	static HashMap<String, Map> maps = new HashMap<String, Map>();
 	//static HashMap<String, Location> rooms = new HashMap<String, Location>();
 	static HashMap<String, TileType> tiles = new HashMap<String, TileType>();
@@ -95,6 +96,11 @@ public class GameClass {
 	 * 
 	 * TODO - redo this. Probably v0.something should have a test map, v0.s+1 implements the combat system, s+2 adds enemies, items and a progression, s+3 is the full map with events, s+4 has points and a menu, and s+5 is the full game (with different weapon progressions).
 	 * 
+	 * A point on optimisation and multithreading - I forgot about the fact that, basically, each thread can work on different bytes simultaneously.
+	 * So, what I propose, is making sure each thing fits neatly into bytes - each entity takes up exactly n bytes, each tile, etc.
+	 * Then, I can spawn multiple threads, each of which deals with the movement of a single entity at a time.
+	 * It should hopefully be possible to update entities simultaneously - or at least have it so that ones who require other entities' info can be put into a sequence, so those that don't can update earlier.
+	 * That's quite a way down the line, but it'll happen eventually.
 	 * 
 	 * 
 	 * Roadmap for To3: Arena
@@ -122,6 +128,21 @@ public class GameClass {
 	 * For example, two-handed is "Allows devastating downward smashes, but little in the way of other attacks and weak defences."
 	 * There could be different stances for different weapon combos later down the line - sword and shield, for example, or polearm.
 	 * Also, don't forget the possibility of using, say, WW as a stab, or S- as a stab to the middle then a slice outwards.
+	 * 
+	 * To make it more engaging, I can add different timings to everything. Changing stance requires 50% of the time it would have taken to move.
+	 * Attacking requires a 15% waiting period before you actually hit your opponent, and a 135% waiting period afterwards - in total it takes 1.5 times as long as a movement.
+	 * Once you begin your attack, you may or may not telegraph to your opponent what you are about to do. Not sure which would be better balanced.
+	 * But the waiting periods are meant to make it possible to anticipate opponent's attacks most of the time, and prepare for them. But not all the time - you have to attack occasionally.
+	 * Blocking directions should be lessened to compensate - possibly even have an entirey separate blocking system, where the entity can block attacks from 1 direction or deflect attacks from 3 for half/quarter damage.
+	 * That would lead to a lot more tactics in combat - do I keep changing stances to look for an opening, or attack now and risk my defence being open?
+	 * There'll have to be a healing system in place, at least a basic heal-to-full-after-wave. You might be dealt a lot of damage in each combat with this system.
+	 * Also, difficulties are easy to cater for - easier ones lower the enemy speed or tendency to block attacks, harder ones increase their speed. Or, even cheat by letting them see what attack you're making while winding up.
+	 * 
+	 * I need to rethink this mechanic. It's not that fun now that I consider it, unlike the proposed research mechanic.
+	 * There's just one way to do things, and before you learn that way it's hard, once you learn it it's easy. There should be some challenge involved.
+	 * But, it can't just be RNG, can't be one-of-n-type (e.g. Minotaurs have different blocking states to figure out each time you play) etc.
+	 * Maybe I could get inspiration from Blade Mode in Metal Gear V: Revengeance?
+	 * Or work in a skill tree like Final Fantasy X, or Path of Exile? www.gamesradar.com/coolest-game-mechanics-2013/, slides 3 and 16.
 	 */
 	public static void main(String[] args) throws Exception {
 		readFromFile();
@@ -278,6 +299,8 @@ public class GameClass {
 		//E.g. for Great Strike
 		//Wind-up .5, so it takes (0.5*10000)/speed ticks before the action is performed
 		//Cool-down 1, so it takes 10000/speed ticks before you can perform another action
+		
+		//TODO - this command system is very inefficient, what with converting everything into Strings then doing stuff with them. Change this.
 		while (true) {
 			System.out.print("Please enter a command: ");
 			try {
@@ -731,6 +754,18 @@ public class GameClass {
 			}
 		}
 		
+		//Let one entity attack another
+		else if (command.startsWith("att ")) {
+			Pattern pattern = Pattern.compile("att (.+) (.+) ([0-9]{1,2})");
+			Matcher matcher = pattern.matcher(command);
+			if (matcher.matches()) {
+				print(command+" attack!");
+			} else {
+				print("Improper usage of attack command.");
+			}
+		}
+		
+		//Cast a spell
 		else if (command.startsWith("magic ")) {
 			
 			//Here, check through the spell list to find a matching spell
@@ -769,7 +804,6 @@ public class GameClass {
 				print("Improper usage of \"cb\" command.\n" +
 						"Should be \"cb <tilename> <xcoord> <ycoord>, found "+command+".");
 			}
-			//TODO next time: Test this and damage systems
 		}
 		else if (command.contentEquals("mix")) {
 			Potion A = null;
@@ -1622,12 +1656,14 @@ public class GameClass {
 	static void attack(int val, boolean firstDir) {
 		if (firstDir) {
 			attackValue = val*9;
+			//And put the swipe previews up.
 		} else {
 			attackValue += val;
 			//Actually perform the attack now that you have both inputs.
 			//Command: get the attackValue'th value from the defence of a given defender, and the attack of you. This is so other entities can also attack without going through this method.
 			command("att "+self.getName()+" "+mainImage.getTargetedEntity()+" "+attackValue);
 			attackValue = 0;
+			//And remove the swipe previews.
 		}
 	}
 	
@@ -1813,14 +1849,6 @@ public class GameClass {
 			}
 		}
 		return colour;
-	}
-	
-	public static int getPX() {
-		return self.getX();
-	}
-	
-	public static int getPY() {
-		return self.getY();
 	}
 	
 	public static void print(String s) {

@@ -21,7 +21,7 @@ public class GameImage extends JPanel {
 	//private static String attackType;
 	private static boolean firstSwing = false;
 	private static boolean takeSwing = false;
-	private static int attackValue = 0;
+	private static EntityTile targetedEntity = null;
 	
 	private static final long serialVersionUID = -2736624963222321827L;
 	private BufferedImage mainPane;
@@ -276,6 +276,12 @@ public class GameImage extends JPanel {
 		//If Shift and a direction is pressed, set firstSwing to true, and add 9xn to the checkPosition, as well as putting up the swing preview.
 		//If firstSwing is true and a direction is pressed, add n to the checkPosition and do the relevant attack.
 		//TODO - what happens when you hold one button, then hold another button? Should you charge in the first direction?
+		//Blocking mechanic works a bit differently in the full version.
+		//Instead of being a strong defence, it reduces attack power. The amount reduced depends on your skill and chance.
+		//A 100-skill blocker blocks 100% of damage 100% of the time. 50-skill blockers decrease attack power by an average of 8 points.
+		//Enemies have a small amount of blocking directions usually - e.g. the Minotaur left-blocking blocks QAZ.
+		//Players have a lot more - left-block blocks WQAZX. Guardians and bosses also have lots of block.
+		//TODO - need to figure out how to balance that. I mean, if the blocker is unskilled, the entity shouldn't take full power attacks if they're in steel armour.
 		//A neat idea - if you hold QE at the same time, maybe it could be basically charging towards W, while holding 2 weapons to QE, dealing damage to each of them?
 		//I think the combat should be really bloody complex, so combos like this should be included.
 		this.addKeyListener(new KeyListener() {
@@ -543,7 +549,7 @@ public class GameImage extends JPanel {
 			private static final long serialVersionUID = -2549505830577275314L;
 			
 			public void actionPerformed(ActionEvent e) {
-				GameClass.command("cb Marble Wall "+(GameClass.getPX()+1)+" "+GameClass.getPY());
+				GameClass.command("cb Marble Wall "+(player.getX()+1)+" "+player.getY());
 			}
 		});
 
@@ -820,5 +826,9 @@ public class GameImage extends JPanel {
 
 	public void setCombatPortrait(BufferedImage portrait) {
 		gSide.drawImage(portrait, 0, 600, null);
+	}
+	
+	public EntityTile getTargetedEntity() {
+		return targetedEntity;
 	}
 }
