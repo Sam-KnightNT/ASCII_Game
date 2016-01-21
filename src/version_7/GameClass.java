@@ -58,6 +58,7 @@ public class GameClass {
 	private static Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 	
 	static boolean debug = true;
+	static boolean systemPrint = true;
 	
 	//Where the player is initially
 	static int px = 1;
@@ -300,167 +301,6 @@ public class GameClass {
 		//Wind-up .5, so it takes (0.5*10000)/speed ticks before the action is performed
 		//Cool-down 1, so it takes 10000/speed ticks before you can perform another action
 		
-		//TODO - this command system is very inefficient, what with converting everything into Strings then doing stuff with them. Change this.
-		while (true) {
-			System.out.print("Please enter a command: ");
-			try {
-				command = readIn.readLine();
-			} catch (IOException ex) {
-				print(ex);
-			}
-			if (command.equals("stats")) {
-				self.printStats();
-			}
-			else if (command.equals("change")) {
-				command("cb Marble Floor "+self.getX()+" "+self.getY());
-			}
-			else if (command.equals("regen")) {
-				self.setStat("mana", self.getStat("max mana"));
-				print("You regen to "+self.getStat("mana")+" mana.");
-			}
-			else if (command.startsWith("magic")) {
-				//Selector selector = new Selector()
-				//selector.
-			}
-			else if (command.startsWith("damage ")) {
-				if (self.hasStat("mana") && self.hasStat("magic power") && self.getStat("mana")>0) {
-					String name = command.substring(7);
-					EntityTile entity = null;
-					if (name.matches(".+ [0-9]+")) {
-						int damage = Integer.parseInt(name.substring(name.indexOf(' ')+1));
-						name = name.substring(0, name.indexOf(" "));
-						print(damage+" "+name);
-						command("d "+name+" "+damage);
-					}
-					else if (cloc.getEntityCount(name)>0) {
-						ArrayList<EntityTile> entityList = cloc.getEntityByName(name);
-						if (entityList.size()==1) {
-							entity = entityList.get(0);
-						} else {
-							print("More than one entity with name "+name+" found:\n" +
-									"Please enter which one you want to attack.\n" +
-									"They are numbered from top to bottom, if on the same height then left to right.");
-							int num = Integer.parseInt(readIn.readLine());
-							entity = entityList.get(num-1);
-						}
-						print("You do a weird magicky thing!");
-						int rng = random.nextInt(6)+1;
-						print("A mystical die rolls. It rolls a "+rng+"!");
-						int damage;
-						self.setStat("mana", self.getStat("mana")-1);
-						switch (rng) {
-						case 1:
-							entityTypes.remove(self.getName());
-							break;
-						case 2:
-							damage = random.nextInt(20); 
-							command("d "+self+" "+damage);
-							break;
-						case 3:
-							command("d "+entity+" 1");
-							break;
-						case 4:
-							damage = random.nextInt(20);
-							command("d "+entity+" "+damage);
-							break;
-						case 5:
-							damage = random.nextInt(30)+40;
-							command("d "+entity+" "+damage);
-	 					case 6:
-	 						damage = random.nextInt(15);
-	 						command("d "+self+" "+damage);
-	 						cloc.removeEntity(entity);
-	 						break;
-	 					default:
-	 						print(
-	 							"I don't know what you just did, but something's broke.\n" +
-	 							"Let me know what the die rolled and I'll try to fix it.\n");
-	 					}
-	 				} else {
-	 					print("Entity not recognised.");
-	 					for (EntityTile entityN : cloc.getEntities()) {
-	 						print(entityN.getName());
-	 					}
-	 				}
-				}
-				else if (!self.hasStat("mana")) 		{print("Undefined mana");}
-				else if (!self.hasStat("magic power")) 	{print("Undefined magic power");}
-				else if (self.getStat("mana")<=0) 		{print("Out of mana!");}
-			}
-			
-			//Heal thyself
-			else if (command.equals("heal")) {
-				int mana = self.getStat("mana");
-				int power = self.getStat("magic power");
-				if (power>0 && mana>0) {
-					int health = self.getStat("health");
-					print("You attempt to heal yourself.");
-					int rng = random.nextInt(6)+1;
-					print("You roll a "+rng);
-					switch (rng) {
-					case 2: case 3: case 4:
-						self.setStat("health", health+power);
-						break;
-					case 5:
-						self.setStat("health", health+(power*2));
-						break;
-					case 6:
-						self.setStat("health", self.getStat("max health"));
-						break;
-					}
-					print("You now have "+health+" health.");
-					self.setStat("mana", mana-1);
-				}
-				else if(mana==0) {print("Out of mana!");}
-				else if (mana<0) {print("Undefined mana");}
-				else if(power<0) {print("Undefined magic power");}
-			}
-			
-			//Control another entity
-			else if (command.startsWith("control ")) {
-				String entity = command.substring(8);
-				if (entityTypes.containsKey(entity)) {
-					ArrayList<EntityTile> ent = cloc.getEntityByName(entity);
-					if (!ent.isEmpty()) {
-						if (ent.size()>1) {
-							print("More than one entity has been found, please type\n" +
-									"which one you want to control (it added them from top to bottom, then left to right)");
-							int num = Integer.parseInt(readIn.readLine());
-							self = ent.get(num-1);
-						} else {
-							self = ent.get(0);
-						}
-					} else {
-						print("Entity not found, type \"entities\" for a list.");
-					}
-				} else {
-					print("Invalid entity, type \"entities\" for a list of valid names");
-				}
-			}
-			else if (command.contentEquals("all entities")) {
-				for (String entName : entityTypes.keySet()) {
-					print(entName);
-				}
-			}
-			else if (command.contentEquals("entities")) {
-				for (EntityTile entity : cloc.getEntities()) {
-					print(entity.getEntity().getName());
-				}
-			}
-			else if (command.contentEquals("hostilities")) {
-				if (AIon) {
-					AIon = false;
-				} else {
-					AIon = true;
-				}
-			}
-			else {
-				print("Command not recognised, type \"show\" for a list");
-			}
-			
-			//Change this to only repaint the small area being changed
-			//frame.getContentPane().repaint();
-		}
 	}
 	
 	private static void createBetweenFord() {
@@ -825,6 +665,152 @@ public class GameClass {
 				print("Mixed!");
 			} else {
 				print("Mixing failed, less than 2 Potions in inventory");
+			}
+		}
+		if (command.equals("stats")) {
+			self.printStats();
+		}
+		else if (command.equals("change")) {
+			command("cb Marble Floor "+self.getX()+" "+self.getY());
+		}
+		else if (command.equals("regen")) {
+			self.setStat("mana", self.getStat("max mana"));
+			print("You regen to "+self.getStat("mana")+" mana.");
+		}
+		else if (command.startsWith("magic")) {
+			//Selector selector = new Selector()
+			//selector.
+		}
+		else if (command.startsWith("damage ")) {
+			if (self.hasStat("mana") && self.hasStat("magic power") && self.getStat("mana")>0) {
+				String name = command.substring(7);
+				EntityTile entity = null;
+				if (name.matches(".+ [0-9]+")) {
+					int damage = Integer.parseInt(name.substring(name.indexOf(' ')+1));
+					name = name.substring(0, name.indexOf(" "));
+					print(damage+" "+name);
+					command("d "+name+" "+damage);
+				}
+				else if (cloc.getEntityCount(name)>0) {
+					ArrayList<EntityTile> entityList = cloc.getEntityByName(name);
+					if (entityList.size()==1) {
+						entity = entityList.get(0);
+					} else {
+						print("More than one entity with name "+name+" found:\n" +
+								"Please enter which one you want to attack.\n" +
+								"They are numbered from top to bottom, if on the same height then left to right.");
+						int num = 2;
+						entity = entityList.get(num-1);
+					}
+					print("You do a weird magicky thing!");
+					int rng = random.nextInt(6)+1;
+					print("A mystical die rolls. It rolls a "+rng+"!");
+					int damage;
+					self.setStat("mana", self.getStat("mana")-1);
+					switch (rng) {
+					case 1:
+						entityTypes.remove(self.getName());
+						break;
+					case 2:
+						damage = random.nextInt(20); 
+						command("d "+self+" "+damage);
+						break;
+					case 3:
+						command("d "+entity+" 1");
+						break;
+					case 4:
+						damage = random.nextInt(20);
+						command("d "+entity+" "+damage);
+						break;
+					case 5:
+						damage = random.nextInt(30)+40;
+						command("d "+entity+" "+damage);
+ 					case 6:
+ 						damage = random.nextInt(15);
+ 						command("d "+self+" "+damage);
+ 						cloc.removeEntity(entity);
+ 						break;
+ 					default:
+ 						print(
+ 							"I don't know what you just did, but something's broke.\n" +
+ 							"Let me know what the die rolled and I'll try to fix it.\n");
+ 					}
+ 				} else {
+ 					print("Entity not recognised.");
+ 					for (EntityTile entityN : cloc.getEntities()) {
+ 						print(entityN.getName());
+ 					}
+ 				}
+			}
+			else if (!self.hasStat("mana")) 		{print("Undefined mana");}
+			else if (!self.hasStat("magic power")) 	{print("Undefined magic power");}
+			else if (self.getStat("mana")<=0) 		{print("Out of mana!");}
+		}
+		
+		//Heal thyself
+		else if (command.equals("heal")) {
+			int mana = self.getStat("mana");
+			int power = self.getStat("magic power");
+			if (power>0 && mana>0) {
+				int health = self.getStat("health");
+				print("You attempt to heal yourself.");
+				int rng = random.nextInt(6)+1;
+				print("You roll a "+rng);
+				switch (rng) {
+				case 2: case 3: case 4:
+					self.setStat("health", health+power);
+					break;
+				case 5:
+					self.setStat("health", health+(power*2));
+					break;
+				case 6:
+					self.setStat("health", self.getStat("max health"));
+					break;
+				}
+				print("You now have "+health+" health.");
+				self.setStat("mana", mana-1);
+			}
+			else if(mana==0) {print("Out of mana!");}
+			else if (mana<0) {print("Undefined mana");}
+			else if(power<0) {print("Undefined magic power");}
+		}
+		
+		//Control another entity
+		else if (command.startsWith("control ")) {
+			String entity = command.substring(8);
+			if (entityTypes.containsKey(entity)) {
+				ArrayList<EntityTile> ent = cloc.getEntityByName(entity);
+				if (!ent.isEmpty()) {
+					if (ent.size()>1) {
+						print("More than one entity has been found, please type\n" +
+								"which one you want to control (it added them from top to bottom, then left to right)");
+						int num = 2;
+						self = ent.get(num-1);
+					} else {
+						self = ent.get(0);
+					}
+				} else {
+					print("Entity not found, type \"entities\" for a list.");
+				}
+			} else {
+				print("Invalid entity, type \"entities\" for a list of valid names");
+			}
+		}
+		else if (command.contentEquals("all entities")) {
+			for (String entName : entityTypes.keySet()) {
+				print(entName);
+			}
+		}
+		else if (command.contentEquals("entities")) {
+			for (EntityTile entity : cloc.getEntities()) {
+				print(entity.getEntity().getName());
+			}
+		}
+		else if (command.contentEquals("hostilities")) {
+			if (AIon) {
+				AIon = false;
+			} else {
+				AIon = true;
 			}
 		}
 		//Change this to only repaint the small area being changed
@@ -1386,7 +1372,7 @@ public class GameClass {
 						BufferedImage img = ImageIO.read(new File(filepath));
 						BufferedImage gateImg = op.filter(img, null);
 						ArrayList<String> playerRestricted = new ArrayList<String>();
-						//playerRestricted.add("-");
+						playerRestricted.add("-");
 						playerRestricted.add("Player");
 						tiles.put(name, new TileType(name, gateImg, playerRestricted, null));
 						
@@ -1851,8 +1837,10 @@ public class GameClass {
 		return colour;
 	}
 	
-	public static void print(String s) {
-		System.out.println(s);
+	public static void print(String s, boolean system) {
+		if (system) {
+			System.out.println(s);
+		}
 		//Try to draw to the main image. If it doesn't exist (such as, for testing purposes), print to the console.
 		try {
 			mainImage.drawInfo(s);
@@ -1861,16 +1849,8 @@ public class GameClass {
 		}
 	}
 	
-	public static void print(Boolean b) {
-		print(b.toString());
-	}
-	
-	public static void print(Exception e) {
-		print(e.toString());
-	}
-	
-	public static void print(char c){
-		print(Character.toString(c));
+	public static void print(String s) {
+		print(s, systemPrint);
 	}
 	
 	public static void print(Object o) {
