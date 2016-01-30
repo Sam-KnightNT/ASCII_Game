@@ -194,14 +194,17 @@ public class EntityTile implements Comparable<EntityTile> {
 		}
 	}
 	
-	public void setTicks(int tick) {
-		ticksLeft = tick;
+	public void setTicks(int ticks) {
+		ticksLeft = ticks;
 	}
 	public int getTicks() {
 		return ticksLeft;
 	}
 	public void resetTicks() {
 		ticksLeft = (int) (100*(100/(float) this.getStat("speed")));
+	}
+	public void decreaseTicks(int ticks) {
+		ticksLeft -= ticks;
 	}
 	
 	public void pickupItem(ItemEquippable item) {
@@ -249,14 +252,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	
 	@Override
 	public int compareTo(EntityTile e) {
-		if (this.equals(e)) {
-			return 0;
-		} else if (this.ticksLeft==e.ticksLeft) {
-			//TODO: This is probably slowish with all the casting and it'll need to be called a monstrous numer of times - optimise it 
-			return (int) Math.signum(((Integer) this.getID()).compareTo(e.getID()));
-		} else {
-			return this.ticksLeft-e.ticksLeft;
-		}
+		return this.id-e.id;
 	}
 	
 	public void setImage(BufferedImage image) {

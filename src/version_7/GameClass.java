@@ -50,7 +50,11 @@ public class GameClass {
 	public static EntityTile self;
 	private static Location cloc;
 	private static boolean AIon = false;
-	private static TreeMap<EntityTile, Integer> entityInstances = new TreeMap<EntityTile, Integer>();
+
+	private static HashSet<EntityTile> entityInstances = new HashSet<EntityTile>();
+	private static TreeSet<EntityAssociation> entityByTicks = new TreeSet<EntityAssociation>();
+	private static HashMap<Integer, EntityTile> entityByID = new HashMap<Integer, EntityTile>();
+	
 	private static BufferedImage bottle;
 	private static BufferedImage liquid;
 	private static BufferedImage shine;
@@ -144,6 +148,16 @@ public class GameClass {
 	 * But, it can't just be RNG, can't be one-of-n-type (e.g. Minotaurs have different blocking states to figure out each time you play) etc.
 	 * Maybe I could get inspiration from Blade Mode in Metal Gear V: Revengeance?
 	 * Or work in a skill tree like Final Fantasy X, or Path of Exile? www.gamesradar.com/coolest-game-mechanics-2013/, slides 3 and 16.
+	 * 
+	 * 
+	 * 
+	 * More information on the dungeons: Instead of being just "dungeons", they should be more... alive. Like you're storming fortresses.
+	 * Imagine Dwarf Fortresses. How would they make them in order to fend off attackers? Build the generator to make stuff like that.
+	 * Do what Will said - have preset corridors and rooms and stuff, plugged into each other with certain rules.
+	 * E.g. a particularly violent fortress will have the armory close to the entrance.
+	 * Some particularly sneaky forts will have hidden areas for their gear, so that attackers can't steal them...
+	 * The free version should have 5 premade fortresses, it should be more of a demo than anything. It should also have limited abilities - levels 1-3 or so.
+	 * The full version should have the Dungen, along with much more abilities and stuff. It should cost... something. Not sure how much.
 	 */
 	public static void main(String[] args) throws Exception {
 		readFromFile();
@@ -481,6 +495,7 @@ public class GameClass {
 		if (command.matches("m([swen])$")) {
 			switch (command.charAt(1)) {
 			case 's':
+				System.out.println(entityByTicks);
 				cycle(Direction.SOUTH);
 				break;
 			case 'w':
@@ -543,7 +558,7 @@ public class GameClass {
 				}
 				else {
 					//Add new exception (ItemNotFound exception?) like ConcurrentModification
-					print(
+					System.out.println(
 						"Something went seriously wrong here. I can't find an item at the place\n" +
 						"you're at, but the only way to get here is if you picked one up.\n" +
 						"Did it disappear before this thing deleted it? Exiting anyway, this will crash otherwise.");
@@ -561,7 +576,7 @@ public class GameClass {
 		
 		//Show entity list and timings
 		else if (command.equals("ls")) {
-			for (EntityTile entity : entityInstances.keySet()) {
+			for (EntityTile entity : entityInstances) {
 				print(entity.getTicks()+" "+entity.getName());
 			}
 		}
@@ -596,12 +611,18 @@ public class GameClass {
 		
 		//Let one entity attack another
 		else if (command.startsWith("att ")) {
+			//TODO - check if there's a problem with entities with spaces in their names (Bronze Colossus) - this will probably confuse the parser
 			Pattern pattern = Pattern.compile("att (.+) (.+) ([0-9]{1,2})");
 			Matcher matcher = pattern.matcher(command);
 			if (matcher.matches()) {
 				print(command+" attack!");
+				//This should get the stances of the attacker and defender, then get the A-SPC/D-SPC from the strings provided in the entity stats.
+				//Then work out how much damage to deal based on that.
+				EntityTile attacker = entityByID.get(Integer.parseInt(matcher.group(1)));
+				EntityTile defender = entityByID.get(Integer.parseInt(matcher.group(2)));
+				//String aStance = attacker.getStance();
 			} else {
-				print("Improper usage of attack command.");
+				print("Improper usage of attack command. "+command);
 			}
 		}
 		
@@ -827,22 +848,34 @@ public class GameClass {
 	}
 	
 	public static void cycle(boolean move, Direction dir) {
-		TreeMap<EntityTile, Integer> newList = new TreeMap<EntityTile, Integer>();
 		
-		//Reset your own tick count
-		entityInstances.remove(self);
+		//First, check to see if you are the first entity in the list.
+		//If not, something weird's gone wrong and the game should probably stop before it breaks even more.
+		//TODO - remove this check for the full RPG - it could lead to interesting stuffs.
+		if (entityByTicks.first().getEntity() != self) {
+			System.out.println("Something is severely wrong, the player is not at the front of the move list despite only just having moved.");
+			System.out.println("I'm exiting the program now since bad stuff would be almost certain.");
+			System.out.println(entityByTicks);
+			System.exit(-2);
+		}
+		
+		//After this, move the player and reset the tick count.
+		if (move) {
+			print("Move");
+		} else {
+			print("NO MOVE");
+		}
+		Pair<Boolean, Boolean> didMove = playerMove(dir);
+		
+		//Left of this pair is whether the player actually moved. If so, reset tick count, otherwise do it dynamically (e.g. if the player fought, have smaller cooldown)
+		//TODO - for now it's just resetting anyway - do it dynamically.
+		entityByTicks.pollFirst();
+		
+		//Get the current ticks left (to subtract it from every other Entity) and reset the player's ticks.
 		int ticks = self.getTicks();
 		self.resetTicks();
 		
-		//Print out all the locations and their entities
-		//TODO - delete this
-		/*for (Location loc : rooms.values()) {
-			System.out.println(loc.getName());
-			for (EntityTile ent : loc.getEntities()) {
-				System.out.println("\t"+ent.getName());
-			}
-		}*/
-		
+		/*
 		boolean leftRoom = false;
 		//Move the player
 		if (move) {
@@ -853,35 +886,46 @@ public class GameClass {
 		//TODO - remove for arena release, there is only one room.
 		//If the player entered a new room, alter the path of every entity that needs it
 		if (leftRoom) {
-			for (EntityTile entity : entityInstances.keySet()) {
+			for (EntityTile entity : entityInstances) {
 				//alterPath pseudocode: if passed room is in the Path ArrayList, truncate it to that. Otherwise, add it to the end.
 				entity.alterPathEnd(self.getLocation());
 				print("Path: "+entity.getPath().toString());
 			}
 		}
+		*/
 		
-		//Put the player into the new list, as well as every other entity
-		newList.put(self, self.getTicks());
-		for (EntityTile other : entityInstances.keySet()) {
-			other.setTicks(other.getTicks()-ticks);
-			newList.put(other, other.getTicks()-ticks);
+		//Now cycle through each Entity and decrease their ticks left by this amount.
+		for (EntityAssociation assoc : entityByTicks) {
+			assoc.decreaseValue(ticks);
+			assoc.getEntity().decreaseTicks(ticks);
 		}
-
-		//And set the unfrozen entity list to this new list
-		entityInstances = newList;
 		
-		//Cycle through unfrozenEntities while there are entities to move
-		while (!entityInstances.firstKey().equals(self)) {
+		//And re-add the player in the appropriate place (which TreeSet does for us)
+		EntityAssociation selfA = new EntityAssociation(self.getTicks(), self);
+		entityByTicks.add(selfA);
+		
+		//TreeSet allows us to simply grab the chunk of Entities that are to move before the player.
+		//Get this chunk, then find out how many ticks the last one needs to move.
+		//Move each Entity on this list, then change the tick value to be their current tick value minus this value, added to their speed if they make a move.
+		SortedSet<EntityAssociation> movers = entityByTicks.headSet(selfA);
+		SortedSet<EntityAssociation> nonmovers = entityByTicks.tailSet(selfA, true);
+		
+		TreeSet<EntityAssociation> newList = new TreeSet<EntityAssociation>();
+		int lastTicks = movers.last().getValue();
+		for (EntityAssociation assoc : movers) {
 			
-			//Recreate the new list and pop the entity off
-			newList = new TreeMap<EntityTile, Integer>();
-			EntityTile entity = entityInstances.pollFirstEntry().getKey();
+			//First, remove this Entity from the ticklist.
+			//Get the entity to move and move it
+			EntityTile entity = assoc.getEntity();
 			
-			//Reset the entity's tick rate after getting its current remaining
+			//Change the entity's ticks remaining based on the state it WILL be at after all others have moved.
+			//TODO - this will be problematic if it moves twice before the player does. Fix it somehow.
 			ticks = entity.getTicks();
 			entity.resetTicks();
+			entity.decreaseTicks(lastTicks-ticks);
 			
 			//Attempt to pathfind to the player
+			//TODO - no need for leftRoomEnt, delete the thing in pathfind.
 			boolean leftRoomEnt = pathfind(entity);
 			
 			if (leftRoomEnt) {
@@ -889,19 +933,31 @@ public class GameClass {
 				entity.alterPathBeginning(entity.getLocation());
 			}
 			
+			//If and only if the entity is alive, add it to the new list. Otherwise, remove it from both other lists.
 			if (entity.getHealth()>0) {
-				newList.put(entity, entity.getTicks());
+				newList.add(new EntityAssociation(entity.getTicks(), entity));
+			} else {
+				boolean didRemove = entityInstances.remove(entity);
+				if (debug) {
+					print(didRemove ? "Successfully removed "+entity+"." : "ERROR: Entity "+entity+" not found.");
+				}
+				didRemove = entityByID.remove(entity.getID()).equals(entity);
+				if (debug) {
+					print(didRemove ? "Successfully removed "+entity+" from ID list." : "ERROR: Entity "+entity+" not found in ID list.");
+				}
 			}
-			for (EntityTile other : entityInstances.keySet()) {
-				other.setTicks(other.getTicks()-ticks);
-				newList.put(other, other.getTicks()-ticks);
-			}
-			
-			entityInstances = newList;
 		}
-		/*for (EntityTile ent : unfrozenEntities.keySet()) {
-			print(ent.getName());
-		}*/
+		
+		//Now decrease everything that wasn't in that list by the appropriate amount.
+		for (EntityAssociation assoc : nonmovers) {
+			assoc.decreaseValue(lastTicks);
+			assoc.getEntity().decreaseTicks(lastTicks);
+		}
+		
+		//Finally, put all the remaining Entities back into newList and assign the Set to that list.
+		newList.addAll(nonmovers);
+		entityByTicks = newList;
+		
 		//Check the 8 tiles around the player, and display the entity/ies that are there
 		ArrayList<EntityTile> adjacents = new ArrayList<EntityTile>();
 		
@@ -1655,54 +1711,7 @@ public class GameClass {
 	}
 	
 	private static void fight(EntityTile ent1, EntityTile ent2) {
-		int str1 = ent1.getStrength()+random.nextInt(20)-10;
-		int str2 = ent2.getStrength()+random.nextInt(20)-10;
 		
-		print(ent1.getName()+" strength: "+str1+". "+ent2.getName()+" strength: "+str2);
-
-		String printStr = "";
-		if (str1>str2) {
-			boolean kill = dealDamage(ent1, ent2, str1-str2);
-			if (kill) {
-				boolean killed = cloc.removeEntity(ent2);
-				Integer killed2 = entityInstances.remove(ent2);
-				entityTypes.remove(ent2);
-				for (EntityTile entity : entityInstances.keySet()) {
-					print(entity+", "+entity.compareTo(ent2));
-				}
-				print(killed+", "+killed2);
-			}
-		}
-		else if (str2>str1) {
-			boolean kill = dealDamage(ent2, ent1, str2-str1);
-			if (kill) {
-				boolean killed = cloc.removeEntity(ent1);
-				Integer killed2 = entityInstances.remove(ent1);
-				entityTypes.remove(ent1);
-				for (EntityTile entity : entityInstances.keySet()) {
-					print(entity+", "+entity.compareTo(ent1));
-				}
-				print(killed+", "+killed2);
-			}
-		}
-		else {
-			printStr += "Nobody takes damage: ";
-			if (ent1.equals(self)) {
-				printStr += "You have ";
-			} else {
-				printStr += "The "+ent1.getName()+" has ";
-			}
-			printStr += ent1.getHealth()+" health left, and ";
-			print(printStr);
-			printStr = "";
-			if (ent2.equals(self)) {
-				printStr += "you have ";
-			} else {
-				printStr += "the "+ent2.getName()+" has ";
-			}
-			printStr += ent2.getHealth()+".\n";
-			print(printStr);
-		}
 	}
 	
 	private static boolean dealDamage(EntityTile attacker, EntityTile defender, int diff) {
@@ -1898,12 +1907,15 @@ public class GameClass {
 	private static boolean createEntity(String name, Location loc, int x, int y) {
 		if (entityTypes.containsKey(name)) {
 			EntityTile entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null);
-			Integer v = entityInstances.put(entity, entity.getStat("Speed"));
+			boolean v = entityByTicks.add(new EntityAssociation(entity.getStat("Speed"), entity));
+			entityInstances.add(entity);
+			entityByID.put(entity.getID(), entity);
 			
 			if (debug) {
-				System.out.println("New entity created: "+entity);
-				if (v != null) {
-					System.out.println("WARNING: Entity just created clashes with another. It has replaced that one, the ID of that entity was "+v+".");
+				if (v) {
+					System.out.println("New entity created: "+entity+" with ticks "+entity.getStat("Speed"));
+				} else {
+					System.out.println("WARNING: Entity just created is identical to one already on the board. Entity is "+entity+"");
 				}
 			}
 			return true;
