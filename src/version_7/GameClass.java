@@ -285,7 +285,8 @@ public class GameClass {
 		arena.fill(new Coord2D(60, 49), new Coord2D(63, 49), gate);
 		
 		//Create the player
-		self = new EntityTile(entityTypes.get("Player"), cloc, 42, 62, null);
+		self = createPlayer(42, 62);
+		
 		
 		//Add enemies
 		createEntity("Minotaur", arena, 45, 65);
@@ -654,7 +655,7 @@ public class GameClass {
 					} else if (cloc instanceof Location3D) {
 						((Location3D) cloc).setTile(x, y, z, tile);
 					} else {
-						print(cloc.getClass()+" is not either a 2D or 3D location. It's probably 4D - I haven't added behaviour for that yet, nag me.");
+						print(cloc.getClass()+" is not either a 2D or 3D location. It's probably 4D, i.e. it changes over time - I haven't added behaviour for that yet, nag me.");
 					}
 				} else {
 					print("Tile "+tileName+" not found, " +
@@ -852,20 +853,26 @@ public class GameClass {
 		//First, check to see if you are the first entity in the list.
 		//If not, something weird's gone wrong and the game should probably stop before it breaks even more.
 		//TODO - remove this check for the full RPG - it could lead to interesting stuffs.
-		if (entityByTicks.first().getEntity() != self) {
+		/*if (entityByTicks.first().getEntity() != self) {
 			System.out.println("Something is severely wrong, the player is not at the front of the move list despite only just having moved.");
 			System.out.println("I'm exiting the program now since bad stuff would be almost certain.");
 			System.out.println(entityByTicks);
 			System.exit(-2);
-		}
+		}*/
 		
 		//After this, move the player and reset the tick count.
-		if (move) {
-			print("Move");
-		} else {
-			print("NO MOVE");
+		TurnStatus moveStatus = playerMove(dir);
+		
+		switch (moveStatus) {
+		case FOUGHT:
+			print("Fought.");
+			break;
+		case MOVED:
+			print("Moved.");
+			break;
+		case BLOCKED:
+			print("Blocked.");
 		}
-		Pair<Boolean, Boolean> didMove = playerMove(dir);
 		
 		//Left of this pair is whether the player actually moved. If so, reset tick count, otherwise do it dynamically (e.g. if the player fought, have smaller cooldown)
 		//TODO - for now it's just resetting anyway - do it dynamically.
@@ -976,7 +983,9 @@ public class GameClass {
 		mainImage.redrawMap();
 	}
 	
-	public static Pair<Boolean, Boolean> move(Direction dir, EntityTile entity) {
+	public static TurnStatus move(Direction dir, EntityTile entity) {
+		//TODO - remember that, before a big cleanup, this and playerMove returned a Pair<Boolean, Boolean>, which was whether the player moved and whether the player moved to a new location.
+		//This enum now returns whether the player moved, fought or hit a wall. Later I should add to it MOVED_LOC, which means the player changed locations.
 		Location loc = entity.getLocation();
 		
 		//TODO - this is an absolute mess, clean it up! (Put most things into separate functions)
@@ -997,10 +1006,10 @@ public class GameClass {
 			//If it is inside the current Location, just try to perform the movement. Note that some tiles might only let certain entities through.
 			if (loc.getTile(newxy).isTraversable(entity)) {
 				entity.setXY(newxy);
-				return new Pair<Boolean, Boolean>(true, false);
+				return TurnStatus.MOVED;
 			} else {
 				print(entity.getName()+" cannot move to "+nx+", "+((newxy - nx) >> 8)+" in location "+loc.getName());
-				return new Pair<Boolean, Boolean>(false, false);
+				return TurnStatus.BLOCKED;
 			}
 		} else {
 			//Otherwise, it's outside the current Location and should go to whatever Location is there.
@@ -1015,9 +1024,9 @@ public class GameClass {
 			} catch (NullPointerException e) {
 				//In this case, the player has made an illegal move - shunt them to the Between Ford.
 				between = true;
-				return new Pair<Boolean, Boolean>(true, true);
+				return TurnStatus.MOVED_BETWEEN;
 			}
-			return new Pair<Boolean, Boolean>(true, true);
+			return TurnStatus.MOVED_LOC;
 		}
 	}
 	
@@ -1026,13 +1035,14 @@ public class GameClass {
 		return i > 0 ? i % 256 : i % 256 + 256;
 	}
 	
-	public static Pair<Boolean, Boolean> playerMove(Direction dir) {
+	public static TurnStatus playerMove(Direction dir) {
 		if (canMove(dir, self)) {
 			return move(dir, self);
 		} else if (cloc.getTile(self.getCoords().shift(dir).toSingleVal()).isTraversable(self)) {
 			fight (self, cloc.entityAt(self.getCoords().shift(dir)).getRight());
+			return TurnStatus.FOUGHT;
 		}
-		return new Pair<Boolean, Boolean>(false, false);
+		return TurnStatus.BLOCKED;
 	}
 	
 	public static void moveToPlayer(EntityTile entity) {
@@ -1125,6 +1135,7 @@ public class GameClass {
 	private static boolean canMove(Direction direction, EntityTile entity) {
 		//True iff there are no entities in the way and the tile is traversable.
 		//TODO - this'll be called a lot, so I'll probably need to optimise it to shit.
+		//TODO - there's a check in the move method for this, too. See if both are necessary.
 		int newLoc = entity.getCoords().toSingleVal()+direction.getNumVal();
 		for (EntityTile entityO : cloc.getEntities()) {
 			if (newLoc == entityO.getCoords().toSingleVal()) {
@@ -1907,13 +1918,13 @@ public class GameClass {
 	private static boolean createEntity(String name, Location loc, int x, int y) {
 		if (entityTypes.containsKey(name)) {
 			EntityTile entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null);
-			boolean v = entityByTicks.add(new EntityAssociation(entity.getStat("Speed"), entity));
+			boolean v = entityByTicks.add(new EntityAssociation(entity.getTicks(), entity));
 			entityInstances.add(entity);
 			entityByID.put(entity.getID(), entity);
 			
 			if (debug) {
 				if (v) {
-					System.out.println("New entity created: "+entity+" with ticks "+entity.getStat("Speed"));
+					System.out.println("New entity created: "+entity+" with ticks "+entity.getTicks());
 				} else {
 					System.out.println("WARNING: Entity just created is identical to one already on the board. Entity is "+entity+"");
 				}
@@ -1931,6 +1942,14 @@ public class GameClass {
 			}
 			return false;
 		}
+	}
+	
+	private static EntityTile createPlayer(int x, int y) {
+		EntityTile player = new EntityTile(entityTypes.get("Player"), cloc, x, y, null);
+		entityByTicks.add(new EntityAssociation(0, player));
+		entityInstances.add(player);
+		entityByID.put(player.getID(),  player);
+		return player;
 	}
 	
 	private static void fillLine(int x, int y) {

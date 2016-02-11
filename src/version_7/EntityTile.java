@@ -38,6 +38,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.id = GameClass.entityCount+1;
 		GameClass.entityCount++;
 		genStats();
+		this.resetTicks();
 	}
 	
 	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait) {
