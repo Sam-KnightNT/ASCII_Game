@@ -62,7 +62,7 @@ public class GameClass {
 	private static Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 	
 	static boolean debug = true;
-	static boolean systemPrint = false;
+	static boolean systemPrint = true;
 	
 	//Where the player is initially
 	static int px = 1;
@@ -76,6 +76,7 @@ public class GameClass {
 	
 	//Have you lost your way?
 	static boolean between = false;
+	
 	/*
 	 * This series of comments marks what should be done in v.03.07. 
 	 * Currently, Potions seem to be working fine, at least, single ones do. I'm sick of them though, so I'm going to leave multi-fluid Potions until later.
@@ -149,6 +150,24 @@ public class GameClass {
 	 * Maybe I could get inspiration from Blade Mode in Metal Gear V: Revengeance?
 	 * Or work in a skill tree like Final Fantasy X, or Path of Exile? www.gamesradar.com/coolest-game-mechanics-2013/, slides 3 and 16.
 	 * 
+	 * Perhaps it could be more of a puzzly kinda combat, more like DROD than fighting.
+	 * The focus should be more on crowd control than one-on-one duels, so it should be possible to do a lot of fancy moves to that end - similar to the rapier in Crypt of the Necrodancer.
+	 * So, how about different weapons in your arsenal that do different things?
+	 * The sword moves could have a focus on moving you and the hammer on stunning or knocking back your foes? Maybe have, say, a mace that can keep enemies away and slowly bleed them, or an axe that can chop limbs off and permanently slow enemies and such.
+	 * Yeah, so the combat becomes focused around seeing enemy telegraphy, fending off side attackers and weakening foes so you have a chance to finish some of them off!
+	 * Also, different enemies react to different weapons and situations in different ways! Minotaurs can charge at you and are heavy, so you're much better off using the sword to dodge, and the axe to debilitate them.
+	 * However slimes are unhampered by the axe - in fact, hitting them will split them in two! They are very light though - you can easily hammer them into a wall whereupon they'll split, but it makes it easier to get at the nuclei with a cutting weapon. Or you can ground pound them, if they're small enough or if you're strong enough you'll hit the nucleus outright.
+	 * Kobolds could be fast enough that you'll have to plan ahead when dealing with them, but weak enough to die easily when attacked. So you need to take care to only let one or two near at once.
+	 * Other enemies... 
+	 * Controls:
+	 * Shift+1-4 select weapons, or 1-6 or whatever.
+	 * 1-9 selects the type of strike to use, this is dependent on the weapon. For example, the Axe has 1: Cleave Arm (weakens opponents' attack), 2: Cleave Leg (lowers enemy movement), 3: Cleave Head (unlikely to work, but insta-kills), etc.
+	 * Hammer has, e.g., 1: Launching Blow (sends enemies flying depending on their weight), 2: Ground Pound (if the tile in front is clear, smashes the ground around it, stunning enemies. Otherwise hits the enemy in the tile ahead for massive damage), 3: Debilitating Whack (hits the enemy in the head, stunning them and knocking them a bit away).
+	 * Sword: 1: Lunge (closes the distance towards an enemy, but deals a lot of damage - particularly to slimes), 2: Dodge (Hit the enemy in front and move a tile in any direction), 3: Vault (hits an enemy in front and launches you over them, landing on the other side), 4: Charge (like Debilitating Whack but more damage, less knockback/stun time and moves you alongside them - use if you NEED to get away from a group sharpish)  
+	 * QWEDCXZA only selects an attack direction, not what attack to use. I.e. which enemy/tile to hit.
+	 * Numpad 1-9 still moves you as normal.
+	 * 
+	 * This system is also conducive to upgrades - you can get better weapons but most people will prefer one type - you can just about manage with one, and in fact a good challenge could be to use only one type, but it's far more prudent to use all of them.
 	 * 
 	 * 
 	 * More information on the dungeons: Instead of being just "dungeons", they should be more... alive. Like you're storming fortresses.
@@ -918,10 +937,13 @@ public class GameClass {
 		SortedSet<EntityAssociation> nonmovers = entityByTicks.tailSet(selfA, true);
 		
 		TreeSet<EntityAssociation> newList = new TreeSet<EntityAssociation>();
-		int lastTicks = movers.last().getValue();
+		int lastTicks = 0;
+		if (!movers.isEmpty()) {
+			lastTicks = movers.last().getValue();
+		} else {
+			System.out.println("Movers is empty");
+		}
 		for (EntityAssociation assoc : movers) {
-			
-			//First, remove this Entity from the ticklist.
 			//Get the entity to move and move it
 			EntityTile entity = assoc.getEntity();
 			
@@ -959,10 +981,10 @@ public class GameClass {
 		for (EntityAssociation assoc : nonmovers) {
 			assoc.decreaseValue(lastTicks);
 			assoc.getEntity().decreaseTicks(lastTicks);
+			newList.add(assoc);
 		}
 		
-		//Finally, put all the remaining Entities back into newList and assign the Set to that list.
-		newList.addAll(nonmovers);
+		//Finally, replace the previous ticklist with the new one.
 		entityByTicks = newList;
 		
 		//Check the 8 tiles around the player, and display the entity/ies that are there
@@ -1053,7 +1075,9 @@ public class GameClass {
 			//In other words, make the target not equal to the player.
 			
 			//Find which of the 8 directions surrounding the player are already taken, and move to one which isn't.
-			Direction[] directions = Direction.class.getEnumConstants();
+			//TODO - see whether this is fairer or all 8 directions. This is probably better since it allows players to get breathing room more easily.
+			
+			Direction[] directions = {Direction.NORTH, Direction.EAST, Direction.WEST, Direction.SOUTH};//Direction.class.getEnumConstants();
 			Coord2D playerCoords = self.getCoords();
 			double minDist = Integer.MAX_VALUE;
 			Coord2D target = null;
@@ -1715,9 +1739,13 @@ public class GameClass {
 			attackValue += val;
 			//Actually perform the attack now that you have both inputs.
 			//Command: get the attackValue'th value from the defence of a given defender, and the attack of you. This is so other entities can also attack without going through this method.
-			command("att "+self.getName()+" "+mainImage.getTargetedEntity()+" "+attackValue);
-			attackValue = 0;
-			//And remove the swipe previews.
+			if (mainImage.getTargetedEntity() == null) {
+				print("No entity is attackable from here!");
+			} else {
+				command("att "+self.getID()+" "+mainImage.getTargetedEntity().getID()+" "+attackValue);
+				attackValue = 0;
+				//And remove the swipe previews.
+			}
 		}
 	}
 	
