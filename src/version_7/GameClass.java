@@ -560,7 +560,7 @@ public class GameClass {
 		
 		//Wait a cycle
 		else if (command.equals("wait")) {
-			cycle(false, null);
+			cycle();
 		}
 		//Pick up item
 		else if (command.equals("p")) {
@@ -863,43 +863,29 @@ public class GameClass {
 		//You can have more control over the engravings - such as, plating the bucklers in iron, or making carved drawings/embossed drawings.
 	}
 	
-	public static void cycle(Direction dir) {
-		cycle(true, dir);
+	/**
+	 * Perform a wait cycle - that is, wait a turn instead of moving. Takes just as much time.
+	 */
+	public static void cycle() {
+		//TODO - add another way of waiting that is more granular - allows you to wait, say, 1/10th the time a turn would normally be.
+		cycle(self.getTicks());
 	}
 	
-	public static void cycle(boolean move, Direction dir) {
-		
-		//First, check to see if you are the first entity in the list.
-		//If not, something weird's gone wrong and the game should probably stop before it breaks even more.
-		//TODO - remove this check for the full RPG - it could lead to interesting stuffs.
-		/*if (entityByTicks.first().getEntity() != self) {
-			System.out.println("Something is severely wrong, the player is not at the front of the move list despite only just having moved.");
-			System.out.println("I'm exiting the program now since bad stuff would be almost certain.");
-			System.out.println(entityByTicks);
-			System.exit(-2);
-		}*/
-		
-		//After this, move the player and reset the tick count.
-		TurnStatus moveStatus = playerMove(dir);
-		
-		switch (moveStatus) {
-		case FOUGHT:
-			print("Fought.");
-			break;
-		case MOVED:
-			print("Moved.");
-			break;
-		case BLOCKED:
-			print("Blocked.");
-		}
-		
+	/**
+	 * 
+	 * @param ticks Amount of ticks to add to the player's value.
+	 * Allows other entities to take actions in between a player's turns; cycles through each entity taking action until the next input is needed.
+	 */
+	public static void cycle(int ticks) {
+		//Instead of having the player move, just reset their tick count to the appropriate value and move every other entity as in cycle.
 		//Left of this pair is whether the player actually moved. If so, reset tick count, otherwise do it dynamically (e.g. if the player fought, have smaller cooldown)
 		//TODO - for now it's just resetting anyway - do it dynamically.
 		entityByTicks.pollFirst();
 		
+		
 		//Get the current ticks left (to subtract it from every other Entity) and reset the player's ticks.
-		int ticks = self.getTicks();
 		self.resetTicks();
+		
 		
 		/*
 		boolean leftRoom = false;
@@ -1003,6 +989,47 @@ public class GameClass {
 			mainImage.setCombatPortrait(adjacents.get(0).getPortrait());
 		}
 		mainImage.redrawMap();
+	}
+	
+	/**
+	 * Called only after the player provides an input intending to move.
+	 */
+	public static void cycle(Direction dir) {
+		
+		//First, check to see if you are the first entity in the list.
+		//If not, something weird's gone wrong and the game should probably stop before it breaks even more.
+		//TODO - remove this check for the full RPG - it could lead to interesting stuffs.
+		/*if (entityByTicks.first().getEntity() != self) {
+			System.out.println("Something is severely wrong, the player is not at the front of the move list despite only just having moved.");
+			System.out.println("I'm exiting the program now since bad stuff would be almost certain.");
+			System.out.println(entityByTicks);
+			System.exit(-2);
+		}*/
+		
+		TurnStatus moveStatus = playerMove(dir);
+		
+		
+		//TODO - add action system to replace the entityByTick list. It allows for things like arrows being Entities - their action is to move in a certain direction, their ticks are 10.
+		//It'll also allow for, say, you to choose your move then move later on - once you select a direction, it'll add you to the list further down, saying "75/Player/'Moving SOUTH-EAST'"
+		//TODO - add agility stat. This determines reactions, mainly. The higher the stat, the faster you move after choosing a direction.
+		//Speed still determines how fast you move. For example, if you have a speed stat of 100 and 50 agility, you'll move once every 100 ticks and once you choose a direction, you'll move after 25 ticks.
+		//Speed 100 agility 0 -> Move after 50 ticks. Agility 100 = move after 88 ticks. Basically, agility = 0, you move after 50% of the ticks of your speed. 50 = moving after 25%, 100 = 12.5%, 200 = 6.25% and so on.
+		//You can also have negative agility, thanks to debuffs. -10 agility = move after 100% of your ticks. Below that actually hurts your speed. -20 or so means you take twice as long, etc.
+		//Either that, or it just stops at 100%. It needs to be semi-asymptotic - it's an asymptote towards y=100, but a log scale going towards -10 agility.
+		switch (moveStatus) {
+		case FOUGHT:
+			print("Fought.");
+			break;
+		case MOVED:
+			print("Moved.");
+			break;
+		case BLOCKED:
+			print("Blocked.");
+		}
+		
+		//Now call cycle with the default number of ticks.
+		cycle(self.getTicks());
+		
 	}
 	
 	public static TurnStatus move(Direction dir, EntityTile entity) {
