@@ -2,13 +2,16 @@ package version_7;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import javax.swing.*;
 
@@ -29,16 +32,15 @@ public class GameImage extends JPanel {
 
 	private Graphics2D g;
 	private Graphics2D gSide;
-	private int xDim, yDim;					//Overall size of the image
-	protected final int X_UNIT = 20, Y_UNIT = 30;	//Size of a single character
-	private int xView, yView;
-	//private int z;						//Current slice of the map
+	private int xDim, yDim;							//Overall size of the main screen
+	protected final int X_UNIT = 20, Y_UNIT = 30;	//Size of a single tile
+	private int xView, yView;						//Number of tiles in the whole view
+	//private int z;								//Current slice of the map
 	private Dungeon dungeon;
 	private EntityTile player;
-	//Rename these?
 	
 	private ArrayList<BufferedImage> dungeonSlices = new ArrayList<BufferedImage>();
-	protected final int infoWidth = 400;
+	protected static final int INFO_WIDTH = 400;
 	
 	public GameImage() {
 		init();
@@ -50,12 +52,12 @@ public class GameImage extends JPanel {
 		xDim = X_UNIT*xArray;
 		yDim = Y_UNIT*yArray;
 		setSize(xDim, yDim);
-		setPreferredSize(new Dimension(xDim+infoWidth, yDim));
+		setPreferredSize(new Dimension(xDim+INFO_WIDTH, yDim));
 		xView = xArray;
 		yView = yArray;
 		
 		mainPane = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);
-		controlPane = new BufferedImage(infoWidth, yDim, BufferedImage.TYPE_INT_RGB);
+		controlPane = new BufferedImage(INFO_WIDTH, yDim, BufferedImage.TYPE_INT_RGB);
 		
 		int maxDepth = 0;
 		for (Map map : dungeon.getMaps().keySet()) {
@@ -546,7 +548,7 @@ public class GameImage extends JPanel {
 		if (lines.size()>=30) {
 			lines.pop();
 			lines.add(info);
-			gSide.clearRect(0, 15, infoWidth, 455);
+			gSide.clearRect(0, 15, INFO_WIDTH, 455);
 		} else {
 			lines.add(info);
 		}
@@ -558,8 +560,8 @@ public class GameImage extends JPanel {
 	public void drawLocation(int x, int y) {
 		//Draws the specified location to the top of the screen.
 		gSide.setColor(new Color(150, 150, 255));
-		gSide.clearRect((int) (infoWidth*.4), 0, 100, 15);
-		gSide.drawString("("+x+", "+y+")", (int) (infoWidth*0.4), 10);
+		gSide.clearRect((int) (INFO_WIDTH*.4), 0, 100, 15);
+		gSide.drawString("("+x+", "+y+")", (int) (INFO_WIDTH*0.4), 10);
 	}
 	
 	public void drawEquipment(EntityTile player) {
@@ -661,10 +663,70 @@ public class GameImage extends JPanel {
 		gSide.drawString(info, 20, 20);
 	}
 	
+	public void drawTurnOrder(TreeSet<EntityAssociation> entities) {
+		//For each entity in the set, draw it.
+		gSide.clearRect(20, 50, INFO_WIDTH-50, entities.size()*26);
+		int entNo = 0;
+		for (EntityAssociation eStat : entities) {
+			EntityTile entity = eStat.getEntity();
+			
+			//Draw the background shape with a gradient - same colour as the entity, but fading from left to right.
+			Color colour = entity.getColour();
+			Color a = new Color(colour.getRed(), colour.getGreen(), colour.getBlue(), 150);
+			Color b = new Color(colour.getRed(), colour.getGreen(), colour.getBlue(), 50);
+			GradientPaint grad = new GradientPaint(0, 0, a, INFO_WIDTH-50, 0, b);
+	        gSide.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			gSide.setPaint(grad);
+			gSide.fillRect(20+entNo*10, 50+entNo*26, INFO_WIDTH-50-entNo*10, 25);
+			
+			//Write the entity name in this shape, with a black border.
+			Font font = new Font("Calibri", Font.BOLD, 22);
+			GlyphVector gve = font.createGlyphVector(g.getFontRenderContext(), entity.getName());
+			GlyphVector gvt = font.createGlyphVector(g.getFontRenderContext(), "" + entity.getTicks());
+			Shape entityTextShape = gve.getOutline();
+			Shape tickTextShape = gvt.getOutline();
+			
+			gSide.translate(25+entNo*10, 69+entNo*26);
+			gSide.setStroke(new BasicStroke(2.5f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+			gSide.setPaint(Color.BLACK);
+			gSide.draw(entityTextShape);
+			gSide.setPaint(Color.WHITE);
+			gSide.fill(entityTextShape);
+			gSide.translate(305-(entNo*10), 0);
+			gSide.setPaint(Color.BLACK);
+			gSide.draw(tickTextShape);
+			gSide.setPaint(Color.WHITE);
+			gSide.fill(tickTextShape);
+			gSide.translate(-330, -(69+entNo*26));
+			entNo++;
+		}
+		//Notes on this thing
+		/*There are a min and max value.
+		The smaller the minimum, the larger the saturation.
+		The larger the multiplier of both, the larger the value.
+		At all times, 1 of the RGB values is the min, another is the max.
+		The third can vary.
+		To get the "opposite" value, swap the min and max values, and take the 3rd away from the max (or add it to the min).
+		
+		36 = 150, 100, 25
+		156 = 25, 150, 100
+		276 = 100, 25, 150
+		
+		36 = 150, 100, 25
+		216 = 25, 75, 150
+		126 = 25, 150, 38
+		306 = 150, 25, 137
+		
+		Thirds will have 3 alternating values - if one RGB value is xyz, the next will be zxy and the next yzx.
+		Quarters are kinda hard to figure out. It's probably best if you go with calculating RGB from HSV, rather than work out the relationship between the RGBs.
+		Since S and V should be constant, it'll be easier.
+		 */
+	}
+	
 	public void dispInventory() {
 		gSide.setColor(new Color(250, 120, 150));
 		ArrayList<Item> inv = player.getInventory();
-		gSide.clearRect(0, 490, infoWidth, inv.size()*15);
+		gSide.clearRect(0, 490, INFO_WIDTH, inv.size()*15);
 		for (int i=0; i<inv.size(); i++) {
 			gSide.drawString(inv.get(i).getName(), 0, 490+(i*15));
 		}

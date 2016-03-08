@@ -1,5 +1,6 @@
 package version_7;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private HashMap<String, Integer> stats = new HashMap<String, Integer>();
 	private HashMap<String, Triplet<BufferedImage, String, String>> patterns;
 	private ArrayList<Item> inventory = new ArrayList<Item>();
+	private Color colour;
 	
 	//Each stat is modified by a random amount from -r to +r. TODO - change this, it's a bit crap.
 	private int randomness = 0;
@@ -25,7 +27,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private BufferedImage portrait;
 	private String AI;
 	
-	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait, String AI) {
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait, String AI, Color colour) {
 		this.entity = entity;
 		this.x = x;
 		this.y = y;
@@ -36,26 +38,27 @@ public class EntityTile implements Comparable<EntityTile> {
 		cloc.addEntity(this);
 		this.setAI(AI);
 		this.id = GameClass.entityCount+1;
+		this.colour = colour;
 		GameClass.entityCount++;
 		genStats();
 		this.resetTicks();
 	}
 	
-	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait) {
-		this(entity, cloc, x, y, portrait, "SimpleMelee");
+	public EntityTile(Entity entity, Location cloc, byte x, byte y, BufferedImage portrait, Color colour) {
+		this(entity, cloc, x, y, portrait, "SimpleMelee", colour);
 	}
 	
-	public EntityTile(Entity entity, Location cloc, int x, int y, BufferedImage portrait) {
-		this(entity, cloc, (byte) x, (byte) y, portrait);
+	public EntityTile(Entity entity, Location cloc, int x, int y, BufferedImage portrait, Color colour) {
+		this(entity, cloc, (byte) x, (byte) y, portrait, colour);
 	}
 	
-	public EntityTile(Entity entity, Location loc, byte x, byte y, BufferedImage portrait, int randomness) {
-		this(entity, loc, x, y, portrait);
+	public EntityTile(Entity entity, Location loc, byte x, byte y, BufferedImage portrait, int randomness, Color colour) {
+		this(entity, loc, x, y, portrait, colour);
 		this.randomness = randomness;
 	}
 	
-	public EntityTile(Entity entity, Location cloc, int x, int y, BufferedImage portrait, int randomness) {
-		this(entity, cloc, (byte) x, (byte) y, portrait, randomness);
+	public EntityTile(Entity entity, Location cloc, int x, int y, BufferedImage portrait, int randomness, Color colour) {
+		this(entity, cloc, (byte) x, (byte) y, portrait, randomness, colour);
 	}
 	
 	public Entity getEntity() {
@@ -206,6 +209,13 @@ public class EntityTile implements Comparable<EntityTile> {
 	}
 	public void decreaseTicks(int ticks) {
 		ticksLeft -= ticks;
+	}
+	
+	public Color getColour() {
+		return colour;
+	}
+	public void setColour(Color colour) {
+		this.colour = colour;
 	}
 	
 	public void pickupItem(ItemEquippable item) {

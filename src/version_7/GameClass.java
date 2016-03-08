@@ -357,7 +357,7 @@ public class GameClass {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.infoWidth+5, 1920), Math.min(dy*mainImage.Y_UNIT, 1200));
+				frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.INFO_WIDTH+5, 1920), Math.min(dy*mainImage.Y_UNIT, 1200));
 				frame.setTitle("Dungeon Game What Has No Name");
 				frame.setVisible(true);
 				frame.add(mainImage);
@@ -504,6 +504,26 @@ public class GameClass {
 		//There might have to be some way to detect cheesing (deliberately taking damage to encourage attributes they find easier), but this might hamper the Any% max-score runs.
 		//It should be such that you can do a speedrun, a max points run and a min points run - plus other things like a run to get the max points in the game (minus the final level - i.e. all enemies killed in level 2 etc) as fast as possible. You'd need setup for getting max points - less setup = faster time. Once max score is reached, this should be a speedrun category.
 		//TL;DR: Arena, expands with each of 10-20 levels, with different expansion conditions. Different weapons encourage replayability, as does letting you continue from later areas. Make it speedrun-friendly and have intelligently-attributed ever-stronger enemies after the final boss for high-score competition.
+		
+		//TODO - changing this system since that's hard.
+		//There are still a lot of levels, even more than that, but there is only the one arena to fight in. Maybe 50 levels or so.
+		//The progression works like so:
+		//There are 4 waves of enemies, of slight increasing difficulty.
+		//Beat these, and you level up, allowing you certain rewards. E.g. Level 2 could offer you either a slice attack, dealing heavy damage to one enemy, or a parry, allowing you to deal minor damage and leap back 1 space.
+		//You also get, e.g. potion stashes - you can choose either 1 HP, 1 attack and 1 speed potion, 1 HP, 1 defence and 1 speed or 1 HP and 2 speed potions, for example.
+		//Every so often you either get the choice or get given a stronger weapon.
+		//Also every so often (either every level, or every 2nd/3rd/5th level) you fight a boss. This might replace the last wave of the level, might be a 5th wave.
+		//If you beat a level 3 times you get to start at the beginning of it, taking whatever choices you want from the previous ones.
+		//E.g. get to level 3 3 times you get to start at level 2 from then on.
+		//Could require 3 times in a row, rather than just thrice.
+		//Last few levels have you facing a boss rush, either with powered-up bosses or multiple bosses at once.
+		//The final boss is extremely difficult, but once you beat it... maybe endless mode? Maybe unlock cheats depending on what weapon you beat it with?
+		//I want the different weapons to change the style of the game, so that latter one could be an option, even unlocking different weapons once you beat, say, level 5 with the previous one. Make it a game of unlockables.
+		//Ironman challenge - offer a "no reward" option. Have 3 end-rewards for those who do the entire game without one - one for those who pick no special abilities, one for those who pick no potion stashes, one for those who pick nothing at all.
+		//Also, possibly some for those who actually go through the entire game in this style, rather than just starting at level 49. This is much, MUCH harder because you start at full health, and you'd be taking steady damage as you went unless you're really good at the game.
+		//I don't want a one-size-fits-all strategy for this reason. There should be a small amount of RNG to begin with, so people can't just learn patterns for not taking damage and follow them the entire way through. This could come from the slight randomness of the speed stats!
+		//The first version should just have the sword, enemies and a bunch of progression, maybe to level 10 or so.
+		//The second version should have all this, and cost £5 or £10 or whatever.
 		
 		//TODO - simple combat system, maybe that could be the "easy" mode for players.
 		//Basically, hold shift and tap QWEDCXZAS for any one of 9 attacks.
@@ -880,13 +900,18 @@ public class GameClass {
 		//Instead of having the player move, just reset their tick count to the appropriate value and move every other entity as in cycle.
 		//Left of this pair is whether the player actually moved. If so, reset tick count, otherwise do it dynamically (e.g. if the player fought, have smaller cooldown)
 		//TODO - for now it's just resetting anyway - do it dynamically.
+		
+		//First of all, draw the turn order as it is now, before it gets modified.
+		mainImage.drawTurnOrder(entityByTicks);
+		
 		entityByTicks.pollFirst();
 		
 		
 		//Get the current ticks left (to subtract it from every other Entity) and reset the player's ticks.
 		self.resetTicks();
 		
-		
+		//LOOK AT THIS NEXT TIME PLEASE
+		//TODO: Look at the Enemy Order Mockup in Pictures/Dot3. Make graphics based on that to use in the game. Don't forget to tint enemies - Slimes can be fully tinted to that colour, others maybe make a bit subtler.
 		/*
 		boolean leftRoom = false;
 		//Move the player
@@ -970,7 +995,7 @@ public class GameClass {
 			newList.add(assoc);
 		}
 		
-		//Finally, replace the previous ticklist with the new one.
+		//Replace the previous ticklist with the new one.
 		entityByTicks = newList;
 		
 		//Check the 8 tiles around the player, and display the entity/ies that are there
@@ -985,9 +1010,12 @@ public class GameClass {
 				}
 			}
 		}
+		//If there are any, set the combat portrait to the first one.
 		if (adjacents.size() > 0) {
 			mainImage.setCombatPortrait(adjacents.get(0).getPortrait());
 		}
+		
+		//And finally, redraw the game screen.
 		mainImage.redrawMap();
 	}
 	
@@ -1198,6 +1226,10 @@ public class GameClass {
 
 	public static boolean pathfind(EntityTile entity) {
 		//If the entity is in the same room as the player, try to move towards the player.
+		//TODO - have dumb rangers, and smart rangers, possibly along a grade.
+		//Dumb rangers will attack you whatever you're doing, unless you're moving quickly or are surrounded by enemies with one way out. This could be easily exploitable - move out of the way of a speeding arrow, and let another enemy take damage.
+		//Smarter rangers will assess the likelihood of accidentally hitting an ally. If it is likely, they will hold off on firing. They will only fire if it is reasonably likely that they can hit you.
+		//The grade would be them firing at varying probabilities.
 		if (entity.getLocation() == self.getLocation()) {
 			if (entity.getAI() == "SimpleMelee") {
 				moveToPlayer(entity);
@@ -1972,7 +2004,18 @@ public class GameClass {
 	
 	private static boolean createEntity(String name, Location loc, int x, int y) {
 		if (entityTypes.containsKey(name)) {
-			EntityTile entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null);
+			EntityTile entity;
+			if (entityByTicks.size()==1) {
+				entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, Color.RED);
+			} else {
+				TODO NEXT TIME: Redo this so that each entity has its own colour, and they are tinted on-screen.
+				NOTEONOTEONOTEOTEONOTEON
+				Record the Jefstream on the 8th March, Tuesday. About 3:25 in (it was at 3:25). A couple of minutes before Brandon gets shot to shit.
+				His stories with dasqoot were incredible.
+				//Also TODO tomorrow - add the arrows seen in Enemy Mockup (both the ones on the left on the entities and the + and - ones - see the image for details)
+				//TODO (later) - highlight an enemy (either flashing or just brighter) when you mouseover an enemy name on the info panel, and highlight the enemy name on the panel when you mouseover them in-game.
+				entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, Color.GREEN);
+			}
 			boolean v = entityByTicks.add(new EntityAssociation(entity.getTicks(), entity));
 			entityInstances.add(entity);
 			entityByID.put(entity.getID(), entity);
@@ -2000,7 +2043,7 @@ public class GameClass {
 	}
 	
 	private static EntityTile createPlayer(int x, int y) {
-		EntityTile player = new EntityTile(entityTypes.get("Player"), cloc, x, y, null);
+		EntityTile player = new EntityTile(entityTypes.get("Player"), cloc, x, y, null, Color.WHITE);
 		entityByTicks.add(new EntityAssociation(0, player));
 		entityInstances.add(player);
 		entityByID.put(player.getID(),  player);
