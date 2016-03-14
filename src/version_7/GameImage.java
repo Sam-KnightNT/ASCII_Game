@@ -497,9 +497,10 @@ public class GameImage extends JPanel {
 		});*/
 		addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				System.out.println("Click at "+e.getPoint().toString());
-				int x = Math.floorDiv(e.getPoint().x, X_UNIT);
-				int y = Math.floorDiv(e.getPoint().y, Y_UNIT);
+				System.out.println("Click at "+e.getPoint().toString()+", "+xView+", "+yView);
+				Coord pLoc = player.getCoords();
+				int x = Math.floorDiv(e.getPoint().x, X_UNIT)+pLoc.x-(xView/2);
+				int y = Math.floorDiv(e.getPoint().y, Y_UNIT)+pLoc.y-(yView/2);
 				int val = x + (y << 8);
 				GameClass.print("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val));
 			}
@@ -576,8 +577,8 @@ public class GameImage extends JPanel {
 		g.setColor(Color.BLACK);
 		g.clearRect(0, 0, mainPane.getWidth(), mainPane.getHeight());
 		
-		int offsetX = (int) ((mainPane.getWidth()/2.0f)-player.getX()*X_UNIT);
-		int offsetY = (int) ((mainPane.getHeight()/2.0f)-player.getY()*Y_UNIT);
+		int offsetX = (int) ((mainPane.getWidth()/2.0f)-(2+player.getX())*X_UNIT);
+		int offsetY = (int) ((mainPane.getHeight()/2.0f)-(2+player.getY())*Y_UNIT);
 		
 		//Draw dungeon slice first, draw entities and items on top
 		byte h = (byte) Math.min(dungeon.getH(), player.getY()+(yView/2)+2);
@@ -586,8 +587,8 @@ public class GameImage extends JPanel {
 		//Is this thing greater than 0? If so, set it equal. Otherwise, set it equal to 0.
 		//"This thing" is the location of the player in the map, plus the location of the map in the dungeon, multipled by the number of pixels each unit takes up,
 		//then shifted as if that point described is in the centre of the screen - i.e. moving half a screen left/up.
-		int x = X_UNIT*(player.getX()+player.getLocation().getX()-(xView/2)-2);
-		int y = Y_UNIT*(player.getY()+player.getLocation().getY()-(yView/2)-2);
+		int x = X_UNIT*(player.getX()+player.getLocation().getX()-(xView/2));
+		int y = Y_UNIT*(player.getY()+player.getLocation().getY()-(yView/2));
 		int xDraw = (x > 0 ? x : 0);
 		int yDraw = (y > 0 ? y : 0);
 		
@@ -700,27 +701,6 @@ public class GameImage extends JPanel {
 			gSide.translate(-330, -(69+entNo*26));
 			entNo++;
 		}
-		//Notes on this thing
-		/*There are a min and max value.
-		The smaller the minimum, the larger the saturation.
-		The larger the multiplier of both, the larger the value.
-		At all times, 1 of the RGB values is the min, another is the max.
-		The third can vary.
-		To get the "opposite" value, swap the min and max values, and take the 3rd away from the max (or add it to the min).
-		
-		36 = 150, 100, 25
-		156 = 25, 150, 100
-		276 = 100, 25, 150
-		
-		36 = 150, 100, 25
-		216 = 25, 75, 150
-		126 = 25, 150, 38
-		306 = 150, 25, 137
-		
-		Thirds will have 3 alternating values - if one RGB value is xyz, the next will be zxy and the next yzx.
-		Quarters are kinda hard to figure out. It's probably best if you go with calculating RGB from HSV, rather than work out the relationship between the RGBs.
-		Since S and V should be constant, it'll be easier.
-		 */
 	}
 	
 	public void dispInventory() {

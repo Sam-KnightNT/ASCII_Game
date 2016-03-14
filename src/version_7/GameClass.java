@@ -268,7 +268,7 @@ public class GameClass {
 
 		//Put walls around arena
 		arena.fill(new Coord2D(0, 0), new Coord2D(119, 119), tiles.get("Limestone 2 Wall"));
-		arena.fill(new Coord2D(30, 50), new Coord2D(94, 90), tiles.get("Limestone 2 Floor"));
+		arena.fill(new Coord2D(30, 50), new Coord2D(93, 90), tiles.get("Limestone 2 Floor"));
 		
 		fillLine(30, 64);
 		fillLine(31, 60);
@@ -304,17 +304,18 @@ public class GameClass {
 		arena.fill(new Coord2D(60, 49), new Coord2D(63, 49), gate);
 		
 		//Create the player
-		self = createPlayer(42, 62);
+		self = createPlayer(36, 56);
 		
 		
 		//Add enemies
-		createEntity("Minotaur", arena, 45, 65);
-		createEntity("Minotaur", arena, 46, 66);
-		createEntity("Slime", arena, 40, 64);
-		createEntity("Slime", arena, 48, 62);
-		createEntity("Slime", arena, 50, 65);
-		createEntity("Slime", arena, 50, 62);
-		createEntity("Slime", arena, 49, 62);
+		float b = 1.0f;
+		createEntity("Minotaur", arena, 45, 65, Color.getHSBColor(0.00f, b, b));
+		createEntity("Minotaur", arena, 46, 66, Color.getHSBColor(0.10f, b, b));
+		createEntity("Slime", arena, 40, 64, Color.getHSBColor(0.20f, b, b));
+		createEntity("Slime", arena, 48, 62, Color.getHSBColor(0.40f, b, b));
+		createEntity("Slime", arena, 50, 65, Color.getHSBColor(0.60f, b, b));
+		createEntity("Slime", arena, 50, 62, Color.getHSBColor(0.75f, b, b));
+		createEntity("Slime", arena, 49, 62, Color.getHSBColor(0.86f, b, b));
 		
 		//Create dungeon (currently doesn't matter, but if you remove it it goes haywire so don't)
 		dungeon = new Dungeon();
@@ -354,20 +355,13 @@ public class GameClass {
 	public static void initialiseMainImage() {
 		mainImage = new GameImage(dungeon, dx, dy);
 		mainImage.setPlayer(self);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.INFO_WIDTH+5, 1920), Math.min(dy*mainImage.Y_UNIT, 1200));
-				frame.setTitle("Dungeon Game What Has No Name");
-				frame.setVisible(true);
-				frame.add(mainImage);
-				//TODO - Add a more pretty graphical thing to infoPanel, that shows you your attack
-				//Like a swipey thing with the 9 directions, that shows you what your wand is doing, how strong the attack is, etc
-				//This is how it becomes a fusion of old-style graphics and new-style features
-				frame.setResizable(false);
-				//frame.pack();
-			}
-		});
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.INFO_WIDTH+5, 1920), Math.min(dy*mainImage.Y_UNIT, 1200));
+		frame.setTitle("Dungeon Game What Has No Name");
+		frame.add(mainImage);
+		frame.setResizable(false);
+		frame.setVisible(true);
+		frame.pack();
 	}
 	
 	public static void readFromFile() throws Exception {
@@ -2002,20 +1996,15 @@ public class GameClass {
 		return pot;
 	}
 	
-	private static boolean createEntity(String name, Location loc, int x, int y) {
+	private static boolean createEntity(String name, Location loc, int x, int y, Color colour) {
 		if (entityTypes.containsKey(name)) {
 			EntityTile entity;
-			if (entityByTicks.size()==1) {
-				entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, Color.RED);
-			} else {
-				TODO NEXT TIME: Redo this so that each entity has its own colour, and they are tinted on-screen.
-				NOTEONOTEONOTEOTEONOTEON
-				Record the Jefstream on the 8th March, Tuesday. About 3:25 in (it was at 3:25). A couple of minutes before Brandon gets shot to shit.
-				His stories with dasqoot were incredible.
-				//Also TODO tomorrow - add the arrows seen in Enemy Mockup (both the ones on the left on the entities and the + and - ones - see the image for details)
-				//TODO (later) - highlight an enemy (either flashing or just brighter) when you mouseover an enemy name on the info panel, and highlight the enemy name on the panel when you mouseover them in-game.
-				entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, Color.GREEN);
-			}
+			
+			//FIRST THING TODO: Fix weird size bug so that the player is properly displayed on the screen.
+			//TODO NEXT TIME: Redo this so that each entity is tinted on-screen, and make it so clicking on one of the entities on the info panel highlights the entity's tile (and possibly vice-versa). Also add the arrows for more than 8 entities, and fix the turn order thing.
+			//Also TODO tomorrow - add the arrows seen in Enemy Mockup (both the ones on the left on the entities and the + and - ones - see the image for details)
+			//TODO (later) - highlight an enemy (either flashing or just brighter) when you mouseover an enemy name on the info panel, and highlight the enemy name on the panel when you mouseover them in-game.
+			entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, colour);
 			boolean v = entityByTicks.add(new EntityAssociation(entity.getTicks(), entity));
 			entityInstances.add(entity);
 			entityByID.put(entity.getID(), entity);
@@ -2040,6 +2029,11 @@ public class GameClass {
 			}
 			return false;
 		}
+	}
+	
+	private static boolean createEntity(String name, Location loc, int x, int y) {
+		//Create an entity with a random colour.
+		return createEntity(name, loc, x, y, new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255)));
 	}
 	
 	private static EntityTile createPlayer(int x, int y) {
