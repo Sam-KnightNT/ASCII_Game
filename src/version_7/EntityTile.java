@@ -15,6 +15,7 @@ public class EntityTile implements Comparable<EntityTile> {
 	private HashMap<String, Triplet<BufferedImage, String, String>> patterns;
 	private ArrayList<Item> inventory = new ArrayList<Item>();
 	private Color colour;
+	private BufferedImage image;
 	
 	//Each stat is modified by a random amount from -r to +r. TODO - change this, it's a bit crap.
 	private int randomness = 0;
@@ -39,6 +40,9 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.setAI(AI);
 		this.id = GameClass.entityCount+1;
 		this.colour = colour;
+		this.image = entity.getImage();
+		BufferedImage tint = new BufferedImage(GameClass.mainImage.X_UNIT, GameClass.mainImage.Y_UNIT, BufferedImage.TYPE_INT_ARGB_PRE);
+		
 		GameClass.entityCount++;
 		genStats();
 		this.resetTicks();

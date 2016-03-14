@@ -43,7 +43,7 @@ public class GameClass {
 	static HashMap<String, TileType> tiles = new HashMap<String, TileType>();
 	static Random random = new Random();
 	//TODO - Remove all static modifiers, since they should be unique to each GameClass
-	private static GameImage mainImage;
+	static GameImage mainImage;
 	//private static InfoPanel infoPanel;
 	private final static JFrame frame = new JFrame();
 	static int playerIndex;
@@ -61,7 +61,7 @@ public class GameClass {
 
 	private static Map arena = new Map(120, 120, 0, 60, 0, tiles.get("Test Floor"));
 	
-	static boolean debug = true;
+	static boolean debug = false;
 	static boolean systemPrint = true;
 	
 	//Where the player is initially
@@ -117,11 +117,12 @@ public class GameClass {
 	 * v0.05: Added basic combat system and pathfinding
 	 * v0.06: Created info panel, with info on combat and such (where I am now)
 	 * v0.07: Working simple combat system with multiple entities, simple AI behaviour and an arena (possibly untextured)
-	 * v0.08: Completed complex combat system
-	 * v0.09: Working combat panel, flavour text and swipe previews
-	 * v0.10: Completed tutorial and finalised arena
-	 * v0.11: (Optional) More advanced AI, featuring rangers and such
-	 * v0.12: All extraneous things removed - "Generating" statements, printouts, most commands, potion system, all that guff.
+	 * v0.08: Populated info panel, with turn order, entity stats and so on
+	 * v0.09: Completed complex combat system
+	 * v0.10: Integrated combat system with info panel, so things like actions statuses displayed in turn order panel and real-time alterations based on the action you want to take
+	 * v0.11: Completed tutorial and finalised arena
+	 * v0.12: (Optional) More advanced AI, featuring rangers and such
+	 * v0.13: All extraneous things removed - "Generating" statements, printouts, most commands, potion system, all that guff.
 	 * 			Make it ready for public release
 	 * v1.00: Progression, scores 
 	 * 
@@ -2000,10 +2001,11 @@ public class GameClass {
 		if (entityTypes.containsKey(name)) {
 			EntityTile entity;
 			
-			//FIRST THING TODO: Fix weird size bug so that the player is properly displayed on the screen.
-			//TODO NEXT TIME: Redo this so that each entity is tinted on-screen, and make it so clicking on one of the entities on the info panel highlights the entity's tile (and possibly vice-versa). Also add the arrows for more than 8 entities, and fix the turn order thing.
+			//TODO NEXT TIME - highlight an enemy (either flashing or just brighter) when you mouseover an enemy name on the info panel, and highlight the enemy name on the panel when you mouseover them in-game.
+			//Also fix the turn order thing, i.e. that the order is useless since it just shows the player at the top all the time.
 			//Also TODO tomorrow - add the arrows seen in Enemy Mockup (both the ones on the left on the entities and the + and - ones - see the image for details)
-			//TODO (later) - highlight an enemy (either flashing or just brighter) when you mouseover an enemy name on the info panel, and highlight the enemy name on the panel when you mouseover them in-game.
+			//After this, make it so that clicking on an enemy displays their stats (move speed, strength, abilities, HP and whatnot) below the turn order list
+			
 			entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, colour);
 			boolean v = entityByTicks.add(new EntityAssociation(entity.getTicks(), entity));
 			entityInstances.add(entity);

@@ -502,13 +502,32 @@ public class GameImage extends JPanel {
 				int x = Math.floorDiv(e.getPoint().x, X_UNIT)+pLoc.x-(xView/2);
 				int y = Math.floorDiv(e.getPoint().y, Y_UNIT)+pLoc.y-(yView/2);
 				int val = x + (y << 8);
-				GameClass.print("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val));
+				Pair<Boolean, EntityTile> entity = player.getLocation().entityAt(x, y); 
+				if (entity.getLeft()) {
+					GameClass.print("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val)+". There is a "+entity.getRight()+" here.");
+				} else {
+					GameClass.print("Clicked on "+x+", "+y+" which is a "+player.getLocation().getTile(val));
+				}
 			}
+			
 		});
 		
 		addMouseMotionListener(new MouseAdapter() {
 			public void mouseDragged(MouseEvent e) {
 				System.out.println("Dragged!");
+			}
+			public void mouseMoved(MouseEvent e) {
+				System.out.println("Moved to "+e.getPoint().toString()+", "+xView+", "+yView);
+				Coord pLoc = player.getCoords();
+				int x = Math.floorDiv(e.getPoint().x, X_UNIT)+pLoc.x-(xView/2);
+				int y = Math.floorDiv(e.getPoint().y, Y_UNIT)+pLoc.y-(yView/2);
+				int val = x + (y << 8);
+				Pair<Boolean, EntityTile> entity = player.getLocation().entityAt(x, y); 
+				if (entity.getLeft()) {
+					GameClass.print("This is a "+player.getLocation().getTile(val)+". There is a "+entity.getRight()+" here.");
+				} else {
+					GameClass.print("Moved to "+x+", "+y+" which is a "+player.getLocation().getTile(val));
+				}
 			}
 		});
 		
