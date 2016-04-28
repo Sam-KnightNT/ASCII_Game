@@ -41,7 +41,7 @@ public class EntityTile implements Comparable<EntityTile> {
 		this.id = GameClass.entityCount+1;
 		this.colour = colour;
 		this.image = entity.getImage();
-		BufferedImage tint = new BufferedImage(GameClass.mainImage.X_UNIT, GameClass.mainImage.Y_UNIT, BufferedImage.TYPE_INT_ARGB_PRE);
+		//BufferedImage tint = new BufferedImage(GameClass.mainImage.X_UNIT, GameClass.mainImage.Y_UNIT, BufferedImage.TYPE_INT_ARGB_PRE);
 		
 		GameClass.entityCount++;
 		genStats();

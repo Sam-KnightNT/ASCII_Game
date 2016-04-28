@@ -43,7 +43,7 @@ public class GameClass {
 	static HashMap<String, TileType> tiles = new HashMap<String, TileType>();
 	static Random random = new Random();
 	//TODO - Remove all static modifiers, since they should be unique to each GameClass
-	static GameImage mainImage;
+	static GameImage gameWindow;
 	//private static InfoPanel infoPanel;
 	private final static JFrame frame = new JFrame();
 	static int playerIndex;
@@ -124,7 +124,7 @@ public class GameClass {
 	 * v0.12: (Optional) More advanced AI, featuring rangers and such
 	 * v0.13: All extraneous things removed - "Generating" statements, printouts, most commands, potion system, all that guff.
 	 * 			Make it ready for public release
-	 * v1.00: Progression, scores 
+	 * v1.00: Progression, scores, options menu?
 	 * 
 	 * Details on v0.08
 	 * There should be new controls. If more than one enemy is standing next to you, 1-9 points at them.
@@ -354,12 +354,12 @@ public class GameClass {
 	}
 
 	public static void initialiseMainImage() {
-		mainImage = new GameImage(dungeon, dx, dy);
-		mainImage.setPlayer(self);
+		gameWindow = new GameImage(dungeon, dx, dy);
+		gameWindow.setPlayer(self);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(Math.min(dx*mainImage.X_UNIT+mainImage.INFO_WIDTH+5, 1920), Math.min(dy*mainImage.Y_UNIT, 1200));
+		frame.setSize(Math.min(dx*gameWindow.X_UNIT+gameWindow.INFO_WIDTH+5, 1920), Math.min(dy*gameWindow.Y_UNIT, 1200));
 		frame.setTitle("Dungeon Game What Has No Name");
-		frame.add(mainImage);
+		frame.add(gameWindow);
 		frame.setResizable(false);
 		frame.setVisible(true);
 		frame.pack();
@@ -511,13 +511,14 @@ public class GameClass {
 		//If you beat a level 3 times you get to start at the beginning of it, taking whatever choices you want from the previous ones.
 		//E.g. get to level 3 3 times you get to start at level 2 from then on.
 		//Could require 3 times in a row, rather than just thrice.
+		//Once you gain the ability to start from a level, you get to select all the skills you would have been able to if you got to this stage normally - but you only get a single potion stash, and you might not even get that. This is to give starting from scratch an actual reason.
 		//Last few levels have you facing a boss rush, either with powered-up bosses or multiple bosses at once.
 		//The final boss is extremely difficult, but once you beat it... maybe endless mode? Maybe unlock cheats depending on what weapon you beat it with?
 		//I want the different weapons to change the style of the game, so that latter one could be an option, even unlocking different weapons once you beat, say, level 5 with the previous one. Make it a game of unlockables.
 		//Ironman challenge - offer a "no reward" option. Have 3 end-rewards for those who do the entire game without one - one for those who pick no special abilities, one for those who pick no potion stashes, one for those who pick nothing at all.
 		//Also, possibly some for those who actually go through the entire game in this style, rather than just starting at level 49. This is much, MUCH harder because you start at full health, and you'd be taking steady damage as you went unless you're really good at the game.
 		//I don't want a one-size-fits-all strategy for this reason. There should be a small amount of RNG to begin with, so people can't just learn patterns for not taking damage and follow them the entire way through. This could come from the slight randomness of the speed stats!
-		//The first version should just have the sword, enemies and a bunch of progression, maybe to level 10 or so.
+		//The first version should just have a few weapons (sword, hammer, bow?), enemies and a bunch of progression, maybe to level 10 or so.
 		//The second version should have all this, and cost £5 or £10 or whatever.
 		
 		//TODO - simple combat system, maybe that could be the "easy" mode for players.
@@ -588,8 +589,8 @@ public class GameClass {
 					cloc.removeItem(itemAt.getRight());
 					self.pickupItem(item);
 					print("Picked up "+itemAt.getRight().getName());
-					mainImage.redrawMap();
-					mainImage.dispInventory();
+					gameWindow.redrawMap();
+					gameWindow.dispInventory();
 				}
 				else {
 					//Add new exception (ItemNotFound exception?) like ConcurrentModification
@@ -672,14 +673,14 @@ public class GameClass {
 		//Change one block into another
 		else if (command.startsWith("cb")) {
 			print(command);
-			Pattern pattern = Pattern.compile("cb (.+) ([0-9]+) ([0-9]+) ([0-9]+)");
+			Pattern pattern = Pattern.compile("cb (.+) ([0-9]+) ([0-9]+)");
 			Matcher matcher = pattern.matcher(command);
 			if (matcher.matches()) {
 				//Must be valid, so get it
 				String tileName = matcher.group(1);
 				byte x = Byte.parseByte(matcher.group(2));
 				byte y = Byte.parseByte(matcher.group(3));
-				byte z = Byte.parseByte(matcher.group(4));
+				byte z = 0;
 				//TODO - test this and damage, add other things that cause these to change (maze generator?)
 				if (tiles.containsKey(tileName)) {
 					TileType tile = tiles.get(tileName);
@@ -897,7 +898,7 @@ public class GameClass {
 		//TODO - for now it's just resetting anyway - do it dynamically.
 		
 		//First of all, draw the turn order as it is now, before it gets modified.
-		mainImage.drawTurnOrder(entityByTicks);
+		gameWindow.drawTurnOrder(entityByTicks);
 		
 		entityByTicks.pollFirst();
 		
@@ -1007,11 +1008,11 @@ public class GameClass {
 		}
 		//If there are any, set the combat portrait to the first one.
 		if (adjacents.size() > 0) {
-			mainImage.setCombatPortrait(adjacents.get(0).getPortrait());
+			gameWindow.setCombatPortrait(adjacents.get(0).getPortrait());
 		}
 		
 		//And finally, redraw the game screen.
-		mainImage.redrawMap();
+		gameWindow.redrawMap();
 	}
 	
 	/**
@@ -1793,10 +1794,10 @@ public class GameClass {
 			attackValue += val;
 			//Actually perform the attack now that you have both inputs.
 			//Command: get the attackValue'th value from the defence of a given defender, and the attack of you. This is so other entities can also attack without going through this method.
-			if (mainImage.getTargetedEntity() == null) {
+			if (gameWindow.getTargetedEntity() == null) {
 				print("No entity is attackable from here!");
 			} else {
-				command("att "+self.getID()+" "+mainImage.getTargetedEntity().getID()+" "+attackValue);
+				command("att "+self.getID()+" "+gameWindow.getTargetedEntity().getID()+" "+attackValue);
 				attackValue = 0;
 				//And remove the swipe previews.
 			}
@@ -1946,7 +1947,7 @@ public class GameClass {
 		}
 		//Try to draw to the main image. If it doesn't exist (such as, for testing purposes), print to the console.
 		try {
-			mainImage.drawInfo(s);
+			gameWindow.drawInfo(s);
 		} catch (NullPointerException e) {
 			System.out.println("Screen has not yet been created. This may be intentional.");
 		}
@@ -2005,6 +2006,8 @@ public class GameClass {
 			//Also fix the turn order thing, i.e. that the order is useless since it just shows the player at the top all the time.
 			//Also TODO tomorrow - add the arrows seen in Enemy Mockup (both the ones on the left on the entities and the + and - ones - see the image for details)
 			//After this, make it so that clicking on an enemy displays their stats (move speed, strength, abilities, HP and whatnot) below the turn order list
+			//Also add sliders in an options menu. Each tick that goes by can be altered to take a certain amount of time. From 30 ticks/s, to 60, to 100, to 150, to 200, to 300, to 500, to 750, to 1000, to instant.
+			//Also, it might be wise to have a kind of weighting option too, so e.g. with a +ve weighting a 100 tick wait might happen in 1/10th of a second, but 1000 ticks might take 2 or 3 or so. With -ve, 1000 ticks happen in 1 second and 100 in 3/10ths. Could have a log function for calculating.
 			
 			entity = new EntityTile(entityTypes.get(name), loc, (byte) x, (byte) y, null, colour);
 			boolean v = entityByTicks.add(new EntityAssociation(entity.getTicks(), entity));
