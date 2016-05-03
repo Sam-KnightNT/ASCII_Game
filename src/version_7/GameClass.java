@@ -2064,5 +2064,24 @@ public class GameClass {
 			arena.setTile(123-tiles.get(i), 140-tiles.get(i+1), wall);
 		}
 	}
+	
+	public static ArrayList<EntityTile> getSurroundingEnemies(boolean diagonal) {
+		ArrayList<EntityTile> entities =  new ArrayList<EntityTile>();
+		//TODO - this is a really stupid, hacky solution and it feels... wrong, like there's something I'm missing. Find out if this is really the best way to do things.
+		Direction[] dirs;
+		if (diagonal) {
+			Direction[] dirsA = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.NORTHEAST, Direction.NORTHWEST, Direction.SOUTHEAST, Direction.SOUTHWEST};
+			dirs = dirsA;
+		} else {
+			Direction[] dirsA = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+			dirs = dirsA;
+		}
+		for (Direction dir : dirs) {
+			if (arena.entityAt(self.getCoords().shift(dir)).getLeft()) {
+				entities.add(arena.entityAt(self.getCoords().shift(dir)).getRight());
+			}
+		}
+		return entities;
+	}
 
 }

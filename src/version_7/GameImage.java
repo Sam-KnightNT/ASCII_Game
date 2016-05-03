@@ -49,11 +49,13 @@ public class GameImage extends JPanel {
 	private Dungeon dungeon;
 	private EntityTile player;
 	
+	private ArrayList<EntityTile> entitiesInRange;
+	
 	private ArrayList<BufferedImage> dungeonSlices = new ArrayList<BufferedImage>();
 	protected static final int INFO_WIDTH = 400;	//Width of the control pane
 	private static final int CONTROL_GAP = 5;		//Distance between main pane and control pane
 	private int locationPaneHeight = 50;
-	private int combatPaneHeight = 20;
+	private int combatPaneHeight = 75;
 	
 	public GameImage() {
 		init();
@@ -550,6 +552,7 @@ public class GameImage extends JPanel {
 		}
 		
 		drawLocation(player.getX(), player.getY());
+		drawAttacks();
 	}
 	//TODO add dynamic textures that change either on step or at 60FPS
 	//2 coordinates - old pair, EntityTile
@@ -614,8 +617,12 @@ public class GameImage extends JPanel {
 			entNo++;
 		}
 		//TODONEXT
-		//Add a line saying "Press Q to view controls", and pressing Q opens a box in the centre of the screen saying the controls.
-		//Add a bar at the top (or bottom) which shows the attacks you can do with your weapons. First version should only have 1 attack - "Push".
+		//Populate cmbtPane with attacks. First (test) version should only have 1 attack - "Push". This moves an entity one tile away and resets its tick count.
+		//There should be just "1. Push" on the bottom, and when you hit '1' it asks you to select an entity if available - if not it does nothing.
+		//That (doing nothing) ought to be changed before release, maybe have red-bordered text pop up above it saying "No entities in range" or something. Or, border the attack itself with red.
+		//If entities are in range, that should either put up a menu with a list of entities, or replace the cmbtPane text with an entity list. These entities should have the same colour as in the infoPane.
+		//Numbers should be before them - selecting that number does that thing to that entity.
+		//After this is done, show it off.
 		//Push should move the enemy you select back 2 tiles and reset their move.
 		//The bar should have a list, arrayed horizontally - like this.
 		//"1. Push		2. Swipe		3. Lunge"
@@ -642,6 +649,34 @@ public class GameImage extends JPanel {
 		//Once it's fully dark orange, if your stamina keeps getting sapped you take HP damage.
 		//If your stamina is 0 or less, you can only wait. Waiting refills a decent chunk of stamina, and moving either refills a little or nothing (either waiting = 40% and moving = 5%, or waiting = 75% and moving = 0% or similar)
 		//Attacking regularly either drains no stamina or drains a little, 5%. Special attacks drain a lot more and have a cooldown.
+		//Also, add an option in the options menu for the "Choose a target" menu - always appear, or only when there is a choice (i.e. choose between auto-attacking single targets or always seeing the length of your attack) 
+	}
+	
+	public void drawAttacks() {
+		int fontSize = (int) Math.ceil(combatPaneHeight*(2.0/3.0));
+		Font font = new Font("Calibri", Font.BOLD, fontSize);
+		GlyphVector gvc = font.createGlyphVector(gMain.getFontRenderContext(), "1. Push");
+		Shape coordinateTextShape = gvc.getOutline();
+		
+        gCmbt.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+		gCmbt.clearRect(0, 0, xDim, combatPaneHeight);
+		gCmbt.translate(fontSize, fontSize);
+		gCmbt.setStroke(new BasicStroke((5*fontSize/80), BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+		
+		//Push should only be valid if there is an entity in the 8 surrounding squares.
+		entitiesInRange = GameClass.getSurroundingEnemies(true);
+		
+		if (!entitiesInRange.isEmpty()) {
+			gCmbt.setPaint(Color.BLACK);
+		} else {
+			gCmbt.setPaint(Color.RED);
+		}
+		
+		gCmbt.draw(coordinateTextShape);
+		gCmbt.setPaint(Color.WHITE);
+		gCmbt.fill(coordinateTextShape);
+		gCmbt.translate(-fontSize, -fontSize);
 	}
 	
 	public void dispInventory() {
@@ -660,7 +695,7 @@ public class GameImage extends JPanel {
 		try {
 			menu = ImageIO.read(new File("images/Controls Menu-2.5.png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO change this to a good error message - this actually needs one
 			e.printStackTrace();
 		}
 		int w = menu.getWidth();

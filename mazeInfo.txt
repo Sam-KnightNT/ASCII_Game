@@ -250,7 +250,7 @@ entity:
 		defence: 40
 		magic power: 60
 		mana: 10
-		speed: 100
+		speed: 93
 	end
 	defence:
 		Overhead Smash: 0001010110201230033012000102001002102002120
