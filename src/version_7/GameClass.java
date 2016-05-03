@@ -1363,14 +1363,7 @@ public class GameClass {
 							}
 						}
 						i++;
-					}/*
-					try { entity.getColour().equals(null); } catch (NullPointerException e) {
-						entity.setColour(Color.BLACK);
 					}
-					try { entity.getBGColour().equals(null); } catch (NullPointerException e) {
-						entity.setBGColour(Color.WHITE);
-						entity.setTransparency(true);
-					}*/
 					try {
 						item.setImage(ImageIO.read(new File("images/items/"+item.getName()+".png")));
 					} catch (IOException e) {
@@ -1492,6 +1485,8 @@ public class GameClass {
 		BufferedImage upDownStairs = null;
 		//TODO - make pillars destructible, and possibly load-bearing
 		BufferedImage pillar = null;
+		
+		//Several semi-transparent masks are pre-made for stairs and pillars - load them.
 		try {
 			upStairs = ImageIO.read(new File("images/masks/Up.png"));
 			downStairs = ImageIO.read(new File("images/masks/Down.png"));
@@ -1501,6 +1496,8 @@ public class GameClass {
 			e1.printStackTrace();
 			System.out.println("One or more masks not present; please check you have \"Up.png\", \"Down.png\", \"Stairs.png\" and \"Pillar.png\" in your images folder");
 		}
+		
+		//Look for patterns in the string provided - looking for e.g. "material:<line break>	Marble<line break>end". Matcher will find "Marble" from that
 		Pattern pattern = Pattern.compile("material:\n((?:.+\n)+)end");
 		Matcher matcher = pattern.matcher(str);
 		while (matcher.find()) {
@@ -1512,6 +1509,8 @@ public class GameClass {
 				name = nMatch.group(1);
 				System.out.println("Name: "+name);
 				String filepath = "images/materials/"+name+".png";
+				
+				//Create a gate texture - black lines added on the image
 				if(name.endsWith("Gate")) {
 					float scaleFactor = 0.7f;
 					RescaleOp op = new RescaleOp(scaleFactor, 0, null);	
@@ -1528,6 +1527,7 @@ public class GameClass {
 						System.out.println("Path of invalid material: "+filepath);
 					}
 				} else {
+					//All this draws the 6 types of tile created from the texture
 					BufferedImage img = null;
 					BufferedImage floorImg = null;
 					BufferedImage upImg = null;
@@ -1560,6 +1560,7 @@ public class GameClass {
 						System.out.println("Path of invalid material: "+filepath);
 					}
 					
+					//Add restrictions and permissions for what entities are allowed to walk on them - generally walls and pillars admit nothing, everything else admits everything.
 					ArrayList<String> allPermitted = new ArrayList<String>();
 					ArrayList<String> allRestricted = new ArrayList<String>();
 					allPermitted.add("All");

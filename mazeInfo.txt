@@ -1,4 +1,4 @@
-dimensions: 59, 27, 1
+dimensions: 73, 27, 1
 
 player:
 	name: Lib

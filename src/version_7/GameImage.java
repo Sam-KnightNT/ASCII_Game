@@ -5,14 +5,18 @@ import java.awt.event.*;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GameImage extends JPanel {
@@ -48,7 +52,7 @@ public class GameImage extends JPanel {
 	private ArrayList<BufferedImage> dungeonSlices = new ArrayList<BufferedImage>();
 	protected static final int INFO_WIDTH = 400;	//Width of the control pane
 	private static final int CONTROL_GAP = 5;		//Distance between main pane and control pane
-	private int locationPaneHeight = 20;
+	private int locationPaneHeight = 50;
 	private int combatPaneHeight = 20;
 	
 	public GameImage() {
@@ -61,14 +65,14 @@ public class GameImage extends JPanel {
 		xDim = X_UNIT*xArray;
 		yDim = Y_UNIT*yArray;
 		setSize(xDim, yDim);
-		setPreferredSize(new Dimension(xDim+INFO_WIDTH, yDim));
+		setPreferredSize(new Dimension(xDim+INFO_WIDTH, yDim+locationPaneHeight+combatPaneHeight));
 		xView = xArray;
 		yView = yArray;
 		
 		mainPane = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);											//mainPane is the screen where the action happens...
-		ctrlPane = new BufferedImage(INFO_WIDTH, yDim, BufferedImage.TYPE_INT_RGB);										//controlPane is the side screen, featuring the turn order and so on...
-		locnPane = new BufferedImage(xDim+INFO_WIDTH+CONTROL_GAP, locationPaneHeight, BufferedImage.TYPE_INT_RGB);		//locationPane is at the top, telling you your location and coordinates...
-		cmbtPane = new BufferedImage(xDim+INFO_WIDTH+CONTROL_GAP, combatPaneHeight, BufferedImage.TYPE_INT_RGB);		//combatPane is at the bottom, showing your available moves.
+		ctrlPane = new BufferedImage(INFO_WIDTH, yDim+locationPaneHeight+combatPaneHeight, BufferedImage.TYPE_INT_RGB);										//controlPane is the side screen, featuring the turn order and so on...
+		locnPane = new BufferedImage(xDim, locationPaneHeight, BufferedImage.TYPE_INT_RGB);		//locationPane is at the top, telling you your location and coordinates...
+		cmbtPane = new BufferedImage(xDim, combatPaneHeight, BufferedImage.TYPE_INT_RGB);		//combatPane is at the bottom, showing your available moves.
 		
 		//Bake the dungeon tiles onto the dungeon BufferedImage.
 		bakeDungeon();
@@ -151,7 +155,6 @@ public class GameImage extends JPanel {
 		//Used for examples of the old combat system, if I ever want to go back to that
 		//this.getInputMap().put(KeyStroke.getKeyStroke("shift Q"), "attack ul");
 		
-
 		this.getInputMap().put(KeyStroke.getKeyStroke("SPACE"), "space"); //Will eventually have various functions, possibly
 		this.getInputMap().put(KeyStroke.getKeyStroke('p'), "pick up");
 		this.getInputMap().put(KeyStroke.getKeyStroke("shift C"), "change"); //Debug - change one tile into another
@@ -462,9 +465,31 @@ public class GameImage extends JPanel {
 	
 	public void drawLocation(int x, int y) {
 		//Draws the specified location to the top of the screen.
-		gLocn.setColor(new Color(150, 150, 255));
-		gLocn.clearRect((int) (INFO_WIDTH*.4), 0, 100, 15);
-		gLocn.drawString("("+x+", "+y+")", (int) (INFO_WIDTH*0.4), 10);
+		int fontSize = (int) Math.ceil(locationPaneHeight*(2.0/3.0));
+		Font font = new Font("Calibri", Font.BOLD, fontSize);
+		GlyphVector gvc = font.createGlyphVector(gMain.getFontRenderContext(), "("+x+", "+y+")");
+		GlyphVector gvl = font.createGlyphVector(gMain.getFontRenderContext(), "Arena");
+		Shape coordinateTextShape = gvc.getOutline();
+		Shape locationTextShape = gvl.getOutline();
+		Rectangle2D coordLoc = coordinateTextShape.getBounds2D();
+		double cx = coordLoc.getWidth();
+		double cy = coordLoc.getHeight();
+
+        gLocn.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+		gLocn.clearRect(0, 0, xDim, locationPaneHeight);
+		gLocn.translate(xDim/2-locationPaneHeight-cx, fontSize);
+		gLocn.setStroke(new BasicStroke((5*fontSize/80), BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+		gLocn.setPaint(Color.BLACK);
+		gLocn.draw(coordinateTextShape);
+		gLocn.setPaint(Color.WHITE);
+		gLocn.fill(coordinateTextShape);
+		gLocn.translate(cx+locationPaneHeight*2, 0);
+		gLocn.setPaint(Color.BLACK);
+		gLocn.draw(locationTextShape);
+		gLocn.setPaint(Color.WHITE);
+		gLocn.fill(locationTextShape);
+		gLocn.translate(-(xDim/2+locationPaneHeight), -fontSize);
 	}
 	
 	public void drawEquipment(EntityTile player) {
@@ -524,16 +549,9 @@ public class GameImage extends JPanel {
 			}
 		}
 		
-		//This is useful for reference.
-		/*try {
-			g.drawImage(ImageIO.read(new File("images/masks/bigmask.png")), 400, 300, null);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
 		drawLocation(player.getX(), player.getY());
 	}
-	//TODO add dynamic textures
+	//TODO add dynamic textures that change either on step or at 60FPS
 	//2 coordinates - old pair, EntityTile
 	public void redrawMap(HashMap<Triplet<Integer, Tile, Integer>, EntityTile> changes) {
 		for (Entry<Triplet<Integer, Tile, Integer>, EntityTile> entry : changes.entrySet()) {
@@ -555,8 +573,6 @@ public class GameImage extends JPanel {
 	
 	public void setInfo(String info) {
 		gCtrl.setColor(Color.WHITE);
-		//TODO - add to the control pane, a double- or triple-size display which is either the 3x3 or 5x5 around the player.
-		//This should display stuff like the direction you are facing, any swipes that take place and things that are closely relevant to melee combat.
 		gCtrl.drawString(info, 20, 20);
 	}
 	
@@ -619,6 +635,13 @@ public class GameImage extends JPanel {
 		//Swing hits the 3 tiles in front, knocking every enemy in those 3 tiles to the left or right, depending on the direction. If you're swiping right and there's an enemy at W, it'll be pushed to R.
 		//If there's one at Q and another at E, they'll be moved to E and R respectively.
 		//Once all this is done, another update is in order. Show off the menus and updated UI, basically. Ask Squiggs how he thinks I should advertise. Maybe set up a subreddit and chart my progress.
+		//After that, add a stamina system and individual attack cooldowns. This'll be used to prevent spamming of the knockback attacks.
+		//HP should be a red bar below the turn order, stamina should be a green bar below that.
+		//Stamina can go negative due to other entities hitting you with powerful attacks. If this happens, it begins refilling, with a darkish-yellow colour.
+		//It can go up to twice as negative as your positive stamina. The 2nd bar refill will be even darker orange.
+		//Once it's fully dark orange, if your stamina keeps getting sapped you take HP damage.
+		//If your stamina is 0 or less, you can only wait. Waiting refills a decent chunk of stamina, and moving either refills a little or nothing (either waiting = 40% and moving = 5%, or waiting = 75% and moving = 0% or similar)
+		//Attacking regularly either drains no stamina or drains a little, 5%. Special attacks drain a lot more and have a cooldown.
 	}
 	
 	public void dispInventory() {
@@ -633,29 +656,48 @@ public class GameImage extends JPanel {
 	private void displayControls() {
 		menuOnScreen = true;
 		GameClass.print("Displaying menu.");
-		int x = 450;
-		int y = 500;
-		int w = 100;
-		int h = 100;
+		BufferedImage menu = null;
+		try {
+			menu = ImageIO.read(new File("images/Controls Menu-2.5.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int w = menu.getWidth();
+		int h = menu.getHeight();
+		int x = (mainPane.getWidth()-w)/2;
+		int y = (mainPane.getHeight()-h)/2;
+		String dots = "........................................";
+		Font font = new Font("Calibri", Font.PLAIN, 42);
+		Graphics g = menu.getGraphics();
+		g.setFont(font);
+		g.setColor(Color.WHITE);
+		g.drawString("Move", 80, 150);
+		g.drawString("Numpad", 660, 150);
+		g.drawString("Stuff", 80, 200);
+		g.drawString("?", 800, 200);
+		g.drawString("Exit", 80, 250);
+		g.drawString("Esc", 760, 250);
+		g.drawString(dots, 200, 140);
+		g.drawString(dots, 200, 240);
+		displayFonts(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
 		//TODO NEXT TIME
-		//Get the menu from the images, put it on the thing and add the controls.
-		//Also see what can be done about variable sized windows.
+		//See what can be done about variable sized windows.
 		behindMenu = new BufferedImage(mainPane.getColorModel(), mainPane.copyData(null), mainPane.isAlphaPremultiplied(), null);
 		behindMenu = behindMenu.getSubimage(x, y, w, h);
-		gMain.drawImage(behindMenu, x, y-250, w, h, null);
-		gMain.setColor(Color.BLACK);
-		gMain.fillRect(x, y, w, h);
-		gMain.setColor(Color.WHITE);
-		gMain.drawString("MENU HERE", x+10, y+(h/2));
-		this.repaint(x, y, w+1, h+1);
-		this.repaint(x, y-250, w+1, h+1);
+		gMain.drawImage(menu, x, y, w, h, null);
+		this.repaint(x, y+locationPaneHeight, w+1, h+1);
 	}
 	
 	private void hideControls() {
 		menuOnScreen = false;
 		GameClass.print("Hiding menu.");
-		gMain.drawImage(behindMenu, 100, 100, 100, 100, null);
-		this.repaint(100, 100, 101, 101);
+		int w = behindMenu.getWidth();
+		int h = behindMenu.getHeight();
+		int x = (mainPane.getWidth()-w)/2;
+		int y = (mainPane.getHeight()-h)/2;
+		gMain.drawImage(behindMenu, x, y, w, h, null);
+		this.repaint(x, y+locationPaneHeight, w+1, h+1);
 	}
 
 	public void debugDraw(BufferedImage img) {
@@ -696,5 +738,18 @@ public class GameImage extends JPanel {
 	
 	public EntityTile getTargetedEntity() {
 		return targetedEntity;
+	}
+	
+	public void displayFonts(String[] fonts) {
+		//TODO remove this before release, along with the debugDraw method.
+		gCtrl.clearRect(0, 0, ctrlPane.getWidth(), ctrlPane.getHeight());
+		for (int i=0; i<fonts.length; i++) {
+			String font = fonts[i];
+			Font f = new Font(font, Font.PLAIN, 12);
+			gCtrl.setFont(f);
+			gCtrl.drawString(font, (i < 50 ? 20 : (i < 100 ? 150 : 270)), 30+(i%50)*15);
+		}
+		System.out.println(fonts.length);
+		this.repaint(xDim+CONTROL_GAP, locationPaneHeight, INFO_WIDTH, yDim);
 	}
 }
